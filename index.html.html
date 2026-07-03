@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>Rutas de Reparto</title>
+<style>
+  :root {
+    --bg:        #0f1117;
+    --bg2:       #181c27;
+    --card:      #1e2235;
+    --card2:     #252a3d;
+    --border:    #2e3450;
+    --border2:   #3d4466;
+    --text:      #eef0f8;
+    --text2:     #9ba3c4;
+    --text3:     #5a6080;
+    --accent:    #4f7fff;
+    --accent-bg: rgba(79,127,255,0.15);
+    --accent-t:  #7da4ff;
+    --green:     #22c55e;
+    --green-bg:  rgba(34,197,94,0.15);
+    --green-t:   #4ade80;
+    --red:       #ef4444;
+    --red-bg:    rgba(239,68,68,0.15);
+    --red-t:     #f87171;
+    --yellow:    #f59e0b;
+    --yellow-bg: rgba(245,158,11,0.13);
+    --yellow-t:  #fbbf24;
+    /* Colores por ruta */
+    --ruta-a:    #6366f1; --ruta-a-bg: rgba(99,102,241,0.18);
+    --ruta-b:    #06b6d4; --ruta-b-bg: rgba(6,182,212,0.15);
+    --ruta-c:    #f97316; --ruta-c-bg: rgba(249,115,22,0.15);
+    --ruta-d:    #a855f7; --ruta-d-bg: rgba(168,85,247,0.15);
+    --ruta-e:    #ec4899; --ruta-e-bg: rgba(236,72,153,0.15);
+    --radius:    14px; --radius-sm: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); font-size: 16px; }
+  #app { display: flex; flex-direction: column; height: 100vh; }
+
+  /* HEADER */
+  .header { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+  .header h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; color: var(--text); }
+  .header p  { font-size: 13px; color: var(--text3); margin-top: 2px; }
+  .hdr-btns  { display: flex; gap: 10px; }
+  .icon-btn  { background: var(--card); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 10px 16px; cursor: pointer; font-size: 15px; font-weight: 600; color: var(--text2); display: flex; align-items: center; gap: 8px; transition: background 0.15s, color 0.15s; }
+  .icon-btn:hover  { background: var(--card2); color: var(--text); }
+  .icon-btn:active { opacity: 0.75; }
+
+  /* STATS */
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--bg2); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .stat { text-align: center; padding: 12px 4px; border-right: 1px solid var(--border); position: relative; }
+  .stat:last-child { border-right: none; }
+  .stat-n { font-size: 34px; font-weight: 800; line-height: 1; letter-spacing: -1px; }
+  .stat-n.blue  { color: var(--accent-t); }
+  .stat-n.green { color: var(--green-t); }
+  .stat-n.red   { color: var(--red-t); }
+  .stat-l { font-size: 12px; color: var(--text3); margin-top: 4px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* PROGRESS */
+  .prog-wrap { height: 3px; background: var(--border); flex-shrink: 0; }
+  .prog-fill { height: 100%; background: linear-gradient(90deg, var(--green), var(--accent)); transition: width 0.5s ease; }
+
+  /* RUTA BAR */
+  .ruta-bar { display: flex; align-items: center; gap: 12px; padding: 10px 24px; background: var(--bg2); border-bottom: 1px solid var(--border); flex-shrink: 0; overflow-x: auto; }
+  .ruta-bar::-webkit-scrollbar { display: none; }
+  .ruta-label { font-size: 13px; color: var(--text3); white-space: nowrap; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .ruta-pill { padding: 6px 16px; border-radius: 20px; border: 1px solid var(--border2); background: transparent; color: var(--text2); font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+  .ruta-pill.active { color: var(--text); border-color: transparent; }
+  .ruta-pill:active { opacity: 0.75; }
+
+  /* SCROLL */
+  .scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px 20px 30px; }
+  .scroll::-webkit-scrollbar { width: 4px; }
+  .scroll::-webkit-scrollbar-track { background: transparent; }
+  .scroll::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+
+  /* GRID */
+  .cards-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .card.expanded { grid-column: 1 / -1; }
+
+  /* NEXT STOP */
+  .next-stop { grid-column: 1 / -1; background: var(--accent-bg); border: 1px solid rgba(79,127,255,0.3); border-radius: var(--radius-sm); padding: 11px 16px; margin-bottom: 2px; font-size: 14px; color: var(--accent-t); font-weight: 600; display: flex; align-items: center; gap: 10px; }
+  .next-stop .ns-addr { font-weight: 400; color: var(--text2); font-size: 13px; margin-top: 1px; }
+
+  /* CARDS */
+  .card { border-radius: var(--radius); overflow: hidden; transition: opacity 0.3s, transform 0.35s, max-height 0.35s, margin 0.3s; border: 1px solid var(--border); position: relative; }
+  .card::before { content:""; position:absolute; top:0; left:0; right:0; height:3px; border-radius: var(--radius) var(--radius) 0 0; }
+  .card.removing { opacity: 0; transform: translateX(90px) scale(0.95); max-height: 0 !important; margin: 0; border: none; }
+
+  .card-head { padding: 14px 16px 0; cursor: pointer; display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .card-order { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 26px; border-radius: 50%; font-size: 12px; font-weight: 800; margin-right: 8px; padding: 0 5px; flex-shrink: 0; }
+  .card-name { font-size: 15px; font-weight: 700; line-height: 1.3; word-break: break-word; color: var(--text); }
+  .card-meta { font-size: 12px; color: var(--text3); margin-top: 3px; }
+  .card-addr { font-size: 13px; color: var(--text2); padding: 8px 16px 14px; display: flex; align-items: flex-start; gap: 6px; line-height: 1.4; }
+  .chevron { font-size: 13px; color: var(--text3); flex-shrink: 0; transition: transform 0.2s; margin-top: 4px; }
+  .chevron.open { transform: rotate(180deg); }
+
+  /* CARD BODY */
+  .card-body { border-top: 1px solid var(--border); padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: var(--card2); }
+  .actions { display: flex; gap: 8px; }
+  .btn { flex: 1; padding: 13px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--card); font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; color: var(--text2); transition: all 0.15s; }
+  .btn:hover  { border-color: var(--border2); background: var(--card2); }
+  .btn:active { opacity: 0.7; transform: scale(0.98); }
+  .btn.green { border-color: rgba(34,197,94,0.4); background: var(--green-bg); color: var(--green-t); }
+  .btn.red   { border-color: rgba(239,68,68,0.4);  background: var(--red-bg);   color: var(--red-t); }
+  .btn.blue  { border-color: rgba(79,127,255,0.4); background: var(--accent-bg); color: var(--accent-t); }
+  .btn.call  { border-color: rgba(34,197,94,0.4); background: rgba(34,197,94,0.1); color: var(--green-t); }
+
+  .phone-row { display: flex; gap: 8px; align-items: center; }
+  .phone-input { flex: 1; padding: 11px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--bg); color: var(--text); font-size: 15px; }
+  .phone-input:focus { outline: none; border-color: var(--accent); }
+  .phone-save { padding: 11px 16px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--card); color: var(--text2); font-size: 13px; cursor: pointer; white-space: nowrap; font-weight: 600; }
+  .phone-saved { font-size: 14px; color: var(--green-t); display: flex; align-items: center; gap: 6px; flex: 1; }
+  .notes-ta { width: 100%; padding: 11px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--bg); color: var(--text); font-size: 14px; resize: none; font-family: inherit; line-height: 1.5; }
+  .notes-ta:focus { outline: none; border-color: var(--accent); }
+  .notes-ta::placeholder { color: var(--text3); }
+  .phone-input::placeholder { color: var(--text3); }
+
+  /* DONE SECTION */
+  .done-section { margin-top: 10px; }
+  .done-hdr { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 8px; cursor: pointer; }
+  .done-hdr span { font-size: 14px; color: var(--text2); font-weight: 600; }
+  .done-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .done-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; display: flex; align-items: center; gap: 10px; }
+  .done-card.issue { border-color: rgba(239,68,68,0.35); }
+  .done-card.done  { border-color: rgba(34,197,94,0.25); }
+  .done-name { flex: 1; font-size: 14px; font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
+  .done-meta { font-size: 12px; color: var(--text3); margin-top: 2px; }
+  .badge { font-size: 11px; padding: 4px 10px; border-radius: 20px; font-weight: 700; flex-shrink: 0; }
+  .badge.done  { background: var(--green-bg);  color: var(--green-t); }
+  .badge.issue { background: var(--red-bg);    color: var(--red-t); }
+  .undo-btn { padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border2); background: none; font-size: 14px; color: var(--text3); cursor: pointer; flex-shrink: 0; }
+  .undo-btn:hover { color: var(--text2); }
+
+  /* EMPTY / ALL DONE */
+  .empty { text-align: center; padding: 60px 20px; color: var(--text3); grid-column: 1 / -1; }
+  .empty .icon  { font-size: 60px; display: block; margin-bottom: 14px; }
+  .empty .title { font-size: 18px; font-weight: 700; color: var(--text2); margin-bottom: 8px; }
+  .empty .sub   { font-size: 14px; line-height: 1.7; }
+  .all-done { text-align: center; padding: 60px 20px; grid-column: 1 / -1; }
+  .all-done .icon  { font-size: 72px; display: block; margin-bottom: 12px; }
+  .all-done .title { font-size: 22px; font-weight: 800; color: var(--green-t); }
+  .all-done .sub   { font-size: 14px; color: var(--text3); margin-top: 6px; }
+
+  /* MODALS */
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .overlay.hidden { display: none; }
+  .sheet { background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius); width: 100%; max-width: 580px; padding: 28px; max-height: 90vh; overflow-y: auto; }
+  .sheet h2 { font-size: 20px; font-weight: 700; margin-bottom: 20px; color: var(--text); }
+  .field-label { font-size: 13px; color: var(--text2); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
+  .field-input { width: 100%; padding: 12px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--bg); color: var(--text); font-size: 16px; margin-bottom: 14px; }
+  .field-input:focus { outline: none; border-color: var(--accent); }
+
+  .upload-zone { border: 2px dashed var(--border2); border-radius: var(--radius); padding: 36px 24px; text-align: center; cursor: pointer; margin-bottom: 16px; background: var(--card); transition: all 0.2s; }
+  .upload-zone:hover  { border-color: var(--accent); background: var(--accent-bg); }
+  .upload-zone:active { opacity: 0.8; }
+  .uz-icon  { font-size: 48px; display: block; margin-bottom: 10px; }
+  .uz-title { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .uz-sub   { font-size: 13px; color: var(--text3); line-height: 1.6; }
+  #csv-file-input { display: none; }
+
+  .info-box  { font-size: 13px; background: var(--accent-bg); border: 1px solid rgba(79,127,255,0.25); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 14px; color: var(--accent-t); line-height: 1.9; }
+  .steps-box { font-size: 14px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 16px; color: var(--text2); line-height: 2.1; }
+  .steps-box strong { color: var(--text); }
+
+  .sheet-btns { display: flex; gap: 10px; margin-top: 4px; }
+  .sheet-btn  { flex: 1; padding: 13px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--card); font-size: 15px; font-weight: 600; cursor: pointer; color: var(--text2); transition: all 0.15s; }
+  .sheet-btn:hover { background: var(--card2); color: var(--text); }
+  .sheet-btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
+  .sheet-btn.primary:hover { background: #3d6ef0; }
+  .extra-btn { width: 100%; margin-top: 12px; padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: transparent; color: var(--text3); font-size: 14px; cursor: pointer; font-weight: 500; transition: all 0.15s; }
+  .extra-btn:hover { color: var(--text2); border-color: var(--border2); }
+
+  .resumen-body { font-size: 13px; color: var(--text2); line-height: 1.9; white-space: pre-wrap; background: var(--bg); border-radius: var(--radius-sm); padding: 14px; border: 1px solid var(--border); max-height: 45vh; overflow-y: auto; margin-bottom: 16px; font-family: 'Courier New', monospace; }
+  #cfg-status { display:none; text-align:center; padding:12px; font-size:14px; color:var(--text2); line-height:1.5; }
+
+  /* RUTA COLORS */
+  .rc-0 { background: var(--ruta-a-bg); border-color: rgba(99,102,241,0.3); }
+  .rc-0::before { background: var(--ruta-a); }
+  .rc-0 .card-order { background: rgba(99,102,241,0.2); color: var(--ruta-a); }
+  .rc-1 { background: var(--ruta-b-bg); border-color: rgba(6,182,212,0.3); }
+  .rc-1::before { background: var(--ruta-b); }
+  .rc-1 .card-order { background: rgba(6,182,212,0.2); color: var(--ruta-b); }
+  .rc-2 { background: var(--ruta-c-bg); border-color: rgba(249,115,22,0.3); }
+  .rc-2::before { background: var(--ruta-c); }
+  .rc-2 .card-order { background: rgba(249,115,22,0.2); color: var(--ruta-c); }
+  .rc-3 { background: var(--ruta-d-bg); border-color: rgba(168,85,247,0.3); }
+  .rc-3::before { background: var(--ruta-d); }
+  .rc-3 .card-order { background: rgba(168,85,247,0.2); color: var(--ruta-d); }
+  .rc-4 { background: var(--ruta-e-bg); border-color: rgba(236,72,153,0.3); }
+  .rc-4::before { background: var(--ruta-e); }
+  .rc-4 .card-order { background: rgba(236,72,153,0.2); color: var(--ruta-e); }
+</style>
+</head>
+<body>
+<script>
+// Compatibilidad con Chrome antiguo (Android car stereo / WebView)
+if (!window.fetch) {
+  window.fetch = function(url) {
+    return new Promise(function(resolve, reject) {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', url, true);
+      xhr.onload = function() {
+        resolve({ json: function() { return JSON.parse(xhr.responseText); } });
+      };
+      xhr.onerror = reject;
+      xhr.send();
+    });
+  };
+}
+document.addEventListener('touchstart', function(){}, {passive: true});
+</script>
+<div id="app">
+  <div class="header">
+    <div>
+      <h1>🚚 Mis Rutas de Reparto</h1>
+      <p id="hdr-date"></p>
+    </div>
+    <div class="hdr-btns">
+      <button class="icon-btn" onclick="openResumen()" ontouchend="openResumen()">📋 Resumen</button>
+      <button class="icon-btn" onclick="openConfig()" ontouchend="openConfig()">📂 Cargar CSV</button>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-n blue"  id="s-pend">0</div><div class="stat-l">Pendientes</div></div>
+    <div class="stat"><div class="stat-n green" id="s-done">0</div><div class="stat-l">Entregados</div></div>
+    <div class="stat"><div class="stat-n red"   id="s-issue">0</div><div class="stat-l">Incidencias</div></div>
+  </div>
+  <div class="prog-wrap"><div class="prog-fill" id="prog" style="width:0%"></div></div>
+
+  <div class="ruta-bar" id="ruta-bar">
+    <span class="ruta-label">Ruta</span>
+  </div>
+
+  <div class="scroll">
+    <div class="cards-grid" id="pending-list"></div>
+    <div class="done-section" id="done-section"></div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="cfg-overlay">
+  <div class="sheet">
+    <h2>📂 Cargar clientes del día</h2>
+    <div class="steps-box">
+      <strong>Cada mañana, antes de salir:</strong><br>
+      1️⃣ Abre Google Sheets en el PC<br>
+      2️⃣ Ejecuta <strong>"Procesar Ruta"</strong> en tu hoja<br>
+      3️⃣ Menú <strong>Archivo → Descargar → CSV</strong><br>
+      4️⃣ Pasa el CSV a la tablet y cárgalo aquí 👇
+    </div>
+    <div style="margin-bottom:14px;">
+      <div class="field-label">🌐 Opción 1 — Cargar desde URL (requiere WiFi)</div>
+      <div style="display:flex;gap:8px;margin-top:6px;">
+        <input class="field-input" id="url-input" placeholder="Pega aquí la URL del Apps Script..." style="margin-bottom:0;flex:1;" />
+        <button class="sheet-btn primary" onclick="cargarDesdeURL()" ontouchend="cargarDesdeURL()" style="flex:none;padding:10px 16px;white-space:nowrap;">⬇️ Cargar</button>
+      </div>
+      <div style="font-size:12px;color:var(--text3);margin-top:6px;">Carga los datos directamente de Google Sheets sin necesidad de CSV</div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+      <div style="flex:1;height:1px;background:var(--border);"></div>
+      <span style="font-size:12px;color:var(--text3);font-weight:600;">O BIEN</span>
+      <div style="flex:1;height:1px;background:var(--border);"></div>
+    </div>
+
+    <div class="field-label">📄 Opción 2 — Cargar CSV (funciona sin WiFi)</div>
+    <input type="file" id="csv-file-input" accept=".csv,text/csv" onchange="onCsvSelected(event)" style="margin-top:6px;" />
+    <div class="upload-zone" onclick="document.getElementById('csv-file-input').click()" style="margin-top:8px;">
+      <span class="uz-icon">📄</span>
+      <div class="uz-title">Pulsa para seleccionar el CSV</div>
+      <div class="uz-sub">Selecciona el archivo BASE_CLIENTES.csv<br>descargado de Google Sheets</div>
+    </div>
+    <div class="info-box">
+      ✅ Solo cargará los clientes con <strong>"x"</strong> en columna F (marcados por "Procesar Ruta")<br>
+      A: Código · B: Nombre · C: Dirección · D: Ruta · E: Orden · F: Obs (x) · G: Teléfono · H: Nota entrega
+    </div>
+    <div id="cfg-status"></div>
+    <div class="sheet-btns">
+      <button class="sheet-btn" onclick="closeCfg()" ontouchend="closeCfg()">Cancelar</button>
+    </div>
+    <button class="extra-btn" onclick="loadDemo()" ontouchend="loadDemo()">✨ Probar con datos de ejemplo</button>
+  </div>
+</div>
+
+<div class="overlay hidden" id="res-overlay">
+  <div class="sheet">
+    <h2>📋 Resumen del día</h2>
+    <div class="resumen-body" id="res-body"></div>
+    <div class="sheet-btns">
+      <button class="sheet-btn" onclick="closeResumen()" ontouchend="closeResumen()">Cerrar</button>
+      <button class="sheet-btn primary" onclick="compartirResumen()" ontouchend="compartirResumen()">📤 Compartir / Copiar</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="phone-overlay">
+  <div class="sheet" style="max-width:420px;">
+    <h2>📞 Teléfono del cliente</h2>
+    <p style="font-size:15px;color:var(--text2);margin-bottom:16px;" id="phone-cname"></p>
+    <div class="field-label">Número de teléfono</div>
+    <input class="field-input" id="phone-input" type="tel" placeholder="Ej: 612 345 678" />
+    <div class="sheet-btns">
+      <button class="sheet-btn" onclick="closePhone()" ontouchend="closePhone()">Cancelar</button>
+      <button class="sheet-btn primary" onclick="savePhone()" ontouchend="savePhone()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let pending   = [];
+let completed = [];
+let phones    = {};
+let rutaMap   = {};
+let expandedId   = null;
+let currentRuta  = "all";
+let showDone     = false;
+let editPhoneIdx = null;
+
+const SK = { p:"reparto_pending", c:"reparto_completed", ph:"reparto_phones" };
+
+function save() {
+  try {
+    localStorage.setItem(SK.p,  JSON.stringify(pending));
+    localStorage.setItem(SK.c,  JSON.stringify(completed));
+    localStorage.setItem(SK.ph, JSON.stringify(phones));
+  } catch(e) {}
+}
+function loadSaved() {
+  try {
+    const p=localStorage.getItem(SK.p), c=localStorage.getItem(SK.c), ph=localStorage.getItem(SK.ph);
+    if(p)  pending   = JSON.parse(p);
+    if(c)  completed = JSON.parse(c);
+    if(ph) phones    = JSON.parse(ph);
+  } catch(e) {}
+}
+
+function parseCSV(text) {
+  const lines=text.replace(/\r\n/g,"\n").replace(/\r/g,"\n").split("\n").filter(l=>l.trim());
+  function splitLine(line) {
+    const r=[]; let cur="", inQ=false;
+    for(let i=0;i<line.length;i++){
+      const ch=line[i];
+      if(ch==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
+      else if(ch===','&&!inQ){r.push(cur.trim());cur="";}
+      else cur+=ch;
+    }
+    r.push(cur.trim()); return r;
+  }
+  const clientes=[];
+  lines.slice(1).forEach(line=>{
+    if(!line.trim()) return;
+    const cols=splitLine(line);
+    const nombre=(cols[1]||"").replace(/^"|"$/g,"").trim();
+    const obs=(cols[5]||"").replace(/['"]+/g,"").trim().toLowerCase();
+    
+    if(!nombre||obs!=="x") return;
+    const cod=(cols[0]||"").replace(/['"]+/g,"").trim();
+    const tel=(cols[6]||"").replace(/['"]+/g,"").trim();
+    if(tel&&cod&&!phones[cod]) phones[cod]=tel;
+    clientes.push({
+      codigo:cod, nombre,
+      direccion:(cols[2]||"").replace(/^"|"$/g,"").trim(),
+      ruta:(cols[3]||"").replace(/^"|"$/g,"").trim(),
+      orden:parseInt((cols[4]||"99").replace(/['"]+/g,"").trim())||99,
+      nota_entrega:(cols[7]||"").replace(/^"|"$/g,"").trim(),
+      notes:""
+    });
+  });
+  return clientes;
+}
+
+function onCsvSelected(event) {
+  const file=event.target.files[0]; if(!file) return;
+  const status=document.getElementById("cfg-status");
+  status.style.display="block"; status.textContent="⏳ Leyendo: " + file.name + " (" + (file.size/1024).toFixed(1) + " KB)...";
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try {
+      const clientes=parseCSV(e.target.result);
+      if(!clientes.length){
+        const reader2=new FileReader();
+        reader2.onload=function(e2){
+          try {
+            const clientes2=parseCSV(e2.target.result);
+            if(!clientes2.length){ status.textContent='⚠️ No se encontraron clientes con "x" en columna F. Ejecuta "Procesar Ruta" primero.'; return; }
+            pending=clientes2; completed=[]; buildRutaMap(); save(); closeCfg(); render();
+          } catch(err2){ status.textContent="❌ Error leyendo el CSV. Descárgalo de nuevo desde Google Sheets."; }
+        };
+        reader2.readAsText(file,"ISO-8859-1");
+        return;
+      }
+      pending=clientes; completed=[]; buildRutaMap(); save(); closeCfg(); render();
+    } catch(err){ status.textContent="❌ Error leyendo el CSV. Descárgalo de nuevo."; }
+  };
+  reader.onerror=()=>{ status.textContent="❌ No se pudo leer el archivo."; };
+  reader.readAsText(file,"UTF-8");
+  event.target.value="";
+}
+
+function buildRutaMap() {
+  rutaMap={};
+  const rutas=getRutas();
+  rutas.forEach((r,i)=>{ rutaMap[r]=i%5; });
+}
+
+function getRutaClass(ruta) { return "rc-"+(rutaMap[ruta]??0); }
+function getPhone(cod)   { return phones[cod]||""; }
+
+function getRutas() { 
+  return [...new Set([...pending,...completed].map(c=>c.ruta).filter(Boolean))].sort((a,b)=>a.localeCompare(b, undefined, {numeric: true})); 
+}
+function filtPending() { 
+  return pending.filter(c=>currentRuta==="all"||c.ruta===currentRuta).sort((a,b)=>(a.orden - b.orden)); 
+}
+function filtCompleted() { return completed.filter(c=>currentRuta==="all"||c.ruta===currentRuta); }
+
+function updateStats() {
+  const fp=filtPending(), fc=filtCompleted(), total=fp.length+fc.length;
+  document.getElementById("s-pend").textContent  = fp.length;
+  document.getElementById("s-done").textContent  = fc.filter(c=>c.status==="done").length;
+  document.getElementById("s-issue").textContent = fc.filter(c=>c.status==="issue").length;
+  document.getElementById("prog").style.width = total>0?Math.round(fc.length/total*100)+"%":"0%";
+}
+
+function buildRutaBar() {
+  const bar=document.getElementById("ruta-bar");
+  const rutas=getRutas();
+  const pills=rutas.map(r=>{
+    const cls=getRutaClass(r);
+    const colors=["#6366f1","#06b6d4","#f97316","#a855f7","#ec4899"];
+    const col=colors[rutaMap[r]??0];
+    const active=currentRuta===r;
+    return `<button class="ruta-pill ${active?"active":""}" onclick="setRuta('${r}')"
+      style="${active?`background:${col}22;border-color:${col};color:${col};`:""}">
+      Ruta ${r}</button>`;
+  }).join("");
+  const allActive=currentRuta==="all";
+  bar.innerHTML=`<span class="ruta-label">Ruta</span>
+    <button class="ruta-pill ${allActive?"active":""}" onclick="setRuta('all')"
+      style="${allActive?"background:var(--accent-bg);border-color:var(--accent);color:var(--accent-t);":""}">
+      Todas</button>${pills}`;
+}
+
+function setRuta(r) { currentRuta=r; render(); }
+function render()   { buildRutaBar(); updateStats(); renderPending(); renderDone(); }
+
+function renderPending() {
+  const list=document.getElementById("pending-list");
+  const rows=filtPending();
+  if(!pending.length&&!completed.length){
+    list.innerHTML=`<div class="empty"><span class="icon">📦</span><div class="title">Sin clientes cargados</div><div class="sub">Pulsa <strong>📂 Cargar CSV</strong> para comenzar</div></div>`;
+    return;
+  }
+  if(!rows.length){
+    list.innerHTML=`<div class="all-done"><span class="icon">✅</span><div class="title">¡Ruta completada!</div><div class="sub">Todos los pedidos del día gestionados</div></div>`;
+    return;
+  }
+  const next=rows[0];
+  list.innerHTML=`<div class="next-stop">📍 <div><div>Siguiente: <strong>${next.nombre}</strong></div><div class="ns-addr">${next.direccion}</div></div></div>`+
+    rows.map(c=>{
+      const idx=pending.indexOf(c);
+      const exp=expandedId===idx;
+      const ph=getPhone(c.codigo);
+      const rc=getRutaClass(c.ruta);
+      return `
+      <div class="card ${rc} ${exp?"expanded":""}" id="card-${idx}" style="max-height:${exp?'900px':'165px'}">
+        <div class="card-head" onclick="toggleExp(${idx})">
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;">
+              <span class="card-order">${c.orden||"?"}</span>
+              <span class="card-name">${c.nombre}</span>
+            </div>
+            <div class="card-meta">Cód. ${c.codigo} · Ruta ${c.ruta}${ph?" · 📞 "+ph:""}</div>
+          </div>
+          <span class="chevron ${exp?"open":""}">▼</span>
+        </div>
+        <div class="card-addr"><span>📍</span><span>${c.direccion}</span></div>
+        ${c.nota_entrega?`<div style="font-size:13px;color:var(--yellow-t);padding:0 16px 10px;display:flex;align-items:flex-start;gap:6px;"><span>⚠️</span><span>${c.nota_entrega}</span></div>`:""}
+        ${exp?`
+        <div class="card-body">
+          <div class="actions">
+            <button class="btn blue" onclick="openMap(${idx})">🗺️ Navegar</button>
+            ${ph?`<button class="btn call" onclick="llamar('${ph}')">📞 Llamar</button>`:""}
+          </div>
+          <div class="actions">
+            <button class="btn green" onclick="markClient(${idx},'done')">✅ Entregado</button>
+            <button class="btn red"   onclick="markClient(${idx},'issue')">⚠️ Incidencia</button>
+          </div>
+          <div class="phone-row">
+            ${ph
+              ?`<span class="phone-saved">📞 ${ph}</span><button class="phone-save" onclick="openPhone(${idx})">✏️ Editar</button>`
+              :`<input class="phone-input" type="tel" placeholder="Añadir teléfono..." id="ph-${idx}"/><button class="phone-save" onclick="quickSavePhone(${idx})">💾 Guardar</button>`
+            }
+          </div>
+          <textarea class="notes-ta" rows="3" placeholder="${c.nota_entrega||'Nota de entrega puntual...'}" onchange="saveNote(${idx},this.value)">${c.notes||""}</textarea>
+        </div>`:""}
+      </div>`;
+    }).join("");
+}
+
+function renderDone() {
+  const sec=document.getElementById("done-section");
+  const rows=filtCompleted();
+  if(!rows.length){sec.innerHTML="";return;}
+  sec.innerHTML=`
+    <div class="done-hdr" onclick="toggleDone()">
+      <span>📁 Gestionados hoy (${rows.length})</span>
+      <span style="color:var(--text3)">${showDone?"▲":"▼"}</span>
+    </div>
+    ${showDone?`<div class="done-grid">`+rows.map(c=>{
+      const ci=completed.indexOf(c);
+      return `<div class="done-card ${c.status}">
+        <div style="flex:1;min-width:0;">
+          <div class="done-name">${c.nombre}</div>
+          <div class="done-meta">Ruta ${c.ruta} · Orden ${c.orden}${c.notes?" · "+c.notes:""}</div>
+        </div>
+        <span class="badge ${c.status}">${c.status==="done"?"Entregado":"Incidencia"}</span>
+        <button class="undo-btn" onclick="undoClient(${ci})">↩️</button>
+      </div>`;
+    }).join("")+`</div>`:""}`;
+}
+
+function toggleExp(idx)  { expandedId=expandedId===idx?null:idx; renderPending(); }
+function toggleDone()    { showDone=!showDone; renderDone(); }
+
+function markClient(idx,status) {
+  const card=document.getElementById("card-"+idx);
+  if(card){
+    card.classList.add("removing");
+    setTimeout(()=>{ const c=pending[idx]; c.status=status; completed.unshift({...c}); pending.splice(idx,1); expandedId=null; save(); render(); },350);
+  }
+}
+function undoClient(ci) { const c={...completed[ci]}; delete c.status; pending.push(c); completed.splice(ci,1); save(); render(); }
+function saveNote(idx,val) { pending[idx].notes=val; save(); }
+function openMap(idx)   { window.open("https://maps.google.com/?q="+encodeURIComponent(pending[idx].direccion),"_blank"); }
+function llamar(tel)    { window.location.href="tel:"+tel.replace(/\s/g,""); }
+
+function quickSavePhone(idx) {
+  const el=document.getElementById("ph-"+idx); if(!el||!el.value.trim()) return;
+  phones[pending[idx].codigo]=el.value.trim(); save(); renderPending();
+}
+function openPhone(idx) {
+  editPhoneIdx=idx;
+  document.getElementById("phone-cname").textContent=pending[idx].nombre;
+  document.getElementById("phone-input").value=getPhone(pending[idx].codigo);
+  document.getElementById("phone-overlay").classList.remove("hidden");
+}
+function closePhone() { document.getElementById("phone-overlay").classList.add("hidden"); editPhoneIdx=null; }
+function savePhone() {
+  if(editPhoneIdx===null) return;
+  const val=document.getElementById("phone-input").value.trim();
+  if(val) phones[pending[editPhoneIdx].codigo]=val; else delete phones[pending[editPhoneIdx].codigo];
+  save(); closePhone(); renderPending();
+}
+
+function openConfig() {
+  document.getElementById("cfg-status").style.display="none";
+  try {
+    const savedUrl = localStorage.getItem("reparto_url");
+    if (savedUrl) document.getElementById("url-input").value = savedUrl;
+  } catch(e) {}
+  document.getElementById("cfg-overlay").classList.remove("hidden");
+}
+function closeCfg()   { document.getElementById("cfg-overlay").classList.add("hidden"); }
+
+function loadDemo() {
+  pending=[
+    {codigo:"601501",nombre:"B&B HOTEL Madrid Getafe",      direccion:"C. Torroja, 13, 28904 Madrid",                       ruta:"186",orden:1,notes:""},
+    {codigo:"522436",nombre:"CAFETERIA RENFE MARGARITAS",   direccion:"Calle Rosa Montero Renfe, S/N, 28903 Getafe",         ruta:"186",orden:2,notes:""},
+    {codigo:"281637",nombre:"LA MASERA DE GONGORA",         direccion:"Av. Rigoberta Menchú, 5, 28903 Getafe",              ruta:"186",orden:3,notes:""},
+    {codigo:"513378",nombre:"LAS DELICIAS DE ROSSE",        direccion:"C. Pizarro, 1, 28902 Getafe, Madrid",                ruta:"186",orden:4,notes:""},
+    {codigo:"404632",nombre:"EUROPEA SERV.ESCRIBANO",       direccion:"Av. de Manuel Azaña, 8, 28905 Getafe",               ruta:"186",orden:5,notes:""},
+    {codigo:"549746",nombre:"HORNO DE CONCHI",              direccion:"C. de Clara Schumann, 20, Villaverde, 28021 Madrid",  ruta:"180",orden:1,notes:""},
+    {codigo:"585665",nombre:"Parque Atracciones Madrid",    direccion:"Casa de Campo, s/n, 28011 Madrid",                   ruta:"180",orden:2,notes:""},
+    {codigo:"601508",nombre:"B&B HOTEL Madrid Carabanchel", direccion:"C. del Aguacate, 43, Carabanchel, 28054 Madrid",     ruta:"180",orden:3,notes:""},
+  ];
+  phones["601501"]="912 345 678";
+  completed=[]; buildRutaMap(); save(); closeCfg(); render();
+}
+
+function openResumen() {
+  const fecha=new Date().toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+  const done=completed.filter(c=>c.status==="done");
+  const issue=completed.filter(c=>c.status==="issue");
+  let txt=`📦 RESUMEN DE REPARTO\n📅 ${fecha}\n${"─".repeat(34)}\n\n`;
+  txt+=`✅ ENTREGADOS (${done.length})\n`;
+  done.forEach(c=>{txt+=`  • [Ruta ${c.ruta}·${c.orden}] ${c.nombre}\n`;if(c.notes)txt+=`    📝 ${c.notes}\n`;});
+  txt+=`\n⚠️  INCIDENCIAS (${issue.length})\n`;
+  issue.forEach(c=>{txt+=`  • [Ruta ${c.ruta}·${c.orden}] ${c.nombre}\n`;if(c.notes)txt+=`    📝 ${c.notes}\n`;});
+  if(pending.length){txt+=`\n⏳ PENDIENTES (${pending.length})\n`;pending.forEach(c=>{txt+=`  • [Ruta ${c.ruta}·${c.orden}] ${c.nombre}\n`;});}
+  txt+=`\n${"─".repeat(34)}\nTotal: ${done.length+issue.length} gestionados de ${done.length+issue.length+pending.length}`;
+  document.getElementById("res-body").textContent=txt;
+  document.getElementById("res-overlay").classList.remove("hidden");
+}
+function closeResumen() { document.getElementById("res-overlay").classList.add("hidden"); }
+function compartirResumen() {
+  const txt=document.getElementById("res-body").textContent;
+  if(navigator.share) navigator.share({title:"Resumen de reparto",text:txt});
+  else if(navigator.clipboard) navigator.clipboard.writeText(txt).then(()=>alert("✅ Copiado al portapapeles"));
+  else alert("Copia el texto manualmente");
+}
+
+async function cargarDesdeURL() {
+  const url = document.getElementById("url-input").value.trim();
+  const status = document.getElementById("cfg-status");
+  if (!url) { alert("Pega la URL del Apps Script primero"); return; }
+
+  status.style.display = "block";
+  status.textContent = "⏳ Conectando con Google Sheets...";
+
+  try {
+    const respuesta = await fetch(url);
+    const data = await respuesta.json();
+
+    pending = [];
+    for (let i = 1; i < data.length; i++) {
+      let f = data[i];
+      let obs = String(f[5]||"").toLowerCase().replace(/['"]+/g,"").trim();
+      if (obs === "x") {
+        const cod = String(f[0]||"");
+        const tel = String(f[6]||"").trim();
+        if (tel && cod && !phones[cod]) phones[cod] = tel;
+        pending.push({
+          codigo: cod,
+          nombre: String(f[1]||""),
+          direccion: String(f[2]||""),
+          ruta: String(f[3]||""),
+          orden: parseInt(f[4])||99,
+          nota_entrega: String(f[7]||"").trim(),
+          notes: ""
+        });
+      }
+    }
+
+    if (!pending.length) {
+      status.textContent = '⚠️ No se encontraron clientes con "x" en columna F. Ejecuta "Procesar Ruta" primero.';
+      return;
+    }
+
+    try { localStorage.setItem("reparto_url", url); } catch(e) {}
+
+    completed = []; buildRutaMap(); save(); closeCfg(); render();
+  } catch(e) {
+    status.textContent = "❌ Error: comprueba que la URL es correcta y el script es público.";
+    console.error(e);
+  }
+}
+
+document.getElementById("hdr-date").textContent=
+  new Date().toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long"});
+loadSaved();
+buildRutaMap();
+if(!pending.length&&!completed.length) setTimeout(openConfig,400);
+else render();
+</script>
+</body>
+</html>
