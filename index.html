@@ -41,8 +41,8 @@
   .header { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
   .header h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; color: var(--text); }
   .header p  { font-size: 13px; color: var(--text3); margin-top: 2px; }
-  .hdr-btns  { display: flex; gap: 10px; }
-  .icon-btn  { background: var(--card); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 10px 16px; cursor: pointer; font-size: 15px; font-weight: 600; color: var(--text2); display: flex; align-items: center; gap: 8px; transition: background 0.15s; }
+  .hdr-btns  { display: flex; gap: 8px; }
+  .icon-btn  { background: var(--card); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 10px 14px; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--text2); display: flex; align-items: center; gap: 6px; transition: background 0.15s; }
   .icon-btn:hover  { background: var(--card2); color: var(--text); }
 
   /* STATS */
@@ -75,11 +75,21 @@
   /* NEXT STOP BOX */
   .next-stop { grid-column: 1 / -1; background: var(--accent-bg); border: 1px solid rgba(79,127,255,0.3); border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 12px; font-size: 14px; color: var(--accent-t); font-weight: 600; display: flex; align-items: center; gap: 10px; }
 
+  /* SECTIONS FOR MANAGED CLIENTS */
+  .section-title { grid-column: 1 / -1; font-size: 14px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin: 24px 0 8px; display: flex; align-items: center; gap: 8px; }
+  .section-title::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+
   /* CARDS */
-  .card { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); position: relative; background: var(--card); display: flex; flex-direction: column; transition: transform 0.15s; }
+  .card { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); position: relative; background: var(--card); display: flex; flex-direction: column; }
   .card::before { content:""; position:absolute; top:0; left:0; right:0; height:3px; background: var(--ruta-a); }
+  .card.done-card::before { background: var(--green); }
+  .card.issue-card::before { background: var(--red); }
+  
   .card-head { padding: 14px 16px; cursor: pointer; display: flex; align-items: flex-start; justify-content: space-between; }
   .card-order { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 26px; border-radius: 50%; font-size: 12px; font-weight: 800; margin-right: 8px; background: rgba(79,127,255,0.2); color: #7da4ff; }
+  .card.done-card .card-order { background: rgba(34,197,94,0.2); color: var(--green-t); }
+  .card.issue-card .card-order { background: rgba(239,68,68,0.2); color: var(--red-t); }
+  
   .card-name { font-size: 15px; font-weight: 700; }
   .card-meta { font-size: 12px; color: var(--text3); margin-top: 3px; }
   .card-addr { font-size: 13px; color: var(--text2); padding: 0 16px 14px; }
@@ -88,8 +98,8 @@
 
   /* EXPANDED ACTIONS */
   .card-body { border-top: 1px solid var(--border); padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: var(--card2); }
-  .actions { display: flex; gap: 8px; }
-  .btn { flex: 1; padding: 12px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--card); font-size: 14px; font-weight: 600; color: var(--text2); cursor: pointer; text-align: center; text-decoration: none; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn { flex: 1; min-width: 80px; padding: 12px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--card); font-size: 13px; font-weight: 600; color: var(--text2); cursor: pointer; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 4px; }
   .btn.green { border-color: rgba(34,197,94,0.4); background: var(--green-bg); color: var(--green-t); }
   .btn.red   { border-color: rgba(239,68,68,0.4);  background: var(--red-bg);   color: var(--red-t); }
   .btn.blue  { border-color: rgba(79,127,255,0.4); background: var(--accent-bg); color: var(--accent-t); }
@@ -101,6 +111,10 @@
   .field-input { width: 100%; padding: 12px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--bg); color: var(--text); font-size: 16px; margin-bottom: 14px; }
   .sheet-btn  { padding: 13px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--card); font-size: 15px; font-weight: 600; color: var(--text2); cursor: pointer; }
   .sheet-btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
+  
+  /* SUMMARY CSS */
+  .resumen-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 15px; }
+  .resumen-row:last-child { border-bottom: none; }
   
   /* DEBUG BOX */
   .debug-box { background: #2c1a1a; border: 1px solid #7a2a2a; border-radius: 8px; padding: 12px; margin-top: 14px; font-family: monospace; font-size: 11px; color: #ff9999; max-height: 200px; overflow: auto; display: none; white-space: pre; }
@@ -116,6 +130,7 @@
     </div>
     <div class="hdr-btns">
       <button class="icon-btn" onclick="toggleView()">👁️ Vista</button>
+      <button class="icon-btn" onclick="openResumen()">📊 Resumen</button>
       <button class="icon-btn" onclick="openConfig()">📂 Sincronizar</button>
     </div>
   </div>
@@ -135,7 +150,7 @@
   </div>
 </div>
 
-<!-- CONFIG OVERLAY -->
+<!-- CONFIG OVERLAY (SINCRONIZAR) -->
 <div class="overlay hidden" id="cfg-overlay">
   <div class="sheet">
     <h2>📂 Sincronizar Clientes</h2>
@@ -149,6 +164,19 @@
     <div class="debug-box" id="cfg-debug"></div>
     <div style="margin-top:14px; text-align:right;">
       <button class="sheet-btn" onclick="closeCfg()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESUMEN OVERLAY -->
+<div class="overlay hidden" id="resumen-overlay">
+  <div class="sheet">
+    <h2>📊 Resumen del Reparto</h2>
+    <div style="margin-top:20px;" id="resumen-content">
+      <!-- Se llena dinámicamente -->
+    </div>
+    <div style="margin-top:24px; text-align:right;">
+      <button class="sheet-btn primary" onclick="closeResumen()">Entendido</button>
     </div>
   </div>
 </div>
@@ -173,6 +201,9 @@ async function cargarDesdeURL() {
   
   if (!url) { alert("Pega la URL de Apps Script"); return; }
   
+  // Guardar la URL para que se quede grabada automáticamente
+  localStorage.setItem("apps_script_url", url);
+  
   status.textContent = "⏳ Leyendo datos del Sheets...";
   debugBox.style.display = "none";
   
@@ -187,7 +218,6 @@ async function cargarDesdeURL() {
       return;
     }
 
-    // Mapear encabezados dinámicamente
     const cabecera = matriz[0].map(h => h.toString().toUpperCase().trim());
     
     const idxCodigo    = cabecera.findIndex(h => h.includes("CODIGO") || h === "A");
@@ -256,7 +286,6 @@ function renderRutaBar() {
   const bar = document.getElementById("ruta-bar");
   if (!pending.length && !completed.length && !issues.length) { bar.innerHTML = ""; return; }
 
-  // Extraer rutas únicas disponibles
   let todasLasRutas = [...pending, ...completed, ...issues].map(c => c.ruta);
   let rutasUnicas = [...new Set(todasLasRutas)].sort();
 
@@ -304,32 +333,36 @@ function marcarIncidencia(id, event) {
   render();
 }
 
+function recuperarCliente(id, deDonde, event) {
+  if(event) event.stopPropagation();
+  if (deDonde === 'done') {
+    let idx = completed.findIndex(c => c.id === id);
+    if(idx > -1) { pending.push(completed[idx]); completed.splice(idx, 1); }
+  } else {
+    let idx = issues.findIndex(c => c.id === id);
+    if(idx > -1) { pending.push(issues[idx]); issues.splice(idx, 1); }
+  }
+  pending.sort((a, b) => a.orden - b.orden);
+  render();
+}
+
 function render() {
   const list = document.getElementById("pending-list");
   
-  // Filtrar según la ruta seleccionada
   let filteredPending = pending.filter(c => currentRuta === "all" || c.ruta === currentRuta);
   let filteredDone = completed.filter(c => currentRuta === "all" || c.ruta === currentRuta);
   let filteredIssues = issues.filter(c => currentRuta === "all" || c.ruta === currentRuta);
 
-  // Actualizar marcadores numéricos superiores
   document.getElementById("s-pend").textContent = filteredPending.length;
   document.getElementById("s-done").textContent = filteredDone.length;
   document.getElementById("s-issue").textContent = filteredIssues.length;
 
-  // Actualizar barra de progreso
   const total = filteredPending.length + filteredDone.length + filteredIssues.length;
-  const pct = total > 0 ? (filteredDone.length / total) * 180 : 0; // Escala visual simple
   document.getElementById("prog").style.width = (total > 0 ? (filteredDone.length / total) * 100 : 0) + "%";
   
-  if (!filteredPending.length) {
-    list.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text3);">No hay clientes pendientes en esta ruta.</div>`;
-    return;
-  }
-
   let listHtml = "";
 
-  // AGREGAR CAJA DE CLIENTE SIGUIENTE (solo si no está en vista compacta y hay alguno)
+  // SIGUIENTE PARADA
   if (!isCompactView && filteredPending.length > 0) {
     const next = filteredPending[0];
     listHtml += `
@@ -340,49 +373,137 @@ function render() {
     `;
   }
 
-  // RENDERIZAR TARJETAS
-  listHtml += filteredPending.map(c => {
-    const isExpanded = expandedCardId === c.id;
-    const tel = phones[c.codigo] || "";
+  if (!filteredPending.length && !filteredDone.length && !filteredIssues.length) {
+    list.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text3);">Pulsa 'Sincronizar' arriba para importar la ruta.</div>`;
+    return;
+  }
 
-    return `
-      <div class="card ${isExpanded ? 'expanded' : ''}">
-        <div class="card-head" onclick="toggleCard('${c.id}')">
-          <div style="flex:1; padding-right:8px;">
-            <span class="card-order">${c.orden}</span>
-            <span class="card-name">${c.nombre}</span>
-            <div class="card-meta">Cód. ${c.codigo} · Ruta ${c.ruta}</div>
-          </div>
-          <div class="chevron ${isExpanded ? 'open' : ''}">▼</div>
-        </div>
-        
-        <!-- Dirección visible si está expandido o si no es vista compacta -->
-        ${(!isCompactView || isExpanded) ? `<div class="card-addr" onclick="toggleCard('${c.id}')">📍 ${c.direccion}</div>` : ''}
-        
-        <!-- Observación / Nota de entrega -->
-        ${c.nota_entrega && (!isCompactView || isExpanded) ? `<div style="font-size:13px;color:var(--yellow-t);padding:0 16px 10px;">⚠️ Horario: ${c.nota_entrega}</div>` : ''}
-        
-        <!-- CUERPO EXPANDIBLE CON ACCIONES -->
-        ${isExpanded ? `
-          <div class="card-body">
-            <div class="actions">
-              <button class="btn green" onclick="marcarEntregado('${c.id}', event)">✔️ Entregado</button>
-              <button class="btn red" onclick="marcarIncidencia('${c.id}', event)">❌ Incidencia</button>
-              ${tel ? `<a class="btn blue" href="tel:${tel}" onclick="event.stopPropagation()">📞 Llamar</a>` : ''}
+  // LISTADO DE PENDIENTES
+  if (filteredPending.length > 0) {
+    listHtml += filteredPending.map(c => {
+      const isExpanded = expandedCardId === c.id;
+      const tel = phones[c.codigo] || "";
+      const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.direccion)}`;
+
+      return `
+        <div class="card ${isExpanded ? 'expanded' : ''}">
+          <div class="card-head" onclick="toggleCard('${c.id}')">
+            <div style="flex:1; padding-right:8px;">
+              <span class="card-order">${c.orden}</span>
+              <span class="card-name">${c.nombre}</span>
+              <div class="card-meta">Cód. ${c.codigo} · Ruta ${c.ruta}</div>
             </div>
+            <div class="chevron ${isExpanded ? 'open' : ''}">▼</div>
           </div>
-        ` : ''}
-      </div>
-    `;
-  }).join("");
+          
+          ${(!isCompactView || isExpanded) ? `<div class="card-addr" onclick="toggleCard('${c.id}')">📍 ${c.direccion}</div>` : ''}
+          ${c.nota_entrega && (!isCompactView || isExpanded) ? `<div style="font-size:13px;color:var(--yellow-t);padding:0 16px 10px;">⚠️ Horario: ${c.nota_entrega}</div>` : ''}
+          
+          ${isExpanded ? `
+            <div class="card-body">
+              <div class="actions">
+                <button class="btn green" onclick="marcarEntregado('${c.id}', event)">✔️ Entregado</button>
+                <button class="btn red" onclick="marcarIncidencia('${c.id}', event)">❌ Incidencia</button>
+                <a class="btn blue" href="${mapUrl}" target="_blank" onclick="event.stopPropagation()">🗺️ Navegar</a>
+                ${tel ? `<a class="btn blue" href="tel:${tel}" onclick="event.stopPropagation()">📞 Llamar</a>` : ''}
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }).join("");
+  }
+
+  // SECCIÓN ENTREGADOS (GESTIONADOS)
+  if (filteredDone.length > 0) {
+    listHtml += `<div class="section-title">✔️ Clientes Entregados (${filteredDone.length})</div>`;
+    listHtml += filteredDone.map(c => {
+      const isExpanded = expandedCardId === c.id;
+      return `
+        <div class="card done-card ${isExpanded ? 'expanded' : ''}">
+          <div class="card-head" onclick="toggleCard('${c.id}')">
+            <div style="flex:1;">
+              <span class="card-order">${c.orden}</span>
+              <span class="card-name" style="text-decoration:line-through; color:var(--text3);">${c.nombre}</span>
+              <div class="card-meta">Entregado correctamente</div>
+            </div>
+            <div class="chevron ${isExpanded ? 'open' : ''}">▼</div>
+          </div>
+          ${isExpanded ? `
+            <div class="card-body">
+              <div class="actions">
+                <button class="btn" onclick="recuperarCliente('${c.id}', 'done', event)">🔄 Devolver a Pendientes</button>
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }).join("");
+  }
+
+  // SECCIÓN INCIDENCIAS (GESTIONADOS)
+  if (filteredIssues.length > 0) {
+    listHtml += `<div class="section-title">❌ Clientes con Incidencia (${filteredIssues.length})</div>`;
+    listHtml += filteredIssues.map(c => {
+      const isExpanded = expandedCardId === c.id;
+      return `
+        <div class="card issue-card ${isExpanded ? 'expanded' : ''}">
+          <div class="card-head" onclick="toggleCard('${c.id}')">
+            <div style="flex:1;">
+              <span class="card-order">${c.orden}</span>
+              <span class="card-name" style="color:var(--red-t); font-style:italic;">${c.nombre}</span>
+              <div class="card-meta">No entregado / Incidencia</div>
+            </div>
+            <div class="chevron ${isExpanded ? 'open' : ''}">▼</div>
+          </div>
+          ${isExpanded ? `
+            <div class="card-body">
+              <div class="actions">
+                <button class="btn" onclick="recuperarCliente('${c.id}', 'issue', event)">🔄 Devolver a Pendientes</button>
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }).join("");
+  }
 
   list.innerHTML = listHtml;
 }
 
+/* FUNCIONES MODAL RESUMEN */
+function openResumen() {
+  const content = document.getElementById("resumen-content");
+  const totalOriginal = pending.length + completed.length + issues.length;
+  
+  content.innerHTML = `
+    <div class="resumen-row"><span>Total clientes asignados:</span><strong>${totalOriginal}</strong></div>
+    <div class="resumen-row" style="color:var(--accent-t);"><span>Pendientes de visitar:</span><strong>${pending.length}</strong></div>
+    <div class="resumen-row" style="color:var(--green-t);"><span>Repartos con éxito:</span><strong>${completed.length}</strong></div>
+    <div class="resumen-row" style="color:var(--red-t);"><span>Incidencias registradas:</span><strong>${issues.length}</strong></div>
+    <div class="resumen-row" style="margin-top:14px; padding-top:14px; border-top:2px dashed var(--border); font-weight:bold;">
+      <span>Efectividad del reparto:</span>
+      <span style="color:var(--green-t);">${totalOriginal > 0 ? ((completed.length / totalOriginal) * 100).toFixed(1) : 0}%</span>
+    </div>
+  `;
+  document.getElementById("resumen-overlay").classList.remove("hidden");
+}
+function closeResumen() { document.getElementById("resumen-overlay").classList.add("hidden"); }
+
 function openConfig() { document.getElementById("cfg-overlay").classList.remove("hidden"); }
 function closeCfg() { document.getElementById("cfg-overlay").classList.add("hidden"); }
 
-window.onload = function() { setHeaderDate(); render(); };
+window.onload = function() {
+  setHeaderDate();
+  
+  // Recuperar automáticamente la URL guardada si existe
+  const savedUrl = localStorage.getItem("apps_script_url");
+  if (savedUrl) {
+    document.getElementById("url-input").value = savedUrl;
+  }
+  
+  render();
+};
 </script>
 </body>
 </html>
