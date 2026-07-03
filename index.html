@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Rutas de Reparto</title>
 <style>
   :root {
@@ -16,48 +17,48 @@
     --red-t: #f87171; --radius: 14px; --radius-sm: 10px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  html, body { height: 100%; overflow: hidden; font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); }
+  html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); }
   #app { display: flex; flex-direction: column; height: 100vh; }
-  .header { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; }
-  .icon-btn { background: var(--card); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 8px 12px; color: var(--text2); font-size: 13px; cursor: pointer; }
+  .header { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; }
+  .icon-btn { background: var(--card); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 10px 14px; cursor: pointer; color: var(--text2); font-size: 14px; font-weight: 600; }
   .stats { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--bg2); border-bottom: 1px solid var(--border); }
-  .stat { text-align: center; padding: 10px 4px; border-right: 1px solid var(--border); }
-  .stat-n { font-size: 24px; font-weight: 800; }
-  .stat-l { font-size: 10px; color: var(--text3); text-transform: uppercase; margin-top: 2px; }
-  .scroll { flex: 1; overflow-y: auto; padding: 16px; }
-  .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 10px; overflow: hidden; }
-  .card-head { padding: 14px; display: flex; align-items: center; cursor: pointer; }
-  .card-order { min-width: 26px; height: 26px; border-radius: 50%; background: var(--border2); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; margin-right: 10px; }
-  .card-body { padding: 12px; background: var(--card2); border-top: 1px solid var(--border); }
-  .btn { display: block; width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border2); background: var(--card); color: var(--text); font-weight: 600; text-align: center; cursor: pointer; }
-  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .stat { text-align: center; padding: 12px 4px; border-right: 1px solid var(--border); }
+  .stat-n { font-size: 34px; font-weight: 800; line-height: 1; }
+  .stat-l { font-size: 12px; color: var(--text3); margin-top: 4px; text-transform: uppercase; }
+  .scroll { flex: 1; overflow-y: auto; padding: 16px 20px; }
+  .card { border-radius: var(--radius); border: 1px solid var(--border); background: var(--card); margin-bottom: 12px; }
+  .card-head { padding: 14px 16px; cursor: pointer; display: flex; align-items: center; }
+  .card-order { min-width: 26px; height: 26px; border-radius: 50%; background: rgba(79,127,255,0.2); color: #7da4ff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; margin-right: 12px; }
+  .card-body { border-top: 1px solid var(--border); padding: 14px 16px; background: var(--card2); }
+  .btn { width: 100%; padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--card); color: var(--text2); font-weight: 600; cursor: pointer; }
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 24px; }
   .hidden { display: none; }
-  .sheet { background: var(--bg2); width: 100%; max-width: 500px; border-radius: var(--radius); padding: 20px; max-height: 90vh; overflow-y: auto; }
-  .section-title { font-size: 12px; font-weight: 700; color: var(--text3); margin: 15px 0 8px; text-transform: uppercase; }
-  .end-route-card { text-align: center; background: var(--card); border: 2px dashed var(--green); padding: 30px; border-radius: var(--radius); margin-top: 20px; }
+  .sheet { background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius); width: 100%; max-width: 600px; padding: 28px; max-height: 90vh; overflow-y: auto; }
+  .end-route-card { text-align: center; background: var(--bg2); border: 2px dashed var(--green); border-radius: var(--radius); padding: 40px; }
 </style>
 </head>
 <body>
 <div id="app">
   <div class="header">
-    <div><h1>🚚 Rutas</h1><p id="hdr-date" style="font-size:11px;color:var(--text3)"></p></div>
-    <div style="display:flex; gap:5px;">
-      <button class="icon-btn" onclick="openHistorial()">📋</button>
-      <button class="icon-btn" onclick="openResumen()">📊</button>
-      <button class="icon-btn" onclick="openConfig()">⚙️</button>
+    <div><h1>🚚 Rutas</h1><p id="hdr-date" style="font-size:12px;color:var(--text3)"></p></div>
+    <div style="display:flex; gap:8px;">
+      <button class="icon-btn" onclick="openHistorial()">📋 Historial</button>
+      <button class="icon-btn" onclick="openResumen()">📊 Resumen</button>
+      <button class="icon-btn" onclick="openConfig()">📂 Sincronizar</button>
     </div>
   </div>
   <div class="stats">
-    <div class="stat"><div class="stat-n" style="color:var(--accent-t)" id="s-pend">0</div><div class="stat-l">Pend.</div></div>
-    <div class="stat"><div class="stat-n" style="color:var(--green-t)" id="s-done">0</div><div class="stat-l">OK</div></div>
-    <div class="stat"><div class="stat-n" style="color:var(--red-t)" id="s-issue">0</div><div class="stat-l">Incid.</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--accent-t)" id="s-pend">0</div><div class="stat-l">Pendientes</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--green-t)" id="s-done">0</div><div class="stat-l">Entregados</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--red-t)" id="s-issue">0</div><div class="stat-l">Incidencias</div></div>
   </div>
   <div class="scroll" id="pending-list"></div>
 </div>
 
-<div id="cfg-overlay" class="overlay hidden"><div class="sheet"><h2>Sincronizar</h2><input id="url-input" class="btn" style="text-align:left; margin:10px 0; background:var(--bg);" placeholder="URL del Script"><button class="btn" onclick="cargarDesdeURL()">Guardar y Cargar</button><button class="btn" style="margin-top:10px" onclick="closeCfg()">Cerrar</button></div></div>
+<!-- OVERLAYS -->
+<div id="cfg-overlay" class="overlay hidden"><div class="sheet"><h2>Sincronizar</h2><input id="url-input" class="btn" style="margin:15px 0; background:var(--bg);" placeholder="URL del Script"><button class="btn" onclick="cargarDesdeURL()">Cargar Datos</button><button class="btn" style="margin-top:10px" onclick="closeCfg()">Cerrar</button></div></div>
 <div id="resumen-overlay" class="overlay hidden"><div class="sheet"><h2>Resumen</h2><div id="resumen-content" style="margin:15px 0;"></div><button class="btn" onclick="closeResumen()">Cerrar</button></div></div>
-<div id="historial-overlay" class="overlay hidden"><div class="sheet"><h2>Historial</h2><div id="historial-content"></div><button class="btn" onclick="closeHistorial()">Cerrar</button></div></div>
+<div id="historial-overlay" class="overlay hidden"><div class="sheet"><h2>Historial</h2><div id="historial-content" style="margin-top:15px;"></div><button class="btn" style="margin-top:15px" onclick="closeHistorial()">Cerrar</button></div></div>
 
 <script>
 let pending = [], completed = [], issues = [], expandedCardId = null, expandedHistorialId = null;
@@ -107,7 +108,7 @@ function render() {
   document.getElementById("s-issue").textContent = issues.length;
 
   if (pending.length === 0 && (completed.length > 0 || issues.length > 0)) {
-    list.innerHTML = `<div class="end-route-card"><h3>🎉 Ruta Finalizada!</h3><p>Todo el trabajo está hecho.</p><button class="btn" style="margin-top:15px;" onclick="openResumen()">Ver Resumen</button></div>`;
+    list.innerHTML = `<div class="end-route-card"><h3>🎉 ¡Ruta Finalizada!</h3><button class="btn" style="margin-top:15px;" onclick="openResumen()">Ver Resumen</button></div>`;
     return;
   }
 
@@ -115,12 +116,12 @@ function render() {
     <div class="card">
       <div class="card-head" onclick="toggleCard(${c.id})">
         <div class="card-order">${c.orden}</div>
-        <div><strong>${c.nombre}</strong><div style="font-size:11px;color:var(--text3)">${c.direccion}</div></div>
+        <div><div style="font-weight:700;">${c.nombre}</div><div style="font-size:12px;color:var(--text3)">${c.direccion}</div></div>
       </div>
       ${expandedCardId === c.id ? `
         <div class="card-body" style="display:flex; gap:10px;">
-          <button class="btn" onclick="marcar(${c.id}, 'done')">✅ OK</button>
-          <button class="btn" onclick="marcar(${c.id}, 'issue')">❌ Incidencia</button>
+          <button class="btn" style="color:var(--green-t);border-color:var(--green-bg)" onclick="marcar(${c.id}, 'done')">✔️ Entregado</button>
+          <button class="btn" style="color:var(--red-t);border-color:var(--red-bg)" onclick="marcar(${c.id}, 'issue')">❌ Incidencia</button>
         </div>` : ''}
     </div>
   `).join("");
@@ -133,36 +134,29 @@ function renderHistorial() {
   const createRow = (c, isDone) => {
     const isExp = expandedHistorialId === c.id;
     return `
-      <div style="background:var(--card); border:1px solid var(--border); border-radius:8px; margin-bottom:6px;">
-        <div style="padding:12px; display:flex; align-items:center; cursor:pointer; min-height:48px;" onclick="toggleHistorialCard(${c.id})">
-          <span style="font-weight:700; color:${isDone ? 'var(--green-t)' : 'var(--red-t)'}; margin-right:12px;">${c.orden}</span>
-          <span style="flex:1; font-size:14px;">${c.nombre}</span>
-          <span style="font-size:10px; color:var(--text3)">${isExp ? '▲' : '▼'}</span>
+      <div style="background:var(--card); border:1px solid var(--border); border-radius:8px; margin-bottom:8px;">
+        <div style="padding:14px; display:flex; align-items:center; cursor:pointer; min-height:50px;" onclick="toggleHistorialCard(${c.id})">
+          <span style="font-weight:800; color:${isDone ? 'var(--green-t)' : 'var(--red-t)'}; margin-right:15px;">${c.orden}</span>
+          <span style="flex:1; font-size:14px; font-weight:600;">${c.nombre}</span>
+          <span style="font-size:12px; color:var(--text3)">${isExp ? '▲' : '▼'}</span>
         </div>
-        ${isExp ? `<div class="card-body"><button class="btn" onclick="recuperar(${c.id}, '${isDone ? 'done' : 'issue'}')">🔄 Mover a Pendientes</button></div>` : ''}
+        ${isExp ? `<div style="padding:10px; background:var(--card2); border-top:1px solid var(--border);"><button class="btn" onclick="recuperar(${c.id}, '${isDone ? 'done' : 'issue'}')">🔄 Mover a Pendientes</button></div>` : ''}
       </div>
     `;
   };
   
-  if(completed.length) { content.innerHTML += '<div class="section-title">Entregados</div>' + completed.map(c => createRow(c, true)).join(""); }
-  if(issues.length) { content.innerHTML += '<div class="section-title">Incidencias</div>' + issues.map(c => createRow(c, false)).join(""); }
+  if(completed.length) { content.innerHTML += '<div style="font-size:12px; color:var(--text3); margin:10px 0;">ENTREGADOS</div>' + completed.map(c => createRow(c, true)).join(""); }
+  if(issues.length) { content.innerHTML += '<div style="font-size:12px; color:var(--text3); margin:10px 0;">INCIDENCIAS</div>' + issues.map(c => createRow(c, false)).join(""); }
 }
 
 function openHistorial() { renderHistorial(); document.getElementById("historial-overlay").classList.remove("hidden"); }
 function closeHistorial() { document.getElementById("historial-overlay").classList.add("hidden"); }
-function openResumen() { 
-  document.getElementById("resumen-content").innerHTML = `Total: ${pending.length + completed.length + issues.length}<br>OK: ${completed.length}<br>Incid.: ${issues.length}`; 
-  document.getElementById("resumen-overlay").classList.remove("hidden"); 
-}
+function openResumen() { document.getElementById("resumen-content").innerHTML = `Entregados: ${completed.length}<br>Incidencias: ${issues.length}`; document.getElementById("resumen-overlay").classList.remove("hidden"); }
+function closeResumen() { document.getElementById("resumen-overlay").classList.remove("hidden").add("hidden"); }
 function closeResumen() { document.getElementById("resumen-overlay").classList.add("hidden"); }
 function openConfig() { document.getElementById("cfg-overlay").classList.remove("hidden"); }
 function closeCfg() { document.getElementById("cfg-overlay").classList.add("hidden"); }
-
-window.onload = () => { 
-  document.getElementById("hdr-date").textContent = new Date().toLocaleDateString('es-ES'); 
-  const url = localStorage.getItem("apps_script_url");
-  if(url) document.getElementById("url-input").value = url;
-};
+window.onload = () => { document.getElementById("hdr-date").textContent = new Date().toLocaleDateString('es-ES'); const url = localStorage.getItem("apps_script_url"); if(url) document.getElementById("url-input").value = url; };
 </script>
 </body>
 </html>
