@@ -59,39 +59,20 @@
   .prog-wrap { height: 3px; background: var(--border); flex-shrink: 0; }
   .prog-fill { height: 100%; background: linear-gradient(90deg, var(--green), var(--accent)); transition: width 0.5s ease; }
 
-  /* RUTA BAR */
-  .ruta-bar { display: flex; align-items: center; gap: 12px; padding: 10px 24px; background: var(--bg2); border-bottom: 1px solid var(--border); flex-shrink: 0; overflow-x: auto; }
-  .ruta-label { font-size: 13px; color: var(--text3); font-weight: 600; text-transform: uppercase; }
-  .ruta-pill { padding: 6px 16px; border-radius: 20px; border: 1px solid var(--border2); background: transparent; color: var(--text2); font-size: 13px; font-weight: 600; cursor: pointer; }
-  .ruta-pill.active { color: var(--text); border-color: transparent; }
-
-  /* SCROLL */
+  /* SCROLL CONTAINER */
   .scroll { flex: 1; overflow-y: auto; padding: 16px 20px 30px; }
   .cards-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .cards-grid.compact { grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .cards-grid.compact .card-addr { display: none; }
-  .card.expanded { grid-column: 1 / -1; }
-
-  .next-stop { grid-column: 1 / -1; background: var(--accent-bg); border: 1px solid rgba(79,127,255,0.3); border-radius: var(--radius-sm); padding: 11px 16px; margin-bottom: 2px; font-size: 14px; color: var(--accent-t); font-weight: 600; display: flex; align-items: center; gap: 10px; }
 
   /* CARDS */
-  .card { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); position: relative; background: var(--card); }
+  .card { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); position: relative; background: var(--card); display: flex; flex-direction: column; }
   .card::before { content:""; position:absolute; top:0; left:0; right:0; height:3px; background: var(--ruta-a); }
-  .card.removing { opacity: 0; transform: scale(0.95); max-height: 0; margin: 0; border: none; transition: all 0.3s; }
-  .card-head { padding: 14px 16px 0; cursor: pointer; display: flex; align-items: flex-start; justify-content: space-between; }
+  .card-head { padding: 14px 16px 0; display: flex; align-items: flex-start; justify-content: space-between; }
   .card-order { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 26px; border-radius: 50%; font-size: 12px; font-weight: 800; margin-right: 8px; background: rgba(79,127,255,0.2); color: #7da4ff; }
   .card-name { font-size: 15px; font-weight: 700; }
   .card-meta { font-size: 12px; color: var(--text3); margin-top: 3px; }
   .card-addr { font-size: 13px; color: var(--text2); padding: 8px 16px 14px; }
-  .chevron { font-size: 13px; color: var(--text3); }
-  .chevron.open { transform: rotate(180deg); }
-
-  .card-body { border-top: 1px solid var(--border); padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: var(--card2); }
-  .actions { display: flex; gap: 8px; }
-  .btn { flex: 1; padding: 13px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--card); font-size: 14px; font-weight: 600; color: var(--text2); cursor: pointer; }
-  .btn.green { border-color: rgba(34,197,94,0.4); background: var(--green-bg); color: var(--green-t); }
-  .btn.red   { border-color: rgba(239,68,68,0.4);  background: var(--red-bg);   color: var(--red-t); }
-  .btn.blue  { border-color: rgba(79,127,255,0.4); background: var(--accent-bg); color: var(--accent-t); }
 
   /* OVERLAYS */
   .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 24px; }
@@ -115,7 +96,7 @@
     </div>
     <div class="hdr-btns">
       <button class="icon-btn" onclick="toggleView()">👁️ Vista</button>
-      <button class="icon-btn" onclick="openConfig()">📂 Cargar CSV</button>
+      <button class="icon-btn" onclick="openConfig()">📂 Sincronizar</button>
     </div>
   </div>
 
@@ -125,7 +106,6 @@
     <div class="stat"><div class="stat-n red"   id="s-issue">0</div><div class="stat-l">Incidencias</div></div>
   </div>
   <div class="prog-wrap"><div class="prog-fill" id="prog" style="width:0%"></div></div>
-  <div class="ruta-bar" id="ruta-bar"></div>
 
   <div class="scroll">
     <div class="cards-grid" id="pending-list"></div>
@@ -138,7 +118,7 @@
     <h2>📂 Sincronizar Clientes</h2>
     <div style="margin-top:14px;">
       <div style="display:flex;gap:8px;">
-        <input class="field-input" id="url-input" placeholder="URL de tu Apps Script..." style="margin-bottom:0;flex:1;" />
+        <input class="field-input" id="url-input" placeholder="URL de tu Apps Script (terminada en /exec)..." style="margin-bottom:0;flex:1;" />
         <button class="sheet-btn primary" onclick="cargarDesdeURL()">⬇️ Cargar</button>
       </div>
     </div>
@@ -151,7 +131,7 @@
 </div>
 
 <script>
-let pending = [], completed = [], phones = {}, currentRuta = "all", isCompactView = false;
+let pending = [], phones = {}, isCompactView = false;
 
 function setHeaderDate() {
   document.getElementById("hdr-date").textContent = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -167,7 +147,7 @@ async function cargarDesdeURL() {
   const status = document.getElementById("cfg-status");
   const debugBox = document.getElementById("cfg-debug");
   
-  if (!url) { alert("Pega la URL"); return; }
+  if (!url) { alert("Pega la URL de Apps Script"); return; }
   
   status.textContent = "⏳ Leyendo datos del Sheets...";
   debugBox.style.display = "none";
@@ -176,73 +156,78 @@ async function cargarDesdeURL() {
     const response = await fetch(url);
     const rawData = await response.json();
     
-    // Si la respuesta no es un array, buscamos dentro de sus propiedades comunes
-    let arrayData = Array.isArray(rawData) ? rawData : (rawData.data || rawData.clientes || []);
+    // Capturar la matriz de filas (tanto si viene directa como si viene dentro de un objeto)
+    let matriz = Array.isArray(rawData) ? rawData : (rawData.data || rawData.clientes || []);
 
-    if (!arrayData || arrayData.length === 0) {
-      status.innerHTML = "❌ El script devolvió una lista vacía.<br>Prueba a ejecutar 'Procesar Ruta' primero en tu PC.";
+    if (!matriz || matriz.length < 2) {
+      status.innerHTML = "❌ El script devolvió una lista vacía o sin filas suficientes.<br>Prueba a ejecutar 'Procesar Ruta' primero en tu PC.";
       return;
     }
 
-    // Muestra una muestra en el cuadro de diagnóstico por si acaso falla el mapeo
+    // Guardar muestra en el cuadro por si acaso
     debugBox.style.display = "block";
-    debugBox.textContent = "MUESTRA RECIBIDA:\n" + JSON.stringify(arrayData.slice(0, 2), null, 2);
+    debugBox.textContent = "PROCESANDO MATRIZ:\n" + JSON.stringify(matriz.slice(0, 2), null, 2);
 
-    // ANALIZAR Y CARGAR SIN IMPORTAR EL CASING DE LA 'X'
-    let clientesCargados = [];
+    // Mapear dinámicamente la posición de los encabezados de la fila 0
+    const cabecera = matriz[0].map(h => h.toString().toUpperCase().trim());
     
-    for (let fila of arrayData) {
-      let marcaReparto = false;
-      let orden = 99;
-      let codigo = "", nombre = "", direccion = "", ruta = "180", nota = "";
+    const idxCodigo    = cabecera.findIndex(h => h.includes("CODIGO") || h === "A");
+    const idxNombre    = cabecera.findIndex(h => h.includes("NOMBRE") || h === "B");
+    const idxDireccion = cabecera.findIndex(h => h.includes("DIREC") || h === "C");
+    const idxRuta      = cabecera.findIndex(h => h === "RUTA" || h === "D");
+    const idxOrden     = cabecera.findIndex(h => h.includes("ORDEN") || h === "E");
+    const idxObs       = cabecera.findIndex(h => h.includes("OBSER") || h === "F");
+    const idxTel       = cabecera.findIndex(h => h.includes("TELEF") || h === "G");
+    const idxNota      = cabecera.findIndex(h => h.includes("NOTA") || h === "H");
 
-      // Buscamos dinámicamente las propiedades del objeto JSON que envía la Macro
-      for (let key in fila) {
-        const kLow = key.toLowerCase();
-        const vRaw = (fila[key] || "").toString().trim();
-        const vLow = vRaw.toLowerCase();
+    let clientesCargados = [];
+    phones = {}; 
 
-        if (kLow.includes("observa") || kLow.includes("obs") || kLow === "f") {
-          if (vLow === "x") marcaReparto = true;
-        }
-        if (kLow.includes("orden") || kLow === "e") {
-          orden = parseInt(vRaw.replace(/[^\d]/g, "")) || 99;
-          // Salvaguarda: si la X se coló en la columna de orden
-          if (vLow.includes("x")) marcaReparto = true;
-        }
-        if (kLow.includes("codigo") || kLow.includes("cód") || kLow === "a") codigo = vRaw;
-        if (kLow.includes("nombre") || kLow === "b") nombre = vRaw;
-        if (kLow.includes("direc") || kLow === "c") direccion = vRaw;
-        if (kLow.includes("ruta") || kLow === "d") ruta = vRaw;
-        if (kLow.includes("nota") || kLow === "h") nota = vRaw;
-        if (kLow.includes("telef") || kLow === "g") { if(codigo && vRaw) phones[codigo] = vRaw; }
-      }
+    // Procesar los datos reales omitiendo la cabecera
+    for (let i = 1; i < matriz.length; i++) {
+      const fila = matriz[i];
+      if (!fila || fila.length === 0) continue;
 
-      // Si tiene la marca o si por alguna razón no se filtró en la macro, la agregamos
-      if (marcaReparto) {
+      // Extraer valor de observaciones para validar la selección ("X")
+      const obsValor = idxObs !== -1 ? (fila[idxObs] || "").toString().trim().toUpperCase() : "";
+      
+      // Filtrar únicamente los marcados para el reparto
+      if (obsValor === "X") {
+        const cod = idxCodigo !== -1 ? fila[idxCodigo].toString().trim() : "S/C";
+        const nom = idxNombre !== -1 ? fila[idxNombre].toString().trim() : "Cliente sin nombre";
+        const dir = idxDireccion !== -1 ? fila[idxDireccion].toString().trim() : "Sin dirección";
+        const rut = idxRuta !== -1 ? fila[idxRuta].toString().trim() : "180";
+        const ordRaw = idxOrden !== -1 ? fila[idxOrden] : 99;
+        const nota = idxNota !== -1 ? fila[idxNota].toString().trim() : "";
+        const tel = idxTel !== -1 ? fila[idxTel].toString().trim() : "";
+
+        if (cod && tel) phones[cod] = tel;
+
         clientesCargados.push({
-          codigo: codigo || "S/C",
-          nombre: nombre || "Cliente sin nombre",
-          direccion: direccion || "Sin dirección",
-          ruta: ruta || "180",
-          orden: orden,
+          codigo: cod,
+          nombre: nom,
+          direccion: dir,
+          ruta: rut,
+          orden: parseInt(ordRaw) || 99,
           nota_entrega: nota
         });
       }
     }
 
     if (clientesCargados.length === 0) {
-      status.innerHTML = "⚠️ Conectado OK, pero ninguna fila tiene la 'X'.<br>Mira abajo la muestra de lo que está enviando tu Sheets 👇";
+      status.innerHTML = "⚠️ Sincronizado OK, pero ninguna fila tenía la 'X' en OBSERVACIONES.";
       return;
     }
 
-    pending = clientesCargados.sort((a,b) => a.orden - b.orden);
+    // Ordenar los clientes por su orden de entrega numérico
+    pending = clientesCargados.sort((a, b) => a.orden - b.orden);
+    
     status.textContent = `✅ ¡Cargados ${pending.length} clientes con éxito!`;
     setTimeout(closeCfg, 1200);
     render();
     
   } catch (err) {
-    status.textContent = "❌ Error crítico al leer el enlace.";
+    status.textContent = "❌ Error crítico al leer el enlace de datos.";
     debugBox.style.display = "block";
     debugBox.textContent = err.toString();
   }
@@ -253,7 +238,7 @@ function render() {
   document.getElementById("s-pend").textContent = pending.length;
   
   if (!pending.length) {
-    list.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text3);">Pulsa 'Cargar CSV' arriba para sincronizar.</div>`;
+    list.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text3);">Pulsa 'Sincronizar' arriba para importar la ruta.</div>`;
     return;
   }
 
@@ -267,7 +252,7 @@ function render() {
         </div>
       </div>
       <div class="card-addr">📍 ${c.direccion}</div>
-      ${c.nota_entrega ? `<div style="font-size:13px;color:var(--yellow-t);padding:0 16px 10px;">⚠️ ${c.nota_entrega}</div>` : ''}
+      ${c.nota_entrega ? `<div style="font-size:13px;color:var(--yellow-t);padding:0 16px 10px;">⚠️ Horario: ${c.nota_entrega}</div>` : ''}
     </div>
   `).join("");
 }
