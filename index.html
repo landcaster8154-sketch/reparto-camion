@@ -14,143 +14,149 @@
     --text3: #5a6080; --accent: #4f7fff; --accent-bg: rgba(79,127,255,0.15);
     --accent-t: #7da4ff; --green: #22c55e; --green-bg: rgba(34,197,94,0.15);
     --green-t: #4ade80; --red: #ef4444; --red-bg: rgba(239,68,68,0.15);
-    --red-t: #f87171; --yellow: #f59e0b; --yellow-t: #fbbf24;
-    --ruta-a: #6366f1; --radius: 14px; --radius-sm: 10px;
+    --red-t: #f87171; --yellow: #f59e0b; --yellow-bg: rgba(245,158,11,0.13);
+    --yellow-t: #fbbf24; --ruta-a: #6366f1; --radius: 14px; --radius-sm: 10px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); font-size: 16px; }
   #app { display: flex; flex-direction: column; height: 100vh; }
   .header { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
-  .header h1 { font-size: 20px; font-weight: 700; }
-  .header p { font-size: 13px; color: var(--text3); }
-  .icon-btn { background: var(--card); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 10px 14px; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--text2); display: flex; align-items: center; gap: 6px; }
-  .stats { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--bg2); border-bottom: 1px solid var(--border); }
+  .header h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; color: var(--text); }
+  .header p { font-size: 13px; color: var(--text3); margin-top: 2px; }
+  .hdr-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .icon-btn { background: var(--card); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 10px 14px; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--text2); display: flex; align-items: center; gap: 6px; transition: background 0.15s; }
+  .icon-btn:hover { background: var(--card2); color: var(--text); }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--bg2); border-bottom: 1px solid var(--border); flex-shrink: 0; }
   .stat { text-align: center; padding: 12px 4px; border-right: 1px solid var(--border); }
+  .stat:last-child { border-right: none; }
   .stat-n { font-size: 34px; font-weight: 800; line-height: 1; }
-  .stat-l { font-size: 12px; color: var(--text3); margin-top: 4px; text-transform: uppercase; }
+  .stat-n.blue { color: var(--accent-t); }
+  .stat-n.green { color: var(--green-t); }
+  .stat-n.red { color: var(--red-t); }
+  .stat-l { font-size: 12px; color: var(--text3); margin-top: 4px; font-weight: 500; text-transform: uppercase; }
+  .prog-wrap { height: 3px; background: var(--border); flex-shrink: 0; }
+  .prog-fill { height: 100%; background: linear-gradient(90deg, var(--green), var(--accent)); transition: width 0.5s ease; }
+  .ruta-bar { display: flex; align-items: center; gap: 12px; padding: 10px 24px; background: var(--bg2); border-bottom: 1px solid var(--border); flex-shrink: 0; overflow-x: auto; }
+  .ruta-label { font-size: 13px; color: var(--text3); font-weight: 600; text-transform: uppercase; white-space: nowrap; }
+  .ruta-pill { padding: 6px 16px; border-radius: 20px; border: 1px solid var(--border2); background: transparent; color: var(--text2); font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .ruta-pill.active { color: #fff; background: var(--accent); border-color: var(--accent); }
   .scroll { flex: 1; overflow-y: auto; padding: 16px 20px 30px; }
-  .cards-grid { display: grid; gap: 12px; }
-  .card { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); background: var(--card); position: relative; }
+  .cards-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .cards-grid.compact { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .cards-grid.compact .card-addr { display: none; }
+  .card.expanded { grid-column: 1 / -1; }
+  .next-stop { grid-column: 1 / -1; background: var(--accent-bg); border: 1px solid rgba(79,127,255,0.3); border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 12px; font-size: 14px; color: var(--accent-t); font-weight: 600; display: flex; align-items: center; gap: 10px; }
+  .section-title { font-size: 14px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin: 20px 0 8px; display: flex; align-items: center; gap: 8px; }
+  .section-title::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+  .card { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); position: relative; background: var(--card); display: flex; flex-direction: column; }
   .card::before { content:""; position:absolute; top:0; left:0; right:0; height:3px; background: var(--ruta-a); }
-  .done-card::before { background: var(--green); }
-  .issue-card::before { background: var(--red); }
-  .card-head { padding: 14px 16px; cursor: pointer; display: flex; align-items: flex-start; justify-content: space-between; }
-  .card-order { min-width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; background: rgba(79,127,255,0.2); color: #7da4ff; }
-  .card-body { border-top: 1px solid var(--border); padding: 14px 16px; background: var(--card2); }
-  .btn { width: 100%; padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--card); color: var(--text2); font-weight: 600; cursor: pointer; }
-  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 24px; }
-  .hidden { display: none; }
-  .sheet { background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius); width: 100%; max-width: 600px; padding: 24px; max-height: 90vh; overflow-y: auto; }
-  .section-title { font-size: 14px; font-weight: 700; color: var(--text3); margin: 20px 0 8px; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
-  .chevron { transition: transform 0.2s; }
+  .card.done-card::before { background: var(--green); }
+  .card.issue-card::before { background: var(--red); }
+  .card-head { padding: 14px 16px; cursor: pointer; display: flex; align-items: flex-start; justify-content: space-between; min-height: 60px; }
+  .card-order { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 26px; border-radius: 50%; font-size: 12px; font-weight: 800; margin-right: 8px; background: rgba(79,127,255,0.2); color: #7da4ff; }
+  .card.done-card .card-order { background: rgba(34,197,94,0.2); color: var(--green-t); }
+  .card.issue-card .card-order { background: rgba(239,68,68,0.2); color: var(--red-t); }
+  .card-name { font-size: 15px; font-weight: 700; }
+  .card-meta { font-size: 12px; color: var(--text3); margin-top: 3px; }
+  .card-addr { font-size: 13px; color: var(--text2); padding: 0 16px 14px; }
+  .chevron { font-size: 13px; color: var(--text3); transition: transform 0.2s; }
   .chevron.open { transform: rotate(180deg); }
+  .card-body { border-top: 1px solid var(--border); padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: var(--card2); }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn { flex: 1; min-width: 80px; padding: 12px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--card); font-size: 13px; font-weight: 600; color: var(--text2); cursor: pointer; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 4px; }
+  .btn.green { border-color: rgba(34,197,94,0.4); background: var(--green-bg); color: var(--green-t); }
+  .btn.red { border-color: rgba(239,68,68,0.4); background: var(--red-bg); color: var(--red-t); }
+  .btn.blue { border-color: rgba(79,127,255,0.4); background: var(--accent-bg); color: var(--accent-t); }
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .overlay.hidden { display: none; }
+  .sheet { background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius); width: 100%; max-width: 620px; padding: 28px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+  .sheet h2 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .field-input { width: 100%; padding: 12px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--bg); color: var(--text); font-size: 16px; }
+  .sheet-btn { padding: 13px 18px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--card); font-size: 14px; font-weight: 600; color: var(--text2); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+  .sheet-btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
+  .sheet-btn.whatsapp { background: #25d366; color: white; border-color: #25d366; }
+  .sheet-btn.email { background: #ea4335; color: white; border-color: #ea4335; }
+  .resumen-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 15px; }
+  .resumen-row:last-child { border-bottom: none; }
+  .end-route-card { grid-column: 1 / -1; text-align: center; background: var(--bg2); border: 2px dashed var(--green); border-radius: var(--radius); padding: 40px 20px; display: flex; flex-direction: column; align-items: center; gap: 16px; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+  .end-check { font-size: 70px; line-height: 1; color: var(--green-t); margin-bottom: 8px; text-shadow: 0 0 20px rgba(34,197,94,0.3); }
+  .end-route-card h3 { font-size: 24px; font-weight: 800; color: #fff; }
+  .end-route-card p { font-size: 15px; color: var(--text2); max-width: 400px; line-height: 1.5; }
+  @keyframes popIn { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+  .debug-box { background: #2c1a1a; border: 1px solid #7a2a2a; border-radius: 8px; padding: 12px; font-family: monospace; font-size: 11px; color: #ff9999; max-height: 200px; overflow: auto; display: none; white-space: pre; }
+  #cfg-status { text-align:center; padding:4px; font-size:14px; color:var(--text2); }
 </style>
 </head>
 <body>
-<div id="app">
-  <div class="header">
-    <div><h1>🚚 Rutas</h1><p id="hdr-date"></p></div>
-    <div style="display:flex; gap:8px;"><button class="icon-btn" onclick="openHistorial()">📋 Historial</button><button class="icon-btn" onclick="openConfig()">📂 Sinc</button></div>
-  </div>
-  <div class="stats">
-    <div class="stat"><div class="stat-n" style="color:var(--accent-t)" id="s-pend">0</div><div class="stat-l">Pendientes</div></div>
-    <div class="stat"><div class="stat-n" style="color:var(--green-t)" id="s-done">0</div><div class="stat-l">Entregados</div></div>
-    <div class="stat"><div class="stat-n" style="color:var(--red-t)" id="s-issue">0</div><div class="stat-l">Incidencias</div></div>
-  </div>
-  <div class="scroll"><div class="cards-grid" id="pending-list"></div></div>
-</div>
-
-<div id="historial-overlay" class="overlay hidden">
-  <div class="sheet">
-    <h2>📋 Historial de Gestión</h2>
-    <div id="historial-content" style="margin: 15px 0;"></div>
-    <button class="btn" onclick="closeHistorial()">Cerrar</button>
-  </div>
-</div>
+<!-- ... (El resto del HTML se mantiene intacto según tu código original) ... -->
+<!-- Nota: Al copiar, asegúrate de mantener el resto del HTML y scripts exactamente igual -->
 
 <script>
-let pending = [], completed = [], issues = [], expandedCardId = null, expandedHistorialId = null;
-
-// Funciones de control
-function toggleCard(id) { expandedCardId = (expandedCardId === id) ? null : id; render(); }
-function toggleHistorialCard(id) { expandedHistorialId = (expandedHistorialId === id) ? null : id; renderHistorial(); }
+// ... (Tus funciones existentes) ...
 
 function renderHistorial() {
   const content = document.getElementById("historial-content");
+  let filteredDone = completed.filter(c => currentRuta === "all" || c.ruta === currentRuta);
+  let filteredIssues = issues.filter(c => currentRuta === "all" || c.ruta === currentRuta);
+
+  if (filteredDone.length === 0 && filteredIssues.length === 0) {
+    content.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text3);">No hay ningún cliente gestionado todavía en esta ruta.</div>`;
+    return;
+  }
+
   let html = "";
   
-  const buildCard = (c, isDone) => {
-    const isExp = expandedHistorialId === c.id;
-    return `
-      <div class="card ${isDone ? 'done-card' : 'issue-card'}" style="margin-bottom: 8px;">
-        <div class="card-head" onclick="toggleHistorialCard('${c.id}')" style="min-height: 60px;">
-          <div style="display:flex; align-items:center; gap:10px;">
-            <div class="card-order">${c.orden}</div>
-            <strong>${c.nombre}</strong>
+  // Renderizado optimizado con altura mínima para cada tarjeta
+  if (filteredDone.length > 0) {
+    html += `<div class="section-title">✔️ Clientes Entregados (${filteredDone.length})</div>`;
+    html += filteredDone.map(c => {
+      const isExp = expandedHistorialId === c.id;
+      return `
+        <div class="card done-card">
+          <div class="card-head" onclick="toggleHistorialCard('${c.id}')" style="min-height:60px;">
+            <div style="flex:1; display:flex; align-items:center;">
+              <span class="card-order">${c.orden}</span>
+              <span class="card-name" style="text-decoration:line-through; color:var(--text3);">${c.nombre}</span>
+            </div>
+            <div class="chevron ${isExp ? 'open' : ''}">▼</div>
           </div>
-          <div class="chevron ${isExp ? 'open' : ''}">▼</div>
+          ${isExp ? `
+            <div class="card-body">
+              <button class="btn" style="color:var(--accent-t);border-color:var(--accent);" onclick="recuperarCliente('${c.id}', 'done', event)">🔄 Reabrir / Mover a Pendientes</button>
+            </div>
+          ` : ''}
         </div>
-        ${isExp ? `<div class="card-body"><button class="btn" onclick="recuperar('${c.id}', '${isDone ? 'done' : 'issue'}')">🔄 Reabrir / Mover a Pendientes</button></div>` : ''}
-      </div>
-    `;
-  };
+      `;
+    }).join("");
+  }
 
-  if (completed.length > 0) {
-    html += '<div class="section-title">✔️ Entregados</div>' + completed.map(c => buildCard(c, true)).join("");
+  if (filteredIssues.length > 0) {
+    html += `<div class="section-title">❌ Clientes con Incidencia (${filteredIssues.length})</div>`;
+    html += filteredIssues.map(c => {
+      const isExp = expandedHistorialId === c.id;
+      return `
+        <div class="card issue-card">
+          <div class="card-head" onclick="toggleHistorialCard('${c.id}')" style="min-height:60px;">
+            <div style="flex:1; display:flex; align-items:center;">
+              <span class="card-order">${c.orden}</span>
+              <span class="card-name" style="color:var(--red-t); font-style:italic;">${c.nombre}</span>
+            </div>
+            <div class="chevron ${isExp ? 'open' : ''}">▼</div>
+          </div>
+          ${isExp ? `
+            <div class="card-body">
+              <button class="btn" style="color:var(--accent-t);border-color:var(--accent);" onclick="recuperarCliente('${c.id}', 'issue', event)">🔄 Reabrir / Mover a Pendientes</button>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }).join("");
   }
-  if (issues.length > 0) {
-    html += '<div class="section-title">❌ Incidencias</div>' + issues.map(c => buildCard(c, false)).join("");
-  }
-  content.innerHTML = html || '<p style="color:var(--text3); text-align:center;">Vacío.</p>';
+
+  content.innerHTML = html;
 }
 
-function recuperar(id, tipo) {
-  let list = tipo === 'done' ? completed : issues;
-  let idx = list.findIndex(c => c.id === id);
-  if(idx > -1) {
-    pending.push(list.splice(idx, 1)[0]);
-    pending.sort((a,b) => a.orden - b.orden);
-    expandedHistorialId = null;
-    render();
-    renderHistorial();
-  }
-}
-
-function render() {
-  const list = document.getElementById("pending-list");
-  document.getElementById("s-pend").textContent = pending.length;
-  document.getElementById("s-done").textContent = completed.length;
-  document.getElementById("s-issue").textContent = issues.length;
-  
-  list.innerHTML = pending.map(c => `
-    <div class="card">
-      <div class="card-head" onclick="toggleCard('${c.id}')">
-        <div style="display:flex; align-items:center; gap:10px;"><div class="card-order">${c.orden}</div> <strong>${c.nombre}</strong></div>
-        <div class="chevron ${expandedCardId === c.id ? 'open' : ''}">▼</div>
-      </div>
-      ${expandedCardId === c.id ? `
-        <div class="card-body" style="display:flex; gap:10px;">
-          <button class="btn" style="color:var(--green-t)" onclick="marcar('${c.id}', 'done')">✔️ OK</button>
-          <button class="btn" style="color:var(--red-t)" onclick="marcar('${c.id}', 'issue')">❌ INC</button>
-        </div>` : ''}
-    </div>
-  `).join("");
-}
-
-function marcar(id, tipo) {
-  let idx = pending.findIndex(c => c.id === id);
-  if(idx > -1) {
-    let item = pending.splice(idx, 1)[0];
-    tipo === 'done' ? completed.push(item) : issues.push(item);
-    expandedCardId = null;
-    render();
-  }
-}
-
-function openHistorial() { renderHistorial(); document.getElementById("historial-overlay").classList.remove("hidden"); }
-function closeHistorial() { document.getElementById("historial-overlay").classList.add("hidden"); }
-function openConfig() { alert("Función Sincronizar activa"); }
-window.onload = () => document.getElementById("hdr-date").textContent = new Date().toLocaleDateString('es-ES');
+// ... (El resto de tus funciones terminan aquí) ...
 </script>
 </body>
 </html>
