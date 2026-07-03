@@ -9,154 +9,527 @@
 <title>Rutas de Reparto</title>
 <style>
   :root {
-    --bg: #0f1117; --bg2: #181c27; --card: #1e2235; --card2: #252a3d;
-    --border: #2e3450; --border2: #3d4466; --text: #eef0f8; --text2: #9ba3c4;
-    --text3: #5a6080; --accent: #4f7fff; --accent-bg: rgba(79,127,255,0.15);
-    --accent-t: #7da4ff; --green: #22c55e; --green-bg: rgba(34,197,94,0.15);
-    --green-t: #4ade80; --red: #ef4444; --red-bg: rgba(239,68,68,0.15);
-    --red-t: #f87171; --yellow: #f59e0b; --yellow-bg: rgba(245,158,11,0.13);
-    --yellow-t: #fbbf24; --ruta-a: #6366f1; --radius: 14px; --radius-sm: 10px;
+    --bg:        #0f1117;
+    --bg2:       #181c27;
+    --card:      #1e2235;
+    --card2:     #252a3d;
+    --border:    #2e3450;
+    --border2:   #3d4466;
+    --text:      #eef0f8;
+    --text2:     #9ba3c4;
+    --text3:     #5a6080;
+    --accent:    #4f7fff;
+    --accent-bg: rgba(79,127,255,0.15);
+    --accent-t:  #7da4ff;
+    --green:     #22c55e;
+    --green-bg:  rgba(34,197,94,0.15);
+    --green-t:   #4ade80;
+    --red:       #ef4444;
+    --red-bg:    rgba(239,68,68,0.15);
+    --red-t:     #f87171;
+    --yellow-t:  #fbbf24;
+    --ruta-a:    #6366f1;
+    --radius:    14px; --radius-sm: 10px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); font-size: 16px; }
   #app { display: flex; flex-direction: column; height: 100vh; }
+
+  /* HEADER */
   .header { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
   .header h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; color: var(--text); }
-  .header p { font-size: 13px; color: var(--text3); margin-top: 2px; }
-  .hdr-btns { display: flex; gap: 8px; flex-wrap: wrap; }
-  .icon-btn { background: var(--card); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 10px 14px; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--text2); display: flex; align-items: center; gap: 6px; transition: background 0.15s; }
+  .header p  { font-size: 13px; color: var(--text3); margin-top: 2px; }
+  .hdr-btns  { display: flex; gap: 8px; flex-wrap: wrap; }
+  .icon-btn  { background: var(--card); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 10px 14px; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--text2); display: flex; align-items: center; gap: 6px; transition: background 0.15s; }
   .icon-btn:hover { background: var(--card2); color: var(--text); }
+
+  /* STATS */
   .stats { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--bg2); border-bottom: 1px solid var(--border); flex-shrink: 0; }
   .stat { text-align: center; padding: 12px 4px; border-right: 1px solid var(--border); }
   .stat:last-child { border-right: none; }
   .stat-n { font-size: 34px; font-weight: 800; line-height: 1; }
-  .stat-n.blue { color: var(--accent-t); }
+  .stat-n.blue  { color: var(--accent-t); }
   .stat-n.green { color: var(--green-t); }
-  .stat-n.red { color: var(--red-t); }
+  .stat-n.red   { color: var(--red-t); }
   .stat-l { font-size: 12px; color: var(--text3); margin-top: 4px; font-weight: 500; text-transform: uppercase; }
+
+  /* PROGRESS */
   .prog-wrap { height: 3px; background: var(--border); flex-shrink: 0; }
   .prog-fill { height: 100%; background: linear-gradient(90deg, var(--green), var(--accent)); transition: width 0.5s ease; }
+
+  /* RUTA BAR */
   .ruta-bar { display: flex; align-items: center; gap: 12px; padding: 10px 24px; background: var(--bg2); border-bottom: 1px solid var(--border); flex-shrink: 0; overflow-x: auto; }
   .ruta-label { font-size: 13px; color: var(--text3); font-weight: 600; text-transform: uppercase; white-space: nowrap; }
   .ruta-pill { padding: 6px 16px; border-radius: 20px; border: 1px solid var(--border2); background: transparent; color: var(--text2); font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
   .ruta-pill.active { color: #fff; background: var(--accent); border-color: var(--accent); }
+
+  /* SCROLL */
   .scroll { flex: 1; overflow-y: auto; padding: 16px 20px 30px; }
   .cards-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .cards-grid.compact { grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .cards-grid.compact .card-addr { display: none; }
   .card.expanded { grid-column: 1 / -1; }
+
+  /* NEXT STOP */
   .next-stop { grid-column: 1 / -1; background: var(--accent-bg); border: 1px solid rgba(79,127,255,0.3); border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 12px; font-size: 14px; color: var(--accent-t); font-weight: 600; display: flex; align-items: center; gap: 10px; }
-  .section-title { font-size: 14px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin: 20px 0 8px; display: flex; align-items: center; gap: 8px; }
+
+  /* SECTION TITLE */
+  .section-title { font-size: 14px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin: 16px 0 10px; display: flex; align-items: center; gap: 8px; }
   .section-title::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+
+  /* CARDS */
   .card { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); position: relative; background: var(--card); display: flex; flex-direction: column; }
   .card::before { content:""; position:absolute; top:0; left:0; right:0; height:3px; background: var(--ruta-a); }
-  .card.done-card::before { background: var(--green); }
+  .card.done-card  { border-color: rgba(34,197,94,0.25); }
+  .card.done-card::before  { background: var(--green); }
+  .card.issue-card { border-color: rgba(239,68,68,0.3); }
   .card.issue-card::before { background: var(--red); }
-  .card-head { padding: 14px 16px; cursor: pointer; display: flex; align-items: flex-start; justify-content: space-between; min-height: 60px; }
-  .card-order { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 26px; border-radius: 50%; font-size: 12px; font-weight: 800; margin-right: 8px; background: rgba(79,127,255,0.2); color: #7da4ff; }
-  .card.done-card .card-order { background: rgba(34,197,94,0.2); color: var(--green-t); }
-  .card.issue-card .card-order { background: rgba(239,68,68,0.2); color: var(--red-t); }
-  .card-name { font-size: 15px; font-weight: 700; }
+
+  .card-head { padding: 14px 16px; cursor: pointer; display: flex; align-items: flex-start; justify-content: space-between; }
+  .card-order { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 26px; border-radius: 50%; font-size: 12px; font-weight: 800; margin-right: 8px; background: rgba(79,127,255,0.2); color: #7da4ff; flex-shrink: 0; }
+  .card.done-card  .card-order { background: rgba(34,197,94,0.2);  color: var(--green-t); }
+  .card.issue-card .card-order { background: rgba(239,68,68,0.2);  color: var(--red-t); }
+  .card-name { font-size: 15px; font-weight: 700; line-height: 1.3; }
   .card-meta { font-size: 12px; color: var(--text3); margin-top: 3px; }
-  .card-addr { font-size: 13px; color: var(--text2); padding: 0 16px 14px; }
-  .chevron { font-size: 13px; color: var(--text3); transition: transform 0.2s; }
+  .card-addr { font-size: 13px; color: var(--text2); padding: 0 16px 12px; line-height: 1.4; }
+  .card-nota { font-size: 13px; color: var(--yellow-t); padding: 0 16px 12px; }
+  .chevron { font-size: 13px; color: var(--text3); transition: transform 0.2s; margin-top: 3px; flex-shrink: 0; }
   .chevron.open { transform: rotate(180deg); }
+
+  /* CARD BODY */
   .card-body { border-top: 1px solid var(--border); padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: var(--card2); }
   .actions { display: flex; gap: 8px; flex-wrap: wrap; }
   .btn { flex: 1; min-width: 80px; padding: 12px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--card); font-size: 13px; font-weight: 600; color: var(--text2); cursor: pointer; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 4px; }
   .btn.green { border-color: rgba(34,197,94,0.4); background: var(--green-bg); color: var(--green-t); }
-  .btn.red { border-color: rgba(239,68,68,0.4); background: var(--red-bg); color: var(--red-t); }
-  .btn.blue { border-color: rgba(79,127,255,0.4); background: var(--accent-bg); color: var(--accent-t); }
+  .btn.red   { border-color: rgba(239,68,68,0.4);  background: var(--red-bg);   color: var(--red-t); }
+  .btn.blue  { border-color: rgba(79,127,255,0.4); background: var(--accent-bg); color: var(--accent-t); }
+  .btn.recover { border-color: rgba(79,127,255,0.5); background: var(--accent-bg); color: var(--accent-t); width: 100%; flex: none; padding: 14px; font-size: 14px; }
+
+  /* HISTORIAL — tarjetas espaciadas */
+  .historial-list { display: flex; flex-direction: column; gap: 12px; margin: 12px 0; overflow-y: auto; max-height: 55vh; padding-right: 4px; }
+  .historial-list::-webkit-scrollbar { width: 4px; }
+  .historial-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+  .historial-card { background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; }
+  .historial-card.done-card  { border-color: rgba(34,197,94,0.3); }
+  .historial-card.issue-card { border-color: rgba(239,68,68,0.35); }
+  .historial-head { padding: 16px 18px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .historial-info { flex: 1; min-width: 0; }
+  .historial-name { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .historial-card.done-card  .historial-name { text-decoration: line-through; color: var(--text3); }
+  .historial-card.issue-card .historial-name { color: var(--red-t); font-style: italic; }
+  .historial-meta { font-size: 12px; color: var(--text3); }
+  .historial-badge { font-size: 12px; padding: 5px 12px; border-radius: 20px; font-weight: 700; flex-shrink: 0; }
+  .badge-done  { background: var(--green-bg); color: var(--green-t); }
+  .badge-issue { background: var(--red-bg);   color: var(--red-t); }
+  .historial-body { border-top: 1px solid var(--border); padding: 14px 18px; background: var(--card2); }
+
+  /* OVERLAYS */
   .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 24px; }
   .overlay.hidden { display: none; }
-  .sheet { background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius); width: 100%; max-width: 620px; padding: 28px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
-  .sheet h2 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .sheet { background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius); width: 100%; max-width: 640px; padding: 28px; max-height: 92vh; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+  .sheet h2 { font-size: 20px; font-weight: 700; }
+  .sheet-sub { font-size: 13px; color: var(--text3); margin-top: -6px; }
   .field-input { width: 100%; padding: 12px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--bg); color: var(--text); font-size: 16px; }
   .sheet-btn { padding: 13px 18px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--card); font-size: 14px; font-weight: 600; color: var(--text2); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
-  .sheet-btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
-  .sheet-btn.whatsapp { background: #25d366; color: white; border-color: #25d366; }
-  .sheet-btn.email { background: #ea4335; color: white; border-color: #ea4335; }
-  .resumen-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 15px; }
+  .sheet-btn.primary   { background: var(--accent);  color: white; border-color: var(--accent); }
+  .sheet-btn.whatsapp  { background: #25d366; color: white; border-color: #25d366; }
+  .sheet-btn.telegram  { background: #0078d4; color: white; border-color: #0078d4; }
+  .sheet-btn.email     { background: #ea4335; color: white; border-color: #ea4335; }
+
+  /* RESUMEN */
+  .resumen-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--border); font-size: 15px; }
   .resumen-row:last-child { border-bottom: none; }
+
+  /* RUTA FINALIZADA */
   .end-route-card { grid-column: 1 / -1; text-align: center; background: var(--bg2); border: 2px dashed var(--green); border-radius: var(--radius); padding: 40px 20px; display: flex; flex-direction: column; align-items: center; gap: 16px; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-  .end-check { font-size: 70px; line-height: 1; color: var(--green-t); margin-bottom: 8px; text-shadow: 0 0 20px rgba(34,197,94,0.3); }
+  .end-check { font-size: 70px; line-height: 1; }
   .end-route-card h3 { font-size: 24px; font-weight: 800; color: #fff; }
-  .end-route-card p { font-size: 15px; color: var(--text2); max-width: 400px; line-height: 1.5; }
-  @keyframes popIn { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-  .debug-box { background: #2c1a1a; border: 1px solid #7a2a2a; border-radius: 8px; padding: 12px; font-family: monospace; font-size: 11px; color: #ff9999; max-height: 200px; overflow: auto; display: none; white-space: pre; }
-  #cfg-status { text-align:center; padding:4px; font-size:14px; color:var(--text2); }
+  .end-route-card p  { font-size: 15px; color: var(--text2); max-width: 400px; line-height: 1.5; }
+  @keyframes popIn { 0%{transform:scale(0.9);opacity:0;} 100%{transform:scale(1);opacity:1;} }
+
+  #cfg-status { text-align:center; padding:4px; font-size:14px; color:var(--text2); min-height:24px; }
+  .debug-box { background:#2c1a1a; border:1px solid #7a2a2a; border-radius:8px; padding:12px; font-family:monospace; font-size:11px; color:#ff9999; max-height:150px; overflow:auto; display:none; white-space:pre; }
 </style>
 </head>
 <body>
-<!-- ... (El resto del HTML se mantiene intacto según tu código original) ... -->
-<!-- Nota: Al copiar, asegúrate de mantener el resto del HTML y scripts exactamente igual -->
+<div id="app">
+  <div class="header">
+    <div>
+      <h1>🚚 Mis Rutas de Reparto</h1>
+      <p id="hdr-date"></p>
+    </div>
+    <div class="hdr-btns">
+      <button class="icon-btn" onclick="toggleView()">👁️ Vista</button>
+      <button class="icon-btn" onclick="openHistorial()">📋 Historial</button>
+      <button class="icon-btn" onclick="openResumen()">📊 Resumen</button>
+      <button class="icon-btn" onclick="openConfig()">📂 Sincronizar</button>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-n blue"  id="s-pend">0</div><div class="stat-l">Pendientes</div></div>
+    <div class="stat"><div class="stat-n green" id="s-done">0</div><div class="stat-l">Entregados</div></div>
+    <div class="stat"><div class="stat-n red"   id="s-issue">0</div><div class="stat-l">Incidencias</div></div>
+  </div>
+  <div class="prog-wrap"><div class="prog-fill" id="prog" style="width:0%"></div></div>
+
+  <div class="ruta-bar" id="ruta-bar"></div>
+
+  <div class="scroll">
+    <div class="cards-grid" id="pending-list"></div>
+  </div>
+</div>
+
+<!-- SINCRONIZAR -->
+<div class="overlay hidden" id="cfg-overlay">
+  <div class="sheet">
+    <h2>📂 Sincronizar Clientes</h2>
+    <div style="display:flex;gap:8px;">
+      <input class="field-input" id="url-input" placeholder="URL de tu Apps Script (terminada en /exec)..." />
+      <button class="sheet-btn primary" onclick="cargarDesdeURL()">⬇️ Cargar</button>
+    </div>
+    <div id="cfg-status"></div>
+    <div class="debug-box" id="cfg-debug"></div>
+    <div style="text-align:right;">
+      <button class="sheet-btn" onclick="closeCfg()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORIAL -->
+<div class="overlay hidden" id="historial-overlay">
+  <div class="sheet" style="max-width:700px;">
+    <h2>📋 Clientes Gestionados</h2>
+    <p class="sheet-sub">Pulsa en una tarjeta para ver opciones o devolverla a pendientes.</p>
+    <div class="historial-list" id="historial-content"></div>
+    <div style="text-align:right;">
+      <button class="sheet-btn primary" onclick="closeHistorial()">Cerrar Historial</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESUMEN -->
+<div class="overlay hidden" id="resumen-overlay">
+  <div class="sheet">
+    <h2>📊 Resumen del Reparto</h2>
+    <div id="resumen-content"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="sheet-btn whatsapp"  onclick="exportarResumen('whatsapp')">💬 WhatsApp</button>
+      <button class="sheet-btn telegram"  onclick="exportarResumen('telegram')">✈️ Telegram</button>
+      <button class="sheet-btn email"     onclick="exportarResumen('email')">✉️ Correo</button>
+      <button class="sheet-btn" style="margin-left:auto;" onclick="closeResumen()">Cerrar</button>
+    </div>
+  </div>
+</div>
 
 <script>
-// ... (Tus funciones existentes) ...
+let pending = [], completed = [], issues = [], phones = {};
+let currentRuta = "all", expandedCardId = null, expandedHistorialId = null, isCompactView = false;
 
-function renderHistorial() {
-  const content = document.getElementById("historial-content");
-  let filteredDone = completed.filter(c => currentRuta === "all" || c.ruta === currentRuta);
-  let filteredIssues = issues.filter(c => currentRuta === "all" || c.ruta === currentRuta);
+function setHeaderDate() {
+  document.getElementById("hdr-date").textContent =
+    new Date().toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long' });
+}
 
-  if (filteredDone.length === 0 && filteredIssues.length === 0) {
-    content.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text3);">No hay ningún cliente gestionado todavía en esta ruta.</div>`;
+function toggleView() {
+  isCompactView = !isCompactView;
+  document.getElementById('pending-list').classList.toggle('compact', isCompactView);
+  render();
+}
+
+// ─── CARGA URL ────────────────────────────────────────────────────────────────
+async function cargarDesdeURL() {
+  const url = document.getElementById("url-input").value.trim();
+  const status = document.getElementById("cfg-status");
+  const debugBox = document.getElementById("cfg-debug");
+  if (!url) { alert("Pega la URL de Apps Script"); return; }
+
+  localStorage.setItem("apps_script_url", url);
+  status.textContent = "⏳ Leyendo datos...";
+  debugBox.style.display = "none";
+
+  try {
+    const response = await fetch(url);
+    const rawData  = await response.json();
+    let matriz = Array.isArray(rawData) ? rawData : (rawData.data || rawData.clientes || []);
+    if (!matriz || matriz.length < 2) { status.innerHTML = "❌ El script devolvió una lista vacía."; return; }
+
+    const cab = matriz[0].map(h => h.toString().toUpperCase().trim());
+    const idx = {
+      cod:  cab.findIndex(h => h.includes("CODIGO") || h === "A"),
+      nom:  cab.findIndex(h => h.includes("NOMBRE") || h === "B"),
+      dir:  cab.findIndex(h => h.includes("DIREC")  || h === "C"),
+      rut:  cab.findIndex(h => h === "RUTA"         || h === "D"),
+      ord:  cab.findIndex(h => h.includes("ORDEN")  || h === "E"),
+      obs:  cab.findIndex(h => h.includes("OBSER")  || h === "F"),
+      tel:  cab.findIndex(h => h.includes("TELEF")  || h === "G"),
+      nota: cab.findIndex(h => h.includes("NOTA")   || h === "H"),
+    };
+
+    let cargados = [];
+    phones = {}; completed = []; issues = []; expandedCardId = null;
+
+    for (let i = 1; i < matriz.length; i++) {
+      const f = matriz[i];
+      if (!f || !f.length) continue;
+      const obs = idx.obs !== -1 ? (f[idx.obs]||"").toString().trim().toUpperCase() : "";
+      if (obs !== "X") continue;
+
+      const cod = idx.cod !== -1 ? f[idx.cod].toString().trim() : "S/C";
+      const tel = idx.tel !== -1 ? f[idx.tel].toString().trim() : "";
+      if (cod && tel) phones[cod] = tel;
+
+      cargados.push({
+        id:           cod + "_" + i,
+        codigo:       cod,
+        nombre:       idx.nom  !== -1 ? f[idx.nom].toString().trim()  : "Sin nombre",
+        direccion:    idx.dir  !== -1 ? f[idx.dir].toString().trim()  : "",
+        ruta:         idx.rut  !== -1 ? f[idx.rut].toString().trim()  : "",
+        orden:        parseInt(idx.ord !== -1 ? f[idx.ord] : 99) || 99,
+        nota_entrega: idx.nota !== -1 ? f[idx.nota].toString().trim() : "",
+      });
+    }
+
+    if (!cargados.length) {
+      status.innerHTML = "⚠️ Ninguna fila tenía la 'X' en observaciones. Ejecuta 'Procesar Ruta' primero.";
+      return;
+    }
+
+    pending = cargados.sort((a,b) => a.orden - b.orden);
+    status.textContent = `✅ ¡${pending.length} clientes cargados!`;
+    setTimeout(closeCfg, 1200);
+    renderRutaBar();
+    render();
+
+  } catch(err) {
+    status.textContent = "❌ Error al leer el enlace.";
+    debugBox.style.display = "block";
+    debugBox.textContent = err.toString();
+  }
+}
+
+// ─── RUTA BAR ────────────────────────────────────────────────────────────────
+function renderRutaBar() {
+  const bar = document.getElementById("ruta-bar");
+  const todos = [...pending, ...completed, ...issues];
+  if (!todos.length) { bar.innerHTML = ""; return; }
+  const rutas = [...new Set(todos.map(c => c.ruta))].sort();
+  bar.innerHTML = `<span class="ruta-label">Rutas:</span>
+    <button class="ruta-pill ${currentRuta==='all'?'active':''}" onclick="setRuta('all')">Todas</button>` +
+    rutas.map(r => `<button class="ruta-pill ${currentRuta===r?'active':''}" onclick="setRuta('${r}')">${r}</button>`).join("");
+}
+
+function setRuta(r) { currentRuta = r; expandedCardId = null; renderRutaBar(); render(); }
+
+// ─── ACCIONES TARJETA ─────────────────────────────────────────────────────────
+function toggleCard(id)  { expandedCardId = expandedCardId === id ? null : id; render(); }
+
+function marcarEntregado(id, e) {
+  if(e) e.stopPropagation();
+  const i = pending.findIndex(c => c.id === id);
+  if(i > -1) { completed.push(pending[i]); pending.splice(i,1); }
+  if(expandedCardId === id) expandedCardId = null;
+  render();
+}
+function marcarIncidencia(id, e) {
+  if(e) e.stopPropagation();
+  const i = pending.findIndex(c => c.id === id);
+  if(i > -1) { issues.push(pending[i]); pending.splice(i,1); }
+  if(expandedCardId === id) expandedCardId = null;
+  render();
+}
+function recuperarCliente(id, origen, e) {
+  if(e) e.stopPropagation();
+  const lista = origen === 'done' ? completed : issues;
+  const i = lista.findIndex(c => c.id === id);
+  if(i > -1) { pending.push(lista[i]); lista.splice(i,1); }
+  pending.sort((a,b) => a.orden - b.orden);
+  render();
+  if (!document.getElementById("historial-overlay").classList.contains("hidden")) renderHistorial();
+}
+
+// ─── RENDER PRINCIPAL ─────────────────────────────────────────────────────────
+function render() {
+  const list = document.getElementById("pending-list");
+  const fp = pending.filter(c   => currentRuta==="all" || c.ruta===currentRuta);
+  const fd = completed.filter(c => currentRuta==="all" || c.ruta===currentRuta);
+  const fi = issues.filter(c    => currentRuta==="all" || c.ruta===currentRuta);
+  const total = fp.length + fd.length + fi.length;
+
+  document.getElementById("s-pend").textContent  = fp.length;
+  document.getElementById("s-done").textContent  = fd.length;
+  document.getElementById("s-issue").textContent = fi.length;
+  document.getElementById("prog").style.width = total > 0 ? (fd.length/total*100)+"%" : "0%";
+
+  if (!total) {
+    list.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text3);">Pulsa 'Sincronizar' para importar la ruta del día.</div>`;
+    return;
+  }
+
+  if (fp.length === 0) {
+    list.innerHTML = `
+      <div class="end-route-card">
+        <div class="end-check">🎉</div>
+        <h3>¡Ruta Finalizada!</h3>
+        <p>Todos los repartos asignados están gestionados.</p>
+        <button class="sheet-btn primary" onclick="openResumen()">📊 Ver Resumen</button>
+      </div>`;
     return;
   }
 
   let html = "";
-  
-  // Renderizado optimizado con altura mínima para cada tarjeta
-  if (filteredDone.length > 0) {
-    html += `<div class="section-title">✔️ Clientes Entregados (${filteredDone.length})</div>`;
-    html += filteredDone.map(c => {
-      const isExp = expandedHistorialId === c.id;
-      return `
-        <div class="card done-card">
-          <div class="card-head" onclick="toggleHistorialCard('${c.id}')" style="min-height:60px;">
-            <div style="flex:1; display:flex; align-items:center;">
-              <span class="card-order">${c.orden}</span>
-              <span class="card-name" style="text-decoration:line-through; color:var(--text3);">${c.nombre}</span>
-            </div>
-            <div class="chevron ${isExp ? 'open' : ''}">▼</div>
+  if (!isCompactView) {
+    const next = fp[0];
+    html += `<div class="next-stop">⚡ SIGUIENTE: <strong>${next.nombre}</strong> · Orden ${next.orden} · Ruta ${next.ruta}</div>`;
+  }
+
+  html += fp.map(c => {
+    const exp = expandedCardId === c.id;
+    const tel = phones[c.codigo] || "";
+    const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.direccion)}`;
+    return `
+    <div class="card ${exp?'expanded':''}">
+      <div class="card-head" onclick="toggleCard('${c.id}')">
+        <div style="flex:1;padding-right:8px;">
+          <div style="display:flex;align-items:center;margin-bottom:3px;">
+            <span class="card-order">${c.orden}</span>
+            <span class="card-name">${c.nombre}</span>
           </div>
-          ${isExp ? `
-            <div class="card-body">
-              <button class="btn" style="color:var(--accent-t);border-color:var(--accent);" onclick="recuperarCliente('${c.id}', 'done', event)">🔄 Reabrir / Mover a Pendientes</button>
-            </div>
-          ` : ''}
+          <div class="card-meta">Cód. ${c.codigo} · Ruta ${c.ruta}</div>
         </div>
-      `;
+        <div class="chevron ${exp?'open':''}">▼</div>
+      </div>
+      ${(!isCompactView||exp)?`<div class="card-addr" onclick="toggleCard('${c.id}')">📍 ${c.direccion}</div>`:''}
+      ${c.nota_entrega&&(!isCompactView||exp)?`<div class="card-nota">⚠️ ${c.nota_entrega}</div>`:''}
+      ${exp?`
+      <div class="card-body">
+        <div class="actions">
+          <button class="btn green" onclick="marcarEntregado('${c.id}',event)">✔️ Entregado</button>
+          <button class="btn red"   onclick="marcarIncidencia('${c.id}',event)">❌ Incidencia</button>
+          <a class="btn blue" href="${mapUrl}" target="_blank" onclick="event.stopPropagation()">🗺️ Navegar</a>
+          ${tel?`<a class="btn blue" href="tel:${tel}" onclick="event.stopPropagation()">📞 Llamar</a>`:''}
+        </div>
+      </div>`:''}
+    </div>`;
+  }).join("");
+
+  list.innerHTML = html;
+}
+
+// ─── HISTORIAL ────────────────────────────────────────────────────────────────
+function openHistorial()  { renderHistorial(); document.getElementById("historial-overlay").classList.remove("hidden"); }
+function closeHistorial() { document.getElementById("historial-overlay").classList.add("hidden"); expandedHistorialId = null; }
+function toggleHistorialCard(id) { expandedHistorialId = expandedHistorialId===id?null:id; renderHistorial(); }
+
+function renderHistorial() {
+  const content = document.getElementById("historial-content");
+  const fd = completed.filter(c => currentRuta==="all" || c.ruta===currentRuta);
+  const fi = issues.filter(c    => currentRuta==="all" || c.ruta===currentRuta);
+
+  if (!fd.length && !fi.length) {
+    content.innerHTML = `<div style="text-align:center;padding:30px;color:var(--text3);">No hay clientes gestionados todavía.</div>`;
+    return;
+  }
+
+  let html = "";
+
+  if (fd.length) {
+    html += `<div class="section-title">✔️ Entregados (${fd.length})</div>`;
+    html += fd.map(c => {
+      const exp = expandedHistorialId === c.id;
+      return `
+      <div class="historial-card done-card">
+        <div class="historial-head" onclick="toggleHistorialCard('${c.id}')">
+          <span class="card-order" style="background:rgba(34,197,94,0.2);color:var(--green-t);flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:26px;border-radius:50%;font-size:12px;font-weight:800;margin-right:10px;">${c.orden}</span>
+          <div class="historial-info">
+            <div class="historial-name">${c.nombre}</div>
+            <div class="historial-meta">Cód. ${c.codigo} · Ruta ${c.ruta} · 📍 ${c.direccion}</div>
+          </div>
+          <span class="historial-badge badge-done">Entregado</span>
+          <div class="chevron ${exp?'open':''}" style="margin-left:10px;">▼</div>
+        </div>
+        ${exp?`
+        <div class="historial-body">
+          <button class="btn recover" onclick="recuperarCliente('${c.id}','done',event)">🔄 Devolver a Pendientes</button>
+        </div>`:''}
+      </div>`;
     }).join("");
   }
 
-  if (filteredIssues.length > 0) {
-    html += `<div class="section-title">❌ Clientes con Incidencia (${filteredIssues.length})</div>`;
-    html += filteredIssues.map(c => {
-      const isExp = expandedHistorialId === c.id;
+  if (fi.length) {
+    html += `<div class="section-title">❌ Incidencias (${fi.length})</div>`;
+    html += fi.map(c => {
+      const exp = expandedHistorialId === c.id;
       return `
-        <div class="card issue-card">
-          <div class="card-head" onclick="toggleHistorialCard('${c.id}')" style="min-height:60px;">
-            <div style="flex:1; display:flex; align-items:center;">
-              <span class="card-order">${c.orden}</span>
-              <span class="card-name" style="color:var(--red-t); font-style:italic;">${c.nombre}</span>
-            </div>
-            <div class="chevron ${isExp ? 'open' : ''}">▼</div>
+      <div class="historial-card issue-card">
+        <div class="historial-head" onclick="toggleHistorialCard('${c.id}')">
+          <span class="card-order" style="background:rgba(239,68,68,0.2);color:var(--red-t);flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:26px;border-radius:50%;font-size:12px;font-weight:800;margin-right:10px;">${c.orden}</span>
+          <div class="historial-info">
+            <div class="historial-name">${c.nombre}</div>
+            <div class="historial-meta">Cód. ${c.codigo} · Ruta ${c.ruta} · 📍 ${c.direccion}</div>
           </div>
-          ${isExp ? `
-            <div class="card-body">
-              <button class="btn" style="color:var(--accent-t);border-color:var(--accent);" onclick="recuperarCliente('${c.id}', 'issue', event)">🔄 Reabrir / Mover a Pendientes</button>
-            </div>
-          ` : ''}
+          <span class="historial-badge badge-issue">Incidencia</span>
+          <div class="chevron ${exp?'open':''}" style="margin-left:10px;">▼</div>
         </div>
-      `;
+        ${exp?`
+        <div class="historial-body">
+          <button class="btn recover" onclick="recuperarCliente('${c.id}','issue',event)">🔄 Devolver a Pendientes</button>
+        </div>`:''}
+      </div>`;
     }).join("");
   }
 
   content.innerHTML = html;
 }
 
-// ... (El resto de tus funciones terminan aquí) ...
+// ─── RESUMEN ─────────────────────────────────────────────────────────────────
+function openResumen() {
+  const total = pending.length + completed.length + issues.length;
+  const efectividad = total > 0 ? ((completed.length/total)*100).toFixed(1) : 0;
+  document.getElementById("resumen-content").innerHTML = `
+    <div class="resumen-row"><span>Total asignados:</span><strong>${total}</strong></div>
+    <div class="resumen-row" style="color:var(--accent-t);"><span>Pendientes:</span><strong>${pending.length}</strong></div>
+    <div class="resumen-row" style="color:var(--green-t);"><span>Entregados:</span><strong>${completed.length}</strong></div>
+    <div class="resumen-row" style="color:var(--red-t);"><span>Incidencias:</span><strong>${issues.length}</strong></div>
+    <div class="resumen-row" style="font-weight:700;border-top:2px dashed var(--border);margin-top:8px;">
+      <span>Efectividad:</span><span style="color:var(--green-t);">${efectividad}%</span>
+    </div>`;
+  document.getElementById("resumen-overlay").classList.remove("hidden");
+}
+function closeResumen() { document.getElementById("resumen-overlay").classList.add("hidden"); }
+
+function generarTextoResumen() {
+  const total = pending.length + completed.length + issues.length;
+  const ef = total > 0 ? ((completed.length/total)*100).toFixed(1) : 0;
+  const fecha = new Date().toLocaleDateString('es-ES', {day:'numeric',month:'numeric',year:'numeric'});
+  let txt = `📋 *RESUMEN DE REPARTO - ${fecha}*\n--------------------------------------\n`;
+  txt += `📦 Total: ${total}\n✅ Entregados: ${completed.length}\n❌ Incidencias: ${issues.length}\n⏳ Pendientes: ${pending.length}\n📈 Efectividad: ${ef}%\n`;
+  if (issues.length) {
+    txt += `\n⚠️ *INCIDENCIAS:*\n`;
+    issues.forEach(c => { txt += `- Cód. ${c.codigo}: ${c.nombre} (Ruta ${c.ruta})\n`; });
+  } else { txt += `\n🎉 ¡Día limpio sin incidencias!`; }
+  return txt;
+}
+
+function exportarResumen(plataforma) {
+  const txt = generarTextoResumen();
+  const urls = {
+    whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}`,
+    telegram: `https://t.me/share/url?url=&text=${encodeURIComponent(txt)}`,
+    email:    `mailto:?subject=${encodeURIComponent('Resumen Reparto '+new Date().toLocaleDateString('es-ES'))}&body=${encodeURIComponent(txt.replace(/\*/g,''))}`
+  };
+  window.open(urls[plataforma], '_blank');
+}
+
+function openConfig() { document.getElementById("cfg-overlay").classList.remove("hidden"); }
+function closeCfg()   { document.getElementById("cfg-overlay").classList.add("hidden"); }
+
+window.onload = function() {
+  setHeaderDate();
+  const savedUrl = localStorage.getItem("apps_script_url");
+  if (savedUrl) document.getElementById("url-input").value = savedUrl;
+  render();
+};
 </script>
 </body>
 </html>
