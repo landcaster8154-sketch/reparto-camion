@@ -80,7 +80,15 @@
   .scroll::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
 
   /* GRID */
-  .cards-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .cards-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; transition: all 0.3s ease; }
+  
+  /* VISTA COMPACTA */
+  .cards-grid.compact { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .cards-grid.compact .card-addr { display: none; }
+  .cards-grid.compact .card-head { padding: 10px 12px 10px; }
+  .cards-grid.compact .card-name { font-size: 14px; }
+  .cards-grid.compact .card-meta { font-size: 11px; }
+
   .card.expanded { grid-column: 1 / -1; }
 
   /* NEXT STOP */
@@ -195,6 +203,11 @@
   .rc-4 { background: var(--ruta-e-bg); border-color: rgba(236,72,153,0.3); }
   .rc-4::before { background: var(--ruta-e); }
   .rc-4 .card-order { background: rgba(236,72,153,0.2); color: var(--ruta-e); }
+  
+  @media (max-width: 900px) {
+    .cards-grid { grid-template-columns: 1fr; }
+    .cards-grid.compact { grid-template-columns: repeat(2, 1fr); }
+  }
 </style>
 </head>
 <body>
@@ -206,7 +219,10 @@ if (!window.fetch) {
       var xhr = new XMLHttpRequest();
       xhr.open('GET', url, true);
       xhr.onload = function() {
-        resolve({ json: function() { return JSON.parse(xhr.responseText); } });
+        resolve({ 
+          text: function() { return Promise.resolve(xhr.responseText); },
+          json: function() { return Promise.resolve(JSON.parse(xhr.responseText)); } 
+        });
       };
       xhr.onerror = reject;
       xhr.send();
@@ -222,6 +238,7 @@ document.addEventListener('touchstart', function(){}, {passive: true});
       <p id="hdr-date"></p>
     </div>
     <div class="hdr-btns">
+      <button class="icon-btn" onclick="toggleView()" ontouchend="toggleView()">👁️ Vista</button>
       <button class="icon-btn" onclick="openResumen()" ontouchend="openResumen()">📋 Resumen</button>
       <button class="icon-btn" onclick="openConfig()" ontouchend="openConfig()">📂 Cargar CSV</button>
     </div>
@@ -251,8 +268,7 @@ document.addEventListener('touchstart', function(){}, {passive: true});
       <strong>Cada mañana, antes de salir:</strong><br>
       1️⃣ Abre Google Sheets en el PC<br>
       2️⃣ Ejecuta <strong>"Procesar Ruta"</strong> en tu hoja<br>
-      3️⃣ Menú <strong>Archivo → Descargar → CSV</strong><br>
-      4️⃣ Pasa el CSV a la tablet y cárgalo aquí 👇
+      3️⃣ Pasa los datos aquí mediante URL o CSV 👇
     </div>
     <div style="margin-bottom:14px;">
       <div class="field-label">🌐 Opción 1 — Cargar desde URL (requiere WiFi)</div>
@@ -260,7 +276,7 @@ document.addEventListener('touchstart', function(){}, {passive: true});
         <input class="field-input" id="url-input" placeholder="Pega aquí la URL del Apps Script..." style="margin-bottom:0;flex:1;" />
         <button class="sheet-btn primary" onclick="cargarDesdeURL()" ontouchend="cargarDesdeURL()" style="flex:none;padding:10px 16px;white-space:nowrap;">⬇️ Cargar</button>
       </div>
-      <div style="font-size:12px;color:var(--text3);margin-top:6px;">Carga los datos directamente de Google Sheets sin necesidad de CSV</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:6px;">Carga los datos directamente de Google Sheets sin necesidad de descargar nada</div>
     </div>
 
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
@@ -277,7 +293,7 @@ document.addEventListener('touchstart', function(){}, {passive: true});
       <div class="uz-sub">Selecciona el archivo BASE_CLIENTES.csv<br>descargado de Google Sheets</div>
     </div>
     <div class="info-box">
-      ✅ Solo cargará los clientes con <strong>"x"</strong> en columna F (marcados por "Procesar Ruta")<br>
+      ✅ Solo cargará los clientes con <strong>"x"</strong> en la columna F/Observaciones<br>
       A: Código · B: Nombre · C: Dirección · D: Ruta · E: Orden · F: Obs (x) · G: Teléfono · H: Nota entrega
     </div>
     <div id="cfg-status"></div>
@@ -321,10 +337,10 @@ let expandedId   = null;
 let currentRuta  = "all";
 let showDone       = false;
 let editPhoneIdx = null;
+let isCompactView = false; // Estado de la vista
 
-const SK = { p:"reparto_pending", c:"reparto_completed", ph:"reparto_phones" };
+const SK = { p:"reparto_pending", c:"reparto_completed", ph:"reparto_phones", v:"reparto_view" };
 
-// Establecer fecha del día en el Header
 function setHeaderDate() {
   const d = new Date();
   const opciones = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
@@ -336,16 +352,26 @@ function save() {
     localStorage.setItem(SK.p,  JSON.stringify(pending));
     localStorage.setItem(SK.c,  JSON.stringify(completed));
     localStorage.setItem(SK.ph, JSON.stringify(phones));
+    localStorage.setItem(SK.v,  isCompactView ? "1" : "0");
   } catch(e) {}
 }
 
 function loadSaved() {
   try {
-    const p=localStorage.getItem(SK.p), c=localStorage.getItem(SK.c), ph=localStorage.getItem(SK.ph);
+    const p=localStorage.getItem(SK.p), c=localStorage.getItem(SK.c), ph=localStorage.getItem(SK.ph), v=localStorage.getItem(SK.v);
     if(p)  pending   = JSON.parse(p);
     if(c)  completed = JSON.parse(c);
     if(ph) phones    = JSON.parse(ph);
+    if(v === "1") { isCompactView = true; document.getElementById('pending-list').classList.add('compact'); }
   } catch(e) {}
+}
+
+function toggleView() {
+  isCompactView = !isCompactView;
+  const list = document.getElementById('pending-list');
+  if (isCompactView) list.classList.add('compact');
+  else list.classList.remove('compact');
+  save();
 }
 
 function parseCSV(text) {
@@ -367,7 +393,7 @@ function parseCSV(text) {
     const nombre=(cols[1]||"").replace(/^"|"$/g,"").trim();
     const obs=(cols[5]||"").replace(/['"]+/g,"").trim().toLowerCase();
     
-    // Filtrado estricto por la columna F (obs) marcada con "x"
+    // Filtrado estricto por columna F (índice 5)
     if(!nombre||obs!=="x") return;
     const cod=(cols[0]||"").replace(/['"]+/g,"").trim();
     const tel=(cols[6]||"").replace(/['"]+/g,"").trim();
@@ -397,15 +423,15 @@ function onCsvSelected(event) {
         reader2.onload=function(e2){
           try {
             const clientes2=parseCSV(e2.target.result);
-            if(!clientes2.length){ status.textContent='⚠️ No se encontraron clientes con "x" en columna F. Ejecuta "Procesar Ruta" primero.'; return; }
+            if(!clientes2.length){ status.textContent='⚠️ No se encontraron clientes con "x" en columna F.'; return; }
             pending=clientes2; completed=[]; buildRutaMap(); save(); closeCfg(); render();
-          } catch(err2){ status.textContent="❌ Error leyendo el CSV. Descárgalo de nuevo desde Google Sheets."; }
+          } catch(err2){ status.textContent="❌ Error leyendo el CSV."; }
         };
         reader2.readAsText(file,"ISO-8859-1");
         return;
       }
       pending=clientes; completed=[]; buildRutaMap(); save(); closeCfg(); render();
-    } catch(err){ status.textContent="❌ Error leyendo el CSV. Descárgalo de nuevo."; }
+    } catch(err){ status.textContent="❌ Error leyendo el CSV."; }
   };
   reader.onerror=()=>{ status.textContent="❌ No se pudo leer el archivo."; };
   reader.readAsText(file,"UTF-8");
@@ -418,48 +444,66 @@ async function cargarDesdeURL() {
   const status = document.getElementById("cfg-status");
   if (!url) { alert("Por favor, pega una URL válida."); return; }
   
-  try {
-    localStorage.setItem("reparto_url", url);
-  } catch(e) {}
+  try { localStorage.setItem("reparto_url", url); } catch(e) {}
 
   status.style.display = "block";
   status.textContent = "⏳ Conectando con Google Sheets...";
   
   try {
     const response = await fetch(url);
-    const data = await response.json();
+    const rawText = await response.text();
+    let data;
     
-    if (data && data.status === "success" && Array.isArray(data.data)) {
-      // Filtrar los datos procedentes del script web app que tengan "x" en la columna correspondiente
-      const clientes = data.data.filter(c => (c.obs || "").toString().toLowerCase().trim() === "x").map(c => {
-        if (c.telefono && c.codigo && !phones[c.codigo]) phones[c.codigo] = c.telefono.toString().trim();
-        return {
-          codigo: (c.codigo || "").toString(),
-          nombre: c.nombre || "Sin Nombre",
-          direccion: c.direccion || "",
-          ruta: (c.ruta || "").toString(),
-          orden: parseInt(c.orden) || 99,
-          nota_entrega: c.nota_entrega || "",
-          notes: ""
-        };
-      });
-
-      if (!clientes.length) {
-        status.textContent = '⚠️ Conectado, pero ningún cliente tiene la "x" en la columna F.';
-        return;
-      }
-
-      pending = clientes;
-      completed = [];
-      buildRutaMap();
-      save();
-      closeCfg();
-      render();
-    } else {
-      status.textContent = "❌ El servidor no devolvió datos válidos.";
+    try {
+      data = JSON.parse(rawText);
+    } catch (e) {
+      status.textContent = "❌ El servidor no devolvió un JSON válido. Revisa que el script esté publicado como Web App.";
+      return;
     }
+
+    // Buscamos el array en la raíz, en data.data, data.items, etc. (Motor todoterreno)
+    let arrayData = Array.isArray(data) ? data : (data.data || data.clientes || data.items || []);
+
+    if (!Array.isArray(arrayData)) {
+      status.textContent = "❌ El servidor respondió, pero el formato de datos no es una lista.";
+      return;
+    }
+
+    // Flexibilidad en el nombre de las columnas (por si el Apps script usa mayúsculas, etc.)
+    const clientes = arrayData.filter(c => {
+      // Buscar la 'x' en cualquier variante de la columna Observaciones o F
+      const obs = (c.obs || c.Obs || c["Obs (x)"] || c.F || c.f || "").toString().toLowerCase().trim();
+      return obs === "x";
+    }).map(c => {
+      const cod = (c.codigo || c.Codigo || c["Código"] || "").toString();
+      const tel = (c.telefono || c.Telefono || c["Teléfono"] || c.tel || "").toString();
+      if (tel && cod && !phones[cod]) phones[cod] = tel.trim();
+      
+      return {
+        codigo: cod,
+        nombre: c.nombre || c.Nombre || "Sin Nombre",
+        direccion: c.direccion || c.Direccion || c["Dirección"] || "",
+        ruta: (c.ruta || c.Ruta || "").toString(),
+        orden: parseInt(c.orden || c.Orden || 99) || 99,
+        nota_entrega: c.nota_entrega || c.Nota || c["Nota entrega"] || "",
+        notes: ""
+      };
+    });
+
+    if (!clientes.length) {
+      status.textContent = '⚠️ Conectado OK, pero no hay ningún cliente con la "x" en la columna de observaciones. Revisa la macro "Procesar Ruta".';
+      return;
+    }
+
+    pending = clientes;
+    completed = [];
+    buildRutaMap();
+    save();
+    closeCfg();
+    render();
+
   } catch (err) {
-    status.textContent = "❌ Error de red o URL incorrecta. Asegúrate de haber publicado el script como Web App.";
+    status.textContent = "❌ Error de red o URL incorrecta. Asegúrate de tener conexión.";
   }
 }
 
