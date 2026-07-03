@@ -59,20 +59,40 @@
   .prog-wrap { height: 3px; background: var(--border); flex-shrink: 0; }
   .prog-fill { height: 100%; background: linear-gradient(90deg, var(--green), var(--accent)); transition: width 0.5s ease; }
 
+  /* RUTA BAR */
+  .ruta-bar { display: flex; align-items: center; gap: 12px; padding: 10px 24px; background: var(--bg2); border-bottom: 1px solid var(--border); flex-shrink: 0; overflow-x: auto; }
+  .ruta-label { font-size: 13px; color: var(--text3); font-weight: 600; text-transform: uppercase; white-space: nowrap; }
+  .ruta-pill { padding: 6px 16px; border-radius: 20px; border: 1px solid var(--border2); background: transparent; color: var(--text2); font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .ruta-pill.active { color: #fff; background: var(--accent); border-color: var(--accent); }
+
   /* SCROLL CONTAINER */
   .scroll { flex: 1; overflow-y: auto; padding: 16px 20px 30px; }
   .cards-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .cards-grid.compact { grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .cards-grid.compact .card-addr { display: none; }
+  .card.expanded { grid-column: 1 / -1; }
+
+  /* NEXT STOP BOX */
+  .next-stop { grid-column: 1 / -1; background: var(--accent-bg); border: 1px solid rgba(79,127,255,0.3); border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 12px; font-size: 14px; color: var(--accent-t); font-weight: 600; display: flex; align-items: center; gap: 10px; }
 
   /* CARDS */
-  .card { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); position: relative; background: var(--card); display: flex; flex-direction: column; }
+  .card { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); position: relative; background: var(--card); display: flex; flex-direction: column; transition: transform 0.15s; }
   .card::before { content:""; position:absolute; top:0; left:0; right:0; height:3px; background: var(--ruta-a); }
-  .card-head { padding: 14px 16px 0; display: flex; align-items: flex-start; justify-content: space-between; }
+  .card-head { padding: 14px 16px; cursor: pointer; display: flex; align-items: flex-start; justify-content: space-between; }
   .card-order { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 26px; border-radius: 50%; font-size: 12px; font-weight: 800; margin-right: 8px; background: rgba(79,127,255,0.2); color: #7da4ff; }
   .card-name { font-size: 15px; font-weight: 700; }
   .card-meta { font-size: 12px; color: var(--text3); margin-top: 3px; }
-  .card-addr { font-size: 13px; color: var(--text2); padding: 8px 16px 14px; }
+  .card-addr { font-size: 13px; color: var(--text2); padding: 0 16px 14px; }
+  .chevron { font-size: 13px; color: var(--text3); transition: transform 0.2s; }
+  .chevron.open { transform: rotate(180deg); }
+
+  /* EXPANDED ACTIONS */
+  .card-body { border-top: 1px solid var(--border); padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: var(--card2); }
+  .actions { display: flex; gap: 8px; }
+  .btn { flex: 1; padding: 12px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--card); font-size: 14px; font-weight: 600; color: var(--text2); cursor: pointer; text-align: center; text-decoration: none; }
+  .btn.green { border-color: rgba(34,197,94,0.4); background: var(--green-bg); color: var(--green-t); }
+  .btn.red   { border-color: rgba(239,68,68,0.4);  background: var(--red-bg);   color: var(--red-t); }
+  .btn.blue  { border-color: rgba(79,127,255,0.4); background: var(--accent-bg); color: var(--accent-t); }
 
   /* OVERLAYS */
   .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 24px; }
@@ -107,6 +127,9 @@
   </div>
   <div class="prog-wrap"><div class="prog-fill" id="prog" style="width:0%"></div></div>
 
+  <!-- BARRA DE RUTAS -->
+  <div class="ruta-bar" id="ruta-bar"></div>
+
   <div class="scroll">
     <div class="cards-grid" id="pending-list"></div>
   </div>
@@ -131,7 +154,7 @@
 </div>
 
 <script>
-let pending = [], phones = {}, isCompactView = false;
+let pending = [], completed = [], issues = [], phones = {}, currentRuta = "all", expandedCardId = null, isCompactView = false;
 
 function setHeaderDate() {
   document.getElementById("hdr-date").textContent = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -140,6 +163,7 @@ function setHeaderDate() {
 function toggleView() {
   isCompactView = !isCompactView;
   document.getElementById('pending-list').classList.toggle('compact', isCompactView);
+  render();
 }
 
 async function cargarDesdeURL() {
@@ -156,19 +180,14 @@ async function cargarDesdeURL() {
     const response = await fetch(url);
     const rawData = await response.json();
     
-    // Capturar la matriz de filas (tanto si viene directa como si viene dentro de un objeto)
     let matriz = Array.isArray(rawData) ? rawData : (rawData.data || rawData.clientes || []);
 
     if (!matriz || matriz.length < 2) {
-      status.innerHTML = "❌ El script devolvió una lista vacía o sin filas suficientes.<br>Prueba a ejecutar 'Procesar Ruta' primero en tu PC.";
+      status.innerHTML = "❌ El script devolvió una lista vacía o sin filas suficientes.";
       return;
     }
 
-    // Guardar muestra en el cuadro por si acaso
-    debugBox.style.display = "block";
-    debugBox.textContent = "PROCESANDO MATRIZ:\n" + JSON.stringify(matriz.slice(0, 2), null, 2);
-
-    // Mapear dinámicamente la posición de los encabezados de la fila 0
+    // Mapear encabezados dinámicamente
     const cabecera = matriz[0].map(h => h.toString().toUpperCase().trim());
     
     const idxCodigo    = cabecera.findIndex(h => h.includes("CODIGO") || h === "A");
@@ -182,16 +201,16 @@ async function cargarDesdeURL() {
 
     let clientesCargados = [];
     phones = {}; 
+    completed = [];
+    issues = [];
+    expandedCardId = null;
 
-    // Procesar los datos reales omitiendo la cabecera
     for (let i = 1; i < matriz.length; i++) {
       const fila = matriz[i];
       if (!fila || fila.length === 0) continue;
 
-      // Extraer valor de observaciones para validar la selección ("X")
       const obsValor = idxObs !== -1 ? (fila[idxObs] || "").toString().trim().toUpperCase() : "";
       
-      // Filtrar únicamente los marcados para el reparto
       if (obsValor === "X") {
         const cod = idxCodigo !== -1 ? fila[idxCodigo].toString().trim() : "S/C";
         const nom = idxNombre !== -1 ? fila[idxNombre].toString().trim() : "Cliente sin nombre";
@@ -204,6 +223,7 @@ async function cargarDesdeURL() {
         if (cod && tel) phones[cod] = tel;
 
         clientesCargados.push({
+          id: cod + "_" + i,
           codigo: cod,
           nombre: nom,
           direccion: dir,
@@ -219,11 +239,10 @@ async function cargarDesdeURL() {
       return;
     }
 
-    // Ordenar los clientes por su orden de entrega numérico
     pending = clientesCargados.sort((a, b) => a.orden - b.orden);
-    
     status.textContent = `✅ ¡Cargados ${pending.length} clientes con éxito!`;
     setTimeout(closeCfg, 1200);
+    renderRutaBar();
     render();
     
   } catch (err) {
@@ -233,28 +252,131 @@ async function cargarDesdeURL() {
   }
 }
 
+function renderRutaBar() {
+  const bar = document.getElementById("ruta-bar");
+  if (!pending.length && !completed.length && !issues.length) { bar.innerHTML = ""; return; }
+
+  // Extraer rutas únicas disponibles
+  let todasLasRutas = [...pending, ...completed, ...issues].map(c => c.ruta);
+  let rutasUnicas = [...new Set(todasLasRutas)].sort();
+
+  let html = `<span class="ruta-label">Rutas:</span>`;
+  html += `<button class="ruta-pill ${currentRuta === 'all' ? 'active' : ''}" onclick="setRuta('all')">Todas</button>`;
+  
+  rutasUnicas.forEach(r => {
+    html += `<button class="ruta-pill ${currentRuta === r ? 'active' : ''}" onclick="setRuta('${r}')">${r}</button>`;
+  });
+  
+  bar.innerHTML = html;
+}
+
+function setRuta(r) {
+  currentRuta = r;
+  expandedCardId = null;
+  renderRutaBar();
+  render();
+}
+
+function toggleCard(id) {
+  expandedCardId = (expandedCardId === id) ? null : id;
+  render();
+}
+
+function marcarEntregado(id, event) {
+  if(event) event.stopPropagation();
+  let idx = pending.findIndex(c => c.id === id);
+  if(idx > -1) {
+    completed.push(pending[idx]);
+    pending.splice(idx, 1);
+  }
+  if(expandedCardId === id) expandedCardId = null;
+  render();
+}
+
+function marcarIncidencia(id, event) {
+  if(event) event.stopPropagation();
+  let idx = pending.findIndex(c => c.id === id);
+  if(idx > -1) {
+    issues.push(pending[idx]);
+    pending.splice(idx, 1);
+  }
+  if(expandedCardId === id) expandedCardId = null;
+  render();
+}
+
 function render() {
   const list = document.getElementById("pending-list");
-  document.getElementById("s-pend").textContent = pending.length;
   
-  if (!pending.length) {
-    list.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text3);">Pulsa 'Sincronizar' arriba para importar la ruta.</div>`;
+  // Filtrar según la ruta seleccionada
+  let filteredPending = pending.filter(c => currentRuta === "all" || c.ruta === currentRuta);
+  let filteredDone = completed.filter(c => currentRuta === "all" || c.ruta === currentRuta);
+  let filteredIssues = issues.filter(c => currentRuta === "all" || c.ruta === currentRuta);
+
+  // Actualizar marcadores numéricos superiores
+  document.getElementById("s-pend").textContent = filteredPending.length;
+  document.getElementById("s-done").textContent = filteredDone.length;
+  document.getElementById("s-issue").textContent = filteredIssues.length;
+
+  // Actualizar barra de progreso
+  const total = filteredPending.length + filteredDone.length + filteredIssues.length;
+  const pct = total > 0 ? (filteredDone.length / total) * 180 : 0; // Escala visual simple
+  document.getElementById("prog").style.width = (total > 0 ? (filteredDone.length / total) * 100 : 0) + "%";
+  
+  if (!filteredPending.length) {
+    list.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text3);">No hay clientes pendientes en esta ruta.</div>`;
     return;
   }
 
-  list.innerHTML = pending.map(c => `
-    <div class="card">
-      <div class="card-head">
-        <div>
-          <span class="card-order">${c.orden}</span>
-          <span class="card-name">${c.nombre}</span>
-          <div class="card-meta">Cód. ${c.codigo} · Ruta ${c.ruta}</div>
-        </div>
+  let listHtml = "";
+
+  // AGREGAR CAJA DE CLIENTE SIGUIENTE (solo si no está en vista compacta y hay alguno)
+  if (!isCompactView && filteredPending.length > 0) {
+    const next = filteredPending[0];
+    listHtml += `
+      <div class="next-stop">
+        <span>⚡ SIGUIENTE PARADA:</span> 
+        <strong>${next.nombre}</strong> (Orden ${next.orden} · Ruta ${next.ruta})
       </div>
-      <div class="card-addr">📍 ${c.direccion}</div>
-      ${c.nota_entrega ? `<div style="font-size:13px;color:var(--yellow-t);padding:0 16px 10px;">⚠️ Horario: ${c.nota_entrega}</div>` : ''}
-    </div>
-  `).join("");
+    `;
+  }
+
+  // RENDERIZAR TARJETAS
+  listHtml += filteredPending.map(c => {
+    const isExpanded = expandedCardId === c.id;
+    const tel = phones[c.codigo] || "";
+
+    return `
+      <div class="card ${isExpanded ? 'expanded' : ''}">
+        <div class="card-head" onclick="toggleCard('${c.id}')">
+          <div style="flex:1; padding-right:8px;">
+            <span class="card-order">${c.orden}</span>
+            <span class="card-name">${c.nombre}</span>
+            <div class="card-meta">Cód. ${c.codigo} · Ruta ${c.ruta}</div>
+          </div>
+          <div class="chevron ${isExpanded ? 'open' : ''}">▼</div>
+        </div>
+        
+        <!-- Dirección visible si está expandido o si no es vista compacta -->
+        ${(!isCompactView || isExpanded) ? `<div class="card-addr" onclick="toggleCard('${c.id}')">📍 ${c.direccion}</div>` : ''}
+        
+        <!-- Observación / Nota de entrega -->
+        ${c.nota_entrega && (!isCompactView || isExpanded) ? `<div style="font-size:13px;color:var(--yellow-t);padding:0 16px 10px;">⚠️ Horario: ${c.nota_entrega}</div>` : ''}
+        
+        <!-- CUERPO EXPANDIBLE CON ACCIONES -->
+        ${isExpanded ? `
+          <div class="card-body">
+            <div class="actions">
+              <button class="btn green" onclick="marcarEntregado('${c.id}', event)">✔️ Entregado</button>
+              <button class="btn red" onclick="marcarIncidencia('${c.id}', event)">❌ Incidencia</button>
+              ${tel ? `<a class="btn blue" href="tel:${tel}" onclick="event.stopPropagation()">📞 Llamar</a>` : ''}
+            </div>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join("");
+
+  list.innerHTML = listHtml;
 }
 
 function openConfig() { document.getElementById("cfg-overlay").classList.remove("hidden"); }
