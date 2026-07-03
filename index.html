@@ -41,7 +41,7 @@
   .header { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
   .header h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; color: var(--text); }
   .header p  { font-size: 13px; color: var(--text3); margin-top: 2px; }
-  .hdr-btns  { display: flex; gap: 8px; }
+  .hdr-btns  { display: flex; gap: 8px; flex-wrap: wrap; }
   .icon-btn  { background: var(--card); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 10px 14px; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--text2); display: flex; align-items: center; gap: 6px; transition: background 0.15s; }
   .icon-btn:hover  { background: var(--card2); color: var(--text); }
 
@@ -75,8 +75,8 @@
   /* NEXT STOP BOX */
   .next-stop { grid-column: 1 / -1; background: var(--accent-bg); border: 1px solid rgba(79,127,255,0.3); border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 12px; font-size: 14px; color: var(--accent-t); font-weight: 600; display: flex; align-items: center; gap: 10px; }
 
-  /* SECTIONS FOR MANAGED CLIENTS */
-  .section-title { grid-column: 1 / -1; font-size: 14px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin: 24px 0 8px; display: flex; align-items: center; gap: 8px; }
+  /* SECTIONS FOR OVERLAYS/HISTORIAL */
+  .section-title { font-size: 14px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin: 20px 0 8px; display: flex; align-items: center; gap: 8px; }
   .section-title::after { content: ""; flex: 1; height: 1px; background: var(--border); }
 
   /* CARDS */
@@ -107,18 +107,33 @@
   /* OVERLAYS */
   .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 24px; }
   .overlay.hidden { display: none; }
-  .sheet { background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius); width: 100%; max-width: 620px; padding: 28px; max-height: 90vh; overflow-y: auto; }
-  .field-input { width: 100%; padding: 12px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--bg); color: var(--text); font-size: 16px; margin-bottom: 14px; }
-  .sheet-btn  { padding: 13px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--card); font-size: 15px; font-weight: 600; color: var(--text2); cursor: pointer; }
+  .sheet { background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius); width: 100%; max-width: 620px; padding: 28px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+  .sheet h2 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .field-input { width: 100%; padding: 12px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--bg); color: var(--text); font-size: 16px; }
+  .sheet-btn  { padding: 13px 18px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--card); font-size: 14px; font-weight: 600; color: var(--text2); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
   .sheet-btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
+  .sheet-btn.whatsapp { background: #25d366; color: white; border-color: #25d366; }
+  .sheet-btn.email { background: #ea4335; color: white; border-color: #ea4335; }
   
   /* SUMMARY CSS */
-  .resumen-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 15px; }
+  .resumen-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 15px; }
   .resumen-row:last-child { border-bottom: none; }
+
+  /* RUTA FINALIZADA CARD */
+  .end-route-card { grid-column: 1 / -1; text-align: center; background: var(--bg2); border: 2px dashed var(--green); border-radius: var(--radius); padding: 40px 20px; display: flex; flex-direction: column; align-items: center; gap: 16px; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+  .end-check { font-size: 70px; line-height: 1; color: var(--green-t); margin-bottom: 8px; text-shadow: 0 0 20px rgba(34,197,94,0.3); }
+  .end-route-card h3 { font-size: 24px; font-weight: 800; color: #fff; }
+  .end-route-card p { font-size: 15px; color: var(--text2); max-width: 400px; line-height: 1.5; }
+  
+  /* ANIMATION */
+  @keyframes popIn {
+    0% { transform: scale(0.9); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
   
   /* DEBUG BOX */
-  .debug-box { background: #2c1a1a; border: 1px solid #7a2a2a; border-radius: 8px; padding: 12px; margin-top: 14px; font-family: monospace; font-size: 11px; color: #ff9999; max-height: 200px; overflow: auto; display: none; white-space: pre; }
-  #cfg-status { text-align:center; padding:12px; font-size:14px; color:var(--text2); margin-top: 10px; }
+  .debug-box { background: #2c1a1a; border: 1px solid #7a2a2a; border-radius: 8px; padding: 12px; font-family: monospace; font-size: 11px; color: #ff9999; max-height: 200px; overflow: auto; display: none; white-space: pre; }
+  #cfg-status { text-align:center; padding:4px; font-size:14px; color:var(--text2); }
 </style>
 </head>
 <body>
@@ -130,6 +145,7 @@
     </div>
     <div class="hdr-btns">
       <button class="icon-btn" onclick="toggleView()">👁️ Vista</button>
+      <button class="icon-btn" onclick="openHistorial()">📋 Historial</button>
       <button class="icon-btn" onclick="openResumen()">📊 Resumen</button>
       <button class="icon-btn" onclick="openConfig()">📂 Sincronizar</button>
     </div>
@@ -154,15 +170,13 @@
 <div class="overlay hidden" id="cfg-overlay">
   <div class="sheet">
     <h2>📂 Sincronizar Clientes</h2>
-    <div style="margin-top:14px;">
-      <div style="display:flex;gap:8px;">
-        <input class="field-input" id="url-input" placeholder="URL de tu Apps Script (terminada en /exec)..." style="margin-bottom:0;flex:1;" />
-        <button class="sheet-btn primary" onclick="cargarDesdeURL()">⬇️ Cargar</button>
-      </div>
+    <div style="display:flex; gap:8px; margin-top:8px;">
+      <input class="field-input" id="url-input" placeholder="URL de tu Apps Script (terminada en /exec)..." />
+      <button class="sheet-btn primary" onclick="cargarDesdeURL()">⬇️ Cargar</button>
     </div>
     <div id="cfg-status"></div>
     <div class="debug-box" id="cfg-debug"></div>
-    <div style="margin-top:14px; text-align:right;">
+    <div style="text-align:right; margin-top:8px;">
       <button class="sheet-btn" onclick="closeCfg()">Cerrar</button>
     </div>
   </div>
@@ -172,17 +186,36 @@
 <div class="overlay hidden" id="resumen-overlay">
   <div class="sheet">
     <h2>📊 Resumen del Reparto</h2>
-    <div style="margin-top:20px;" id="resumen-content">
+    <div id="resumen-content" style="margin: 8px 0;">
       <!-- Se llena dinámicamente -->
     </div>
-    <div style="margin-top:24px; text-align:right;">
-      <button class="sheet-btn primary" onclick="closeResumen()">Entendido</button>
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;">
+      <button class="sheet-btn whatsapp" onclick="exportarResumen('whatsapp')">💬 WhatsApp</button>
+      <button class="sheet-btn" style="background:#0078d4; color:white; border-color:#0078d4;" onclick="exportarResumen('telegram')">✈️ Telegram</button>
+      <button class="sheet-btn email" onclick="exportarResumen('email')">✉️ Correo</button>
+      <button class="sheet-btn" style="margin-left:auto;" onclick="closeResumen()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORIAL OVERLAY (GESTIONADOS) -->
+<div class="overlay hidden" id="historial-overlay">
+  <div class="sheet" style="max-width: 700px;">
+    <h2>📋 Clientes Gestionados</h2>
+    <p style="font-size:13px; color:var(--text3); margin-top:-6px;">Pulsa en cualquier tarjeta para devolverla a la lista de pendientes.</p>
+    
+    <div id="historial-content" style="overflow-y:auto; max-height:60vh; display:flex; flex-direction:column; gap:8px; margin:10px 0; padding-right:4px;">
+      <!-- Se llena dinámicamente -->
+    </div>
+    
+    <div style="text-align:right; margin-top:8px;">
+      <button class="sheet-btn primary" onclick="closeHistorial()">Cerrar Historial</button>
     </div>
   </div>
 </div>
 
 <script>
-let pending = [], completed = [], issues = [], phones = {}, currentRuta = "all", expandedCardId = null, isCompactView = false;
+let pending = [], completed = [], issues = [], phones = {}, currentRuta = "all", expandedCardId = null, isCompactView = false, expandedHistorialId = null;
 
 function setHeaderDate() {
   document.getElementById("hdr-date").textContent = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -201,20 +234,17 @@ async function cargarDesdeURL() {
   
   if (!url) { alert("Pega la URL de Apps Script"); return; }
   
-  // Guardar la URL para que se quede grabada automáticamente
   localStorage.setItem("apps_script_url", url);
-  
-  status.textContent = "⏳ Leyendo datos del Sheets...";
+  status.textContent = "⏳ Leyendo datos del Sheets... (Filtro OBSERVACIONES = 'X')";
   debugBox.style.display = "none";
   
   try {
     const response = await fetch(url);
     const rawData = await response.json();
-    
     let matriz = Array.isArray(rawData) ? rawData : (rawData.data || rawData.clientes || []);
 
     if (!matriz || matriz.length < 2) {
-      status.innerHTML = "❌ El script devolvió una lista vacía o sin filas suficientes.";
+      status.innerHTML = "❌ El script devolvió una lista vacía.";
       return;
     }
 
@@ -230,10 +260,7 @@ async function cargarDesdeURL() {
     const idxNota      = cabecera.findIndex(h => h.includes("NOTA") || h === "H");
 
     let clientesCargados = [];
-    phones = {}; 
-    completed = [];
-    issues = [];
-    expandedCardId = null;
+    phones = {}; completed = []; issues = []; expandedCardId = null;
 
     for (let i = 1; i < matriz.length; i++) {
       const fila = matriz[i];
@@ -265,7 +292,7 @@ async function cargarDesdeURL() {
     }
 
     if (clientesCargados.length === 0) {
-      status.innerHTML = "⚠️ Sincronizado OK, pero ninguna fila tenía la 'X' en OBSERVACIONES.";
+      status.innerHTML = "⚠️ Sincronizado OK, pero ninguna fila tenía la 'X' en observaciones.";
       return;
     }
 
@@ -276,7 +303,7 @@ async function cargarDesdeURL() {
     render();
     
   } catch (err) {
-    status.textContent = "❌ Error crítico al leer el enlace de datos.";
+    status.textContent = "❌ Error crítico al leer el enlace.";
     debugBox.style.display = "block";
     debugBox.textContent = err.toString();
   }
@@ -314,10 +341,7 @@ function toggleCard(id) {
 function marcarEntregado(id, event) {
   if(event) event.stopPropagation();
   let idx = pending.findIndex(c => c.id === id);
-  if(idx > -1) {
-    completed.push(pending[idx]);
-    pending.splice(idx, 1);
-  }
+  if(idx > -1) { completed.push(pending[idx]); pending.splice(idx, 1); }
   if(expandedCardId === id) expandedCardId = null;
   render();
 }
@@ -325,10 +349,7 @@ function marcarEntregado(id, event) {
 function marcarIncidencia(id, event) {
   if(event) event.stopPropagation();
   let idx = pending.findIndex(c => c.id === id);
-  if(idx > -1) {
-    issues.push(pending[idx]);
-    pending.splice(idx, 1);
-  }
+  if(idx > -1) { issues.push(pending[idx]); pending.splice(idx, 1); }
   if(expandedCardId === id) expandedCardId = null;
   render();
 }
@@ -344,6 +365,9 @@ function recuperarCliente(id, deDonde, event) {
   }
   pending.sort((a, b) => a.orden - b.orden);
   render();
+  if (document.getElementById("historial-overlay").classList.contains("hidden") === false) {
+    renderHistorial();
+  }
 }
 
 function render() {
@@ -360,7 +384,26 @@ function render() {
   const total = filteredPending.length + filteredDone.length + filteredIssues.length;
   document.getElementById("prog").style.width = (total > 0 ? (filteredDone.length / total) * 100 : 0) + "%";
   
+  // VERIFICAR RUTA FINALIZADA (Si no hay pendientes, pero hay clientes gestionados en total)
+  if (filteredPending.length === 0 && total > 0) {
+    list.innerHTML = `
+      <div class="end-route-card">
+        <div class="end-check">🎉</div>
+        <h3>¡Ruta Finalizada con Éxito!</h3>
+        <p>Has completado todos los repartos asignados para esta sección. Ya puedes sacar los datos de cierre.</p>
+        <button class="sheet-btn primary" style="margin-top: 8px;" onclick="openResumen()">📊 Ver y Enviar Resumen</button>
+      </div>
+    `;
+    return;
+  }
+
   let listHtml = "";
+
+  // MENSAJE INICIAL SI NO HAY NADA DE NADA CARGADO
+  if (!total) {
+    list.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text3);">Pulsa 'Sincronizar' arriba para importar la ruta.</div>`;
+    return;
+  }
 
   // SIGUIENTE PARADA
   if (!isCompactView && filteredPending.length > 0) {
@@ -373,105 +416,125 @@ function render() {
     `;
   }
 
-  if (!filteredPending.length && !filteredDone.length && !filteredIssues.length) {
-    list.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text3);">Pulsa 'Sincronizar' arriba para importar la ruta.</div>`;
-    return;
-  }
+  // LISTADO DE TARJETAS PENDIENTES
+  listHtml += filteredPending.map(c => {
+    const isExpanded = expandedCardId === c.id;
+    const tel = phones[c.codigo] || "";
+    const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.direccion)}`;
 
-  // LISTADO DE PENDIENTES
-  if (filteredPending.length > 0) {
-    listHtml += filteredPending.map(c => {
-      const isExpanded = expandedCardId === c.id;
-      const tel = phones[c.codigo] || "";
-      const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.direccion)}`;
-
-      return `
-        <div class="card ${isExpanded ? 'expanded' : ''}">
-          <div class="card-head" onclick="toggleCard('${c.id}')">
-            <div style="flex:1; padding-right:8px;">
-              <span class="card-order">${c.orden}</span>
-              <span class="card-name">${c.nombre}</span>
-              <div class="card-meta">Cód. ${c.codigo} · Ruta ${c.ruta}</div>
-            </div>
-            <div class="chevron ${isExpanded ? 'open' : ''}">▼</div>
+    return `
+      <div class="card ${isExpanded ? 'expanded' : ''}">
+        <div class="card-head" onclick="toggleCard('${c.id}')">
+          <div style="flex:1; padding-right:8px;">
+            <span class="card-order">${c.orden}</span>
+            <span class="card-name">${c.nombre}</span>
+            <div class="card-meta">Cód. ${c.codigo} · Ruta ${c.ruta}</div>
           </div>
-          
-          ${(!isCompactView || isExpanded) ? `<div class="card-addr" onclick="toggleCard('${c.id}')">📍 ${c.direccion}</div>` : ''}
-          ${c.nota_entrega && (!isCompactView || isExpanded) ? `<div style="font-size:13px;color:var(--yellow-t);padding:0 16px 10px;">⚠️ Horario: ${c.nota_entrega}</div>` : ''}
-          
-          ${isExpanded ? `
-            <div class="card-body">
-              <div class="actions">
-                <button class="btn green" onclick="marcarEntregado('${c.id}', event)">✔️ Entregado</button>
-                <button class="btn red" onclick="marcarIncidencia('${c.id}', event)">❌ Incidencia</button>
-                <a class="btn blue" href="${mapUrl}" target="_blank" onclick="event.stopPropagation()">🗺️ Navegar</a>
-                ${tel ? `<a class="btn blue" href="tel:${tel}" onclick="event.stopPropagation()">📞 Llamar</a>` : ''}
-              </div>
-            </div>
-          ` : ''}
+          <div class="chevron ${isExpanded ? 'open' : ''}">▼</div>
         </div>
-      `;
-    }).join("");
-  }
-
-  // SECCIÓN ENTREGADOS (GESTIONADOS)
-  if (filteredDone.length > 0) {
-    listHtml += `<div class="section-title">✔️ Clientes Entregados (${filteredDone.length})</div>`;
-    listHtml += filteredDone.map(c => {
-      const isExpanded = expandedCardId === c.id;
-      return `
-        <div class="card done-card ${isExpanded ? 'expanded' : ''}">
-          <div class="card-head" onclick="toggleCard('${c.id}')">
-            <div style="flex:1;">
-              <span class="card-order">${c.orden}</span>
-              <span class="card-name" style="text-decoration:line-through; color:var(--text3);">${c.nombre}</span>
-              <div class="card-meta">Entregado correctamente</div>
+        
+        ${(!isCompactView || isExpanded) ? `<div class="card-addr" onclick="toggleCard('${c.id}')">📍 ${c.direccion}</div>` : ''}
+        ${c.nota_entrega && (!isCompactView || isExpanded) ? `<div style="font-size:13px;color:var(--yellow-t);padding:0 16px 10px;">⚠️ Horario: ${c.nota_entrega}</div>` : ''}
+        
+        ${isExpanded ? `
+          <div class="card-body">
+            <div class="actions">
+              <button class="btn green" onclick="marcarEntregado('${c.id}', event)">✔️ Entregado</button>
+              <button class="btn red" onclick="marcarIncidencia('${c.id}', event)">❌ Incidencia</button>
+              <a class="btn blue" href="${mapUrl}" target="_blank" onclick="event.stopPropagation()">🗺️ Navegar</a>
+              ${tel ? `<a class="btn blue" href="tel:${tel}" onclick="event.stopPropagation()">📞 Llamar</a>` : ''}
             </div>
-            <div class="chevron ${isExpanded ? 'open' : ''}">▼</div>
           </div>
-          ${isExpanded ? `
-            <div class="card-body">
-              <div class="actions">
-                <button class="btn" onclick="recuperarCliente('${c.id}', 'done', event)">🔄 Devolver a Pendientes</button>
-              </div>
-            </div>
-          ` : ''}
-        </div>
-      `;
-    }).join("");
-  }
-
-  // SECCIÓN INCIDENCIAS (GESTIONADOS)
-  if (filteredIssues.length > 0) {
-    listHtml += `<div class="section-title">❌ Clientes con Incidencia (${filteredIssues.length})</div>`;
-    listHtml += filteredIssues.map(c => {
-      const isExpanded = expandedCardId === c.id;
-      return `
-        <div class="card issue-card ${isExpanded ? 'expanded' : ''}">
-          <div class="card-head" onclick="toggleCard('${c.id}')">
-            <div style="flex:1;">
-              <span class="card-order">${c.orden}</span>
-              <span class="card-name" style="color:var(--red-t); font-style:italic;">${c.nombre}</span>
-              <div class="card-meta">No entregado / Incidencia</div>
-            </div>
-            <div class="chevron ${isExpanded ? 'open' : ''}">▼</div>
-          </div>
-          ${isExpanded ? `
-            <div class="card-body">
-              <div class="actions">
-                <button class="btn" onclick="recuperarCliente('${c.id}', 'issue', event)">🔄 Devolver a Pendientes</button>
-              </div>
-            </div>
-          ` : ''}
-        </div>
-      `;
-    }).join("");
-  }
+        ` : ''}
+      </div>
+    `;
+  }).join("");
 
   list.innerHTML = listHtml;
 }
 
-/* FUNCIONES MODAL RESUMEN */
+/* HISTORIAL EN VENTANA FLOTANTE MODAL */
+function openHistorial() {
+  renderHistorial();
+  document.getElementById("historial-overlay").classList.remove("hidden");
+}
+function closeHistorial() { 
+  document.getElementById("historial-overlay").classList.add("hidden"); 
+  expandedHistorialId = null;
+}
+function toggleHistorialCard(id) {
+  expandedHistorialId = (expandedHistorialId === id) ? null : id;
+  renderHistorial();
+}
+
+function renderHistorial() {
+  const content = document.getElementById("historial-content");
+  let filteredDone = completed.filter(c => currentRuta === "all" || c.ruta === currentRuta);
+  let filteredIssues = issues.filter(c => currentRuta === "all" || c.ruta === currentRuta);
+
+  if (filteredDone.length === 0 && filteredIssues.length === 0) {
+    content.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text3);">No hay ningún cliente gestionado todavía en esta ruta.</div>`;
+    return;
+  }
+
+  let html = "";
+  
+  if (filteredDone.length > 0) {
+    html += `<div class="section-title">✔️ Clientes Entregados (${filteredDone.length})</div>`;
+    html += filteredDone.map(c => {
+      const isExp = expandedHistorialId === c.id;
+      return `
+        <div class="card done-card">
+          <div class="card-head" onclick="toggleHistorialCard('${c.id}')">
+            <div style="flex:1;">
+              <span class="card-order">${c.orden}</span>
+              <span class="card-name" style="text-decoration:line-through; color:var(--text3);">${c.nombre}</span>
+              <div class="card-meta">Entregado · Ruta ${c.ruta}</div>
+            </div>
+            <div class="chevron ${isExp ? 'open' : ''}">▼</div>
+          </div>
+          ${isExp ? `
+            <div class="card-body">
+              <div class="actions">
+                <button class="btn" style="color:var(--accent-t);border-color:var(--accent);" onclick="recuperarCliente('${c.id}', 'done', event)">🔄 Reabrir / Mover a Pendientes</button>
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }).join("");
+  }
+
+  if (filteredIssues.length > 0) {
+    html += `<div class="section-title">❌ Clientes con Incidencia (${filteredIssues.length})</div>`;
+    html += filteredIssues.map(c => {
+      const isExp = expandedHistorialId === c.id;
+      return `
+        <div class="card issue-card">
+          <div class="card-head" onclick="toggleHistorialCard('${c.id}')">
+            <div style="flex:1;">
+              <span class="card-order">${c.orden}</span>
+              <span class="card-name" style="color:var(--red-t); font-style:italic;">${c.nombre}</span>
+              <div class="card-meta">Incidencia · Ruta ${c.ruta}</div>
+            </div>
+            <div class="chevron ${isExp ? 'open' : ''}">▼</div>
+          </div>
+          ${isExp ? `
+            <div class="card-body">
+              <div class="actions">
+                <button class="btn" style="color:var(--accent-t);border-color:var(--accent);" onclick="recuperarCliente('${c.id}', 'issue', event)">🔄 Reabrir / Mover a Pendientes</button>
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }).join("");
+  }
+
+  content.innerHTML = html;
+}
+
+/* FUNCIONES MODAL RESUMEN + EXPORTAR */
 function openResumen() {
   const content = document.getElementById("resumen-content");
   const totalOriginal = pending.length + completed.length + issues.length;
@@ -490,18 +553,56 @@ function openResumen() {
 }
 function closeResumen() { document.getElementById("resumen-overlay").classList.add("hidden"); }
 
+function generarTextoResumen() {
+  const totalOriginal = pending.length + completed.length + issues.length;
+  const efectividad = totalOriginal > 0 ? ((completed.length / totalOriginal) * 100).toFixed(1) : 0;
+  const fechaStr = new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'numeric', year: 'numeric' });
+  
+  let texto = `📋 *RESUMEN DE REPARTO - ${fechaStr}*\n`;
+  texto += `--------------------------------------\n`;
+  texto += `📦 Total Asignados: ${totalOriginal}\n`;
+  texto += `✅ Entregados con Éxito: ${completed.length}\n`;
+  texto += `❌ Incidencias: ${issues.length}\n`;
+  texto += `⏳ Pendientes: ${pending.length}\n`;
+  texto += `📈 Efectividad: ${efectividad}%\n\n`;
+  
+  if (issues.length > 0) {
+    texto += `⚠️ *DETALLE DE INCIDENCIAS:*\n`;
+    issues.forEach(c => {
+      texto += `- Cód. ${c.codigo}: ${c.nombre} (Ruta ${c.ruta})\n`;
+    });
+  } else {
+    texto += `🎉 ¡Día limpio sin incidencias registrados!`;
+  }
+  return texto;
+}
+
+function exportarResumen(plataforma) {
+  const texto = generarTextoResumen();
+  
+  if (plataforma === 'whatsapp') {
+    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
+    window.open(url, '_blank');
+  } else if (plataforma === 'telegram') {
+    const url = `https://t.me/share/url?url=&text=${encodeURIComponent(texto)}`;
+    window.open(url, '_blank');
+  } else if (plataforma === 'email') {
+    const asunto = `Resumen de Reparto - ${new Date().toLocaleDateString('es-ES')}`;
+    const textoEmail = texto.replace(/\*/g, ''); 
+    const url = `mailto:?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(textoEmail)}`;
+    window.open(url, '_blank');
+  }
+}
+
 function openConfig() { document.getElementById("cfg-overlay").classList.remove("hidden"); }
 function closeCfg() { document.getElementById("cfg-overlay").classList.add("hidden"); }
 
 window.onload = function() {
   setHeaderDate();
-  
-  // Recuperar automáticamente la URL guardada si existe
   const savedUrl = localStorage.getItem("apps_script_url");
   if (savedUrl) {
     document.getElementById("url-input").value = savedUrl;
   }
-  
   render();
 };
 </script>
