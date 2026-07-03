@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Rutas de Reparto</title>
 <style>
   :root {
@@ -197,6 +198,23 @@
 </style>
 </head>
 <body>
+<script>
+// Compatibilidad con Chrome antiguo (Android car stereo / WebView)
+if (!window.fetch) {
+  window.fetch = function(url) {
+    return new Promise(function(resolve, reject) {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', url, true);
+      xhr.onload = function() {
+        resolve({ json: function() { return JSON.parse(xhr.responseText); } });
+      };
+      xhr.onerror = reject;
+      xhr.send();
+    });
+  };
+}
+document.addEventListener('touchstart', function(){}, {passive: true});
+</script>
 <div id="app">
   <div class="header">
     <div>
@@ -204,8 +222,8 @@
       <p id="hdr-date"></p>
     </div>
     <div class="hdr-btns">
-      <button class="icon-btn" onclick="openResumen()">📋 Resumen</button>
-      <button class="icon-btn" onclick="openConfig()">📂 Cargar CSV</button>
+      <button class="icon-btn" onclick="openResumen()" ontouchend="openResumen()">📋 Resumen</button>
+      <button class="icon-btn" onclick="openConfig()" ontouchend="openConfig()">📂 Cargar CSV</button>
     </div>
   </div>
 
@@ -226,7 +244,6 @@
   </div>
 </div>
 
-<!-- CONFIG MODAL -->
 <div class="overlay hidden" id="cfg-overlay">
   <div class="sheet">
     <h2>📂 Cargar clientes del día</h2>
@@ -237,12 +254,11 @@
       3️⃣ Menú <strong>Archivo → Descargar → CSV</strong><br>
       4️⃣ Pasa el CSV a la tablet y cárgalo aquí 👇
     </div>
-    <!-- OPCIÓN 1: URL -->
     <div style="margin-bottom:14px;">
       <div class="field-label">🌐 Opción 1 — Cargar desde URL (requiere WiFi)</div>
       <div style="display:flex;gap:8px;margin-top:6px;">
         <input class="field-input" id="url-input" placeholder="Pega aquí la URL del Apps Script..." style="margin-bottom:0;flex:1;" />
-        <button class="sheet-btn primary" onclick="cargarDesdeURL()" style="flex:none;padding:10px 16px;white-space:nowrap;">⬇️ Cargar</button>
+        <button class="sheet-btn primary" onclick="cargarDesdeURL()" ontouchend="cargarDesdeURL()" style="flex:none;padding:10px 16px;white-space:nowrap;">⬇️ Cargar</button>
       </div>
       <div style="font-size:12px;color:var(--text3);margin-top:6px;">Carga los datos directamente de Google Sheets sin necesidad de CSV</div>
     </div>
@@ -253,7 +269,6 @@
       <div style="flex:1;height:1px;background:var(--border);"></div>
     </div>
 
-    <!-- OPCIÓN 2: CSV -->
     <div class="field-label">📄 Opción 2 — Cargar CSV (funciona sin WiFi)</div>
     <input type="file" id="csv-file-input" accept=".csv,text/csv" onchange="onCsvSelected(event)" style="margin-top:6px;" />
     <div class="upload-zone" onclick="document.getElementById('csv-file-input').click()" style="margin-top:8px;">
@@ -267,25 +282,23 @@
     </div>
     <div id="cfg-status"></div>
     <div class="sheet-btns">
-      <button class="sheet-btn" onclick="closeCfg()">Cancelar</button>
+      <button class="sheet-btn" onclick="closeCfg()" ontouchend="closeCfg()">Cancelar</button>
     </div>
-    <button class="extra-btn" onclick="loadDemo()">✨ Probar con datos de ejemplo</button>
+    <button class="extra-btn" onclick="loadDemo()" ontouchend="loadDemo()">✨ Probar con datos de ejemplo</button>
   </div>
 </div>
 
-<!-- RESUMEN MODAL -->
 <div class="overlay hidden" id="res-overlay">
   <div class="sheet">
     <h2>📋 Resumen del día</h2>
     <div class="resumen-body" id="res-body"></div>
     <div class="sheet-btns">
-      <button class="sheet-btn" onclick="closeResumen()">Cerrar</button>
-      <button class="sheet-btn primary" onclick="compartirResumen()">📤 Compartir / Copiar</button>
+      <button class="sheet-btn" onclick="closeResumen()" ontouchend="closeResumen()">Cerrar</button>
+      <button class="sheet-btn primary" onclick="compartirResumen()" ontouchend="compartirResumen()">📤 Compartir / Copiar</button>
     </div>
   </div>
 </div>
 
-<!-- PHONE MODAL -->
 <div class="overlay hidden" id="phone-overlay">
   <div class="sheet" style="max-width:420px;">
     <h2>📞 Teléfono del cliente</h2>
@@ -293,8 +306,8 @@
     <div class="field-label">Número de teléfono</div>
     <input class="field-input" id="phone-input" type="tel" placeholder="Ej: 612 345 678" />
     <div class="sheet-btns">
-      <button class="sheet-btn" onclick="closePhone()">Cancelar</button>
-      <button class="sheet-btn primary" onclick="savePhone()">💾 Guardar</button>
+      <button class="sheet-btn" onclick="closePhone()" ontouchend="closePhone()">Cancelar</button>
+      <button class="sheet-btn primary" onclick="savePhone()" ontouchend="savePhone()">💾 Guardar</button>
     </div>
   </div>
 </div>
@@ -303,7 +316,7 @@
 let pending   = [];
 let completed = [];
 let phones    = {};
-let rutaMap   = {};   // { "186": 0, "180": 1, ... } para asignar color
+let rutaMap   = {};
 let expandedId   = null;
 let currentRuta  = "all";
 let showDone     = false;
@@ -344,16 +357,17 @@ function parseCSV(text) {
     if(!line.trim()) return;
     const cols=splitLine(line);
     const nombre=(cols[1]||"").replace(/^"|"$/g,"").trim();
-    const obs=(cols[5]||"").replace(/^"|"$/g,"").trim().toLowerCase();
+    const obs=(cols[5]||"").replace(/['"]+/g,"").trim().toLowerCase();
+    
     if(!nombre||obs!=="x") return;
-    const cod=(cols[0]||"").replace(/^"|"$/g,"").trim();
-    const tel=(cols[6]||"").replace(/^"|"$/g,"").trim();
+    const cod=(cols[0]||"").replace(/['"]+/g,"").trim();
+    const tel=(cols[6]||"").replace(/['"]+/g,"").trim();
     if(tel&&cod&&!phones[cod]) phones[cod]=tel;
     clientes.push({
       codigo:cod, nombre,
       direccion:(cols[2]||"").replace(/^"|"$/g,"").trim(),
       ruta:(cols[3]||"").replace(/^"|"$/g,"").trim(),
-      orden:parseInt((cols[4]||"99").replace(/^"|"$/g,""))||99,
+      orden:parseInt((cols[4]||"99").replace(/['"]+/g,"").trim())||99,
       nota_entrega:(cols[7]||"").replace(/^"|"$/g,"").trim(),
       notes:""
     });
@@ -370,7 +384,6 @@ function onCsvSelected(event) {
     try {
       const clientes=parseCSV(e.target.result);
       if(!clientes.length){
-        // Si no hay resultados con UTF-8, intentar con latin-1
         const reader2=new FileReader();
         reader2.onload=function(e2){
           try {
@@ -398,8 +411,13 @@ function buildRutaMap() {
 
 function getRutaClass(ruta) { return "rc-"+(rutaMap[ruta]??0); }
 function getPhone(cod)   { return phones[cod]||""; }
-function getRutas()      { return [...new Set([...pending,...completed].map(c=>c.ruta).filter(Boolean))].sort((a,b)=>+a-+b); }
-function filtPending()   { return pending.filter(c=>currentRuta==="all"||c.ruta===currentRuta).sort((a,b)=>(+a.orden||99)-(+b.orden||99)); }
+
+function getRutas() { 
+  return [...new Set([...pending,...completed].map(c=>c.ruta).filter(Boolean))].sort((a,b)=>a.localeCompare(b, undefined, {numeric: true})); 
+}
+function filtPending() { 
+  return pending.filter(c=>currentRuta==="all"||c.ruta===currentRuta).sort((a,b)=>(a.orden - b.orden)); 
+}
 function filtCompleted() { return completed.filter(c=>currentRuta==="all"||c.ruta===currentRuta); }
 
 function updateStats() {
@@ -543,7 +561,6 @@ function savePhone() {
 
 function openConfig() {
   document.getElementById("cfg-status").style.display="none";
-  // Recuperar URL guardada
   try {
     const savedUrl = localStorage.getItem("reparto_url");
     if (savedUrl) document.getElementById("url-input").value = savedUrl;
@@ -589,7 +606,6 @@ function compartirResumen() {
   else alert("Copia el texto manualmente");
 }
 
-// --- CARGA POR URL (Google Apps Script) ---
 async function cargarDesdeURL() {
   const url = document.getElementById("url-input").value.trim();
   const status = document.getElementById("cfg-status");
@@ -627,7 +643,6 @@ async function cargarDesdeURL() {
       return;
     }
 
-    // Guardar URL para próximas veces
     try { localStorage.setItem("reparto_url", url); } catch(e) {}
 
     completed = []; buildRutaMap(); save(); closeCfg(); render();
