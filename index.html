@@ -106,22 +106,22 @@
   .btn.recover { border-color: rgba(79,127,255,0.5); background: var(--accent-bg); color: var(--accent-t); width: 100%; flex: none; padding: 14px; font-size: 14px; }
 
   /* HISTORIAL — tarjetas espaciadas */
-  .historial-list { display: flex; flex-direction: column; gap: 12px; margin: 12px 0; overflow-y: auto; max-height: 55vh; padding-right: 4px; }
+  .historial-list { display: flex; flex-direction: column; gap: 8px; margin: 12px 0; overflow-y: scroll; -webkit-overflow-scrolling: touch; max-height: 65vh; padding-right: 6px; }
   .historial-list::-webkit-scrollbar { width: 4px; }
   .historial-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
   .historial-card { background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; }
   .historial-card.done-card  { border-color: rgba(34,197,94,0.3); }
   .historial-card.issue-card { border-color: rgba(239,68,68,0.35); }
-  .historial-head { padding: 16px 18px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .historial-head { padding: 12px 16px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
   .historial-info { flex: 1; min-width: 0; }
-  .historial-name { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .historial-name { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
   .historial-card.done-card  .historial-name { text-decoration: line-through; color: var(--text3); }
   .historial-card.issue-card .historial-name { color: var(--red-t); font-style: italic; }
   .historial-meta { font-size: 12px; color: var(--text3); }
   .historial-badge { font-size: 12px; padding: 5px 12px; border-radius: 20px; font-weight: 700; flex-shrink: 0; }
   .badge-done  { background: var(--green-bg); color: var(--green-t); }
   .badge-issue { background: var(--red-bg);   color: var(--red-t); }
-  .historial-body { border-top: 1px solid var(--border); padding: 14px 18px; background: var(--card2); }
+  .historial-body { border-top: 1px solid var(--border); padding: 12px 16px; background: var(--card2); }
 
   /* OVERLAYS */
   .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 24px; }
@@ -198,7 +198,7 @@
 
 <!-- HISTORIAL -->
 <div class="overlay hidden" id="historial-overlay">
-  <div class="sheet" style="max-width:700px;">
+  <div class="sheet" style="max-width:700px; max-height:95vh;">
     <h2>📋 Clientes Gestionados</h2>
     <p class="sheet-sub">Pulsa en una tarjeta para ver opciones o devolverla a pendientes.</p>
     <div class="historial-list" id="historial-content"></div>
