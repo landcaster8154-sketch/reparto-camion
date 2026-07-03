@@ -30,7 +30,7 @@
     --yellow:    #f59e0b;
     --yellow-bg: rgba(245,158,11,0.13);
     --yellow-t:  #fbbf24;
-    --ruta-a:    #6366f1; --ruta-a-bg: rgba(99,102,241,0.18);
+    --ruta-a:    #6366f1;
     --radius:    14px; --radius-sm: 10px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -42,19 +42,18 @@
   .header h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; color: var(--text); }
   .header p  { font-size: 13px; color: var(--text3); margin-top: 2px; }
   .hdr-btns  { display: flex; gap: 10px; }
-  .icon-btn  { background: var(--card); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 10px 16px; cursor: pointer; font-size: 15px; font-weight: 600; color: var(--text2); display: flex; align-items: center; gap: 8px; transition: background 0.15s, color 0.15s; }
+  .icon-btn  { background: var(--card); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 10px 16px; cursor: pointer; font-size: 15px; font-weight: 600; color: var(--text2); display: flex; align-items: center; gap: 8px; transition: background 0.15s; }
   .icon-btn:hover  { background: var(--card2); color: var(--text); }
-  .icon-btn:active { opacity: 0.75; }
 
   /* STATS */
   .stats { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--bg2); border-bottom: 1px solid var(--border); flex-shrink: 0; }
-  .stat { text-align: center; padding: 12px 4px; border-right: 1px solid var(--border); position: relative; }
+  .stat { text-align: center; padding: 12px 4px; border-right: 1px solid var(--border); }
   .stat:last-child { border-right: none; }
-  .stat-n { font-size: 34px; font-weight: 800; line-height: 1; letter-spacing: -1px; }
+  .stat-n { font-size: 34px; font-weight: 800; line-height: 1; }
   .stat-n.blue  { color: var(--accent-t); }
   .stat-n.green { color: var(--green-t); }
   .stat-n.red   { color: var(--red-t); }
-  .stat-l { font-size: 12px; color: var(--text3); margin-top: 4px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-l { font-size: 12px; color: var(--text3); margin-top: 4px; font-weight: 500; text-transform: uppercase; }
 
   /* PROGRESS */
   .prog-wrap { height: 3px; background: var(--border); flex-shrink: 0; }
@@ -62,76 +61,49 @@
 
   /* RUTA BAR */
   .ruta-bar { display: flex; align-items: center; gap: 12px; padding: 10px 24px; background: var(--bg2); border-bottom: 1px solid var(--border); flex-shrink: 0; overflow-x: auto; }
-  .ruta-bar::-webkit-scrollbar { display: none; }
-  .ruta-label { font-size: 13px; color: var(--text3); white-space: nowrap; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-  .ruta-pill { padding: 6px 16px; border-radius: 20px; border: 1px solid var(--border2); background: transparent; color: var(--text2); font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+  .ruta-label { font-size: 13px; color: var(--text3); font-weight: 600; text-transform: uppercase; }
+  .ruta-pill { padding: 6px 16px; border-radius: 20px; border: 1px solid var(--border2); background: transparent; color: var(--text2); font-size: 13px; font-weight: 600; cursor: pointer; }
   .ruta-pill.active { color: var(--text); border-color: transparent; }
 
   /* SCROLL */
-  .scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px 20px 30px; }
-  .scroll::-webkit-scrollbar { width: 4px; }
-
-  /* GRID */
-  .cards-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; transition: all 0.3s ease; }
+  .scroll { flex: 1; overflow-y: auto; padding: 16px 20px 30px; }
+  .cards-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .cards-grid.compact { grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .cards-grid.compact .card-addr { display: none; }
-  .cards-grid.compact .card-head { padding: 10px 12px; }
-  .cards-grid.compact .card-name { font-size: 14px; }
   .card.expanded { grid-column: 1 / -1; }
 
-  /* NEXT STOP */
   .next-stop { grid-column: 1 / -1; background: var(--accent-bg); border: 1px solid rgba(79,127,255,0.3); border-radius: var(--radius-sm); padding: 11px 16px; margin-bottom: 2px; font-size: 14px; color: var(--accent-t); font-weight: 600; display: flex; align-items: center; gap: 10px; }
-  .next-stop .ns-addr { font-weight: 400; color: var(--text2); font-size: 13px; }
 
   /* CARDS */
-  .card { border-radius: var(--radius); overflow: hidden; transition: opacity 0.3s, transform 0.35s, max-height 0.35s; border: 1px solid var(--border); position: relative; }
-  .card::before { content:""; position:absolute; top:0; left:0; right:0; height:3px; border-radius: var(--radius) var(--radius) 0 0; }
-  .card.removing { opacity: 0; transform: translateX(90px) scale(0.95); max-height: 0 !important; margin: 0; border: none; }
-
-  .card-head { padding: 14px 16px 0; cursor: pointer; display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
-  .card-order { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 26px; border-radius: 50%; font-size: 12px; font-weight: 800; margin-right: 8px; padding: 0 5px; flex-shrink: 0; }
-  .card-name { font-size: 15px; font-weight: 700; color: var(--text); }
+  .card { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); position: relative; background: var(--card); }
+  .card::before { content:""; position:absolute; top:0; left:0; right:0; height:3px; background: var(--ruta-a); }
+  .card.removing { opacity: 0; transform: scale(0.95); max-height: 0; margin: 0; border: none; transition: all 0.3s; }
+  .card-head { padding: 14px 16px 0; cursor: pointer; display: flex; align-items: flex-start; justify-content: space-between; }
+  .card-order { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 26px; border-radius: 50%; font-size: 12px; font-weight: 800; margin-right: 8px; background: rgba(79,127,255,0.2); color: #7da4ff; }
+  .card-name { font-size: 15px; font-weight: 700; }
   .card-meta { font-size: 12px; color: var(--text3); margin-top: 3px; }
-  .card-addr { font-size: 13px; color: var(--text2); padding: 8px 16px 14px; display: flex; align-items: flex-start; gap: 6px; }
-  .chevron { font-size: 13px; color: var(--text3); transition: transform 0.2s; margin-top: 4px; }
+  .card-addr { font-size: 13px; color: var(--text2); padding: 8px 16px 14px; }
+  .chevron { font-size: 13px; color: var(--text3); }
   .chevron.open { transform: rotate(180deg); }
 
-  /* CARD BODY */
   .card-body { border-top: 1px solid var(--border); padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: var(--card2); }
   .actions { display: flex; gap: 8px; }
-  .btn { flex: 1; padding: 13px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--card); font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; color: var(--text2); }
+  .btn { flex: 1; padding: 13px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--card); font-size: 14px; font-weight: 600; color: var(--text2); cursor: pointer; }
   .btn.green { border-color: rgba(34,197,94,0.4); background: var(--green-bg); color: var(--green-t); }
   .btn.red   { border-color: rgba(239,68,68,0.4);  background: var(--red-bg);   color: var(--red-t); }
   .btn.blue  { border-color: rgba(79,127,255,0.4); background: var(--accent-bg); color: var(--accent-t); }
 
-  /* DONE SECTION */
-  .done-section { margin-top: 10px; }
-  .done-hdr { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 8px; cursor: pointer; }
-  .done-hdr span { font-size: 14px; color: var(--text2); font-weight: 600; }
-  .done-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-  .done-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; display: flex; align-items: center; gap: 10px; }
-  .done-name { flex: 1; font-size: 14px; font-weight: 600; color: var(--text); text-overflow: ellipsis; white-space: nowrap; overflow: hidden; }
-  .badge { font-size: 11px; padding: 4px 10px; border-radius: 20px; font-weight: 700; }
-  .badge.done  { background: var(--green-bg);  color: var(--green-t); }
-  .badge.issue { background: var(--red-bg);    color: var(--red-t); }
-  .undo-btn { padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border2); background: none; color: var(--text3); cursor: pointer; }
-
-  /* MODALS */
+  /* OVERLAYS */
   .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 24px; }
   .overlay.hidden { display: none; }
-  .sheet { background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius); width: 100%; max-width: 580px; padding: 28px; max-height: 90vh; overflow-y: auto; }
-  .field-label { font-size: 13px; color: var(--text2); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; }
+  .sheet { background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius); width: 100%; max-width: 620px; padding: 28px; max-height: 90vh; overflow-y: auto; }
   .field-input { width: 100%; padding: 12px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--bg); color: var(--text); font-size: 16px; margin-bottom: 14px; }
-  .info-box  { font-size: 13px; background: var(--accent-bg); border: 1px solid rgba(79,127,255,0.25); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 14px; color: var(--accent-t); line-height: 1.8; }
-  .sheet-btns { display: flex; gap: 10px; }
-  .sheet-btn  { flex: 1; padding: 13px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--card); font-size: 15px; font-weight: 600; cursor: pointer; color: var(--text2); }
+  .sheet-btn  { padding: 13px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--card); font-size: 15px; font-weight: 600; color: var(--text2); cursor: pointer; }
   .sheet-btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
-  .resumen-body { font-size: 13px; color: var(--text2); line-height: 1.9; white-space: pre-wrap; background: var(--bg); border-radius: var(--radius-sm); padding: 14px; border: 1px solid var(--border); max-height: 45vh; overflow-y: auto; margin-bottom: 16px; font-family: monospace; }
-  #cfg-status { display:none; text-align:center; padding:12px; font-size:14px; color:var(--text2); }
-
-  /* COLORES DE FILTRO DE RUTA */
-  .rc-0 { background: rgba(99,102,241,0.15); border-color: rgba(99,102,241,0.3); } .rc-0::before { background: var(--ruta-a); } .rc-0 .card-order { background: rgba(99,102,241,0.2); color: #7da4ff; }
-  @media (max-width: 900px) { .cards-grid { grid-template-columns: 1fr; } .cards-grid.compact { grid-template-columns: repeat(2, 1fr); } }
+  
+  /* DEBUG BOX */
+  .debug-box { background: #2c1a1a; border: 1px solid #7a2a2a; border-radius: 8px; padding: 12px; margin-top: 14px; font-family: monospace; font-size: 11px; color: #ff9999; max-height: 200px; overflow: auto; display: none; white-space: pre; }
+  #cfg-status { text-align:center; padding:12px; font-size:14px; color:var(--text2); margin-top: 10px; }
 </style>
 </head>
 <body>
@@ -143,7 +115,6 @@
     </div>
     <div class="hdr-btns">
       <button class="icon-btn" onclick="toggleView()">👁️ Vista</button>
-      <button class="icon-btn" onclick="openResumen()">📋 Resumen</button>
       <button class="icon-btn" onclick="openConfig()">📂 Cargar CSV</button>
     </div>
   </div>
@@ -154,266 +125,157 @@
     <div class="stat"><div class="stat-n red"   id="s-issue">0</div><div class="stat-l">Incidencias</div></div>
   </div>
   <div class="prog-wrap"><div class="prog-fill" id="prog" style="width:0%"></div></div>
-  <div class="ruta-bar" id="ruta-bar"><span class="ruta-label">Ruta</span></div>
+  <div class="ruta-bar" id="ruta-bar"></div>
 
   <div class="scroll">
     <div class="cards-grid" id="pending-list"></div>
-    <div class="done-section" id="done-section"></div>
   </div>
 </div>
 
 <!-- CONFIG OVERLAY -->
 <div class="overlay hidden" id="cfg-overlay">
   <div class="sheet">
-    <h2>📂 Cargar clientes del día</h2>
-    <div style="margin-bottom:14px;">
-      <div class="field-label">🌐 Cargar desde URL del Web App</div>
-      <div style="display:flex;gap:8px;margin-top:6px;">
-        <input class="field-input" id="url-input" placeholder="Pega aquí la URL de tu Apps Script..." style="margin-bottom:0;flex:1;" />
-        <button class="sheet-btn primary" onclick="cargarDesdeURL()" style="flex:none;padding:10px 16px;">⬇️ Cargar</button>
+    <h2>📂 Sincronizar Clientes</h2>
+    <div style="margin-top:14px;">
+      <div style="display:flex;gap:8px;">
+        <input class="field-input" id="url-input" placeholder="URL de tu Apps Script..." style="margin-bottom:0;flex:1;" />
+        <button class="sheet-btn primary" onclick="cargarDesdeURL()">⬇️ Cargar</button>
       </div>
     </div>
-    <div class="info-box">
-      <strong>⚙️ Lector de Columnas Corregido:</strong><br>
-      Ahora busca directamente el nombre de cabecera "OBSERVACIONES" o "F" de forma flexible, asegurando que capture tus "X" correctamente sin importar desplazamientos visuales de Sheets.
-    </div>
     <div id="cfg-status"></div>
-    <div class="sheet-btns"><button class="sheet-btn" onclick="closeCfg()">Cancelar</button></div>
-  </div>
-</div>
-
-<!-- RESUMEN OVERLAY -->
-<div class="overlay hidden" id="res-overlay">
-  <div class="sheet">
-    <h2>📋 Resumen del día</h2>
-    <div class="resumen-body" id="res-body"></div>
-    <div class="sheet-btns">
-      <button class="sheet-btn" onclick="closeResumen()">Cerrar</button>
-      <button class="sheet-btn primary" onclick="compartirResumen()">📤 Copiar Resumen</button>
+    <div class="debug-box" id="cfg-debug"></div>
+    <div style="margin-top:14px; text-align:right;">
+      <button class="sheet-btn" onclick="closeCfg()">Cerrar</button>
     </div>
   </div>
 </div>
 
 <script>
-let pending = [], completed = [], phones = {}, rutaMap = {}, expandedId = null, currentRuta = "all", showDone = false, isCompactView = false;
-const SK = { p:"reparto_pending", c:"reparto_completed", ph:"reparto_phones", v:"reparto_view" };
+let pending = [], completed = [], phones = {}, currentRuta = "all", isCompactView = false;
 
 function setHeaderDate() {
-  const d = new Date();
-  document.getElementById("hdr-date").textContent = d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-}
-
-function save() {
-  try {
-    localStorage.setItem(SK.p, JSON.stringify(pending));
-    localStorage.setItem(SK.c, JSON.stringify(completed));
-    localStorage.setItem(SK.ph, JSON.stringify(phones));
-    localStorage.setItem(SK.v, isCompactView ? "1" : "0");
-  } catch(e) {}
-}
-
-function loadSaved() {
-  try {
-    const p=localStorage.getItem(SK.p), c=localStorage.getItem(SK.c), ph=localStorage.getItem(SK.ph), v=localStorage.getItem(SK.v);
-    if(p) pending = JSON.parse(p);
-    if(c) completed = JSON.parse(c);
-    if(ph) phones = JSON.parse(ph);
-    if(v === "1") { isCompactView = true; document.getElementById('pending-list').classList.add('compact'); }
-  } catch(e) {}
+  document.getElementById("hdr-date").textContent = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
 }
 
 function toggleView() {
   isCompactView = !isCompactView;
   document.getElementById('pending-list').classList.toggle('compact', isCompactView);
-  save();
 }
 
 async function cargarDesdeURL() {
-  const urlInput = document.getElementById("url-input");
-  const url = urlInput.value.trim();
+  const url = document.getElementById("url-input").value.trim();
   const status = document.getElementById("cfg-status");
-  if (!url) { alert("Por favor, pega una URL válida."); return; }
+  const debugBox = document.getElementById("cfg-debug");
   
-  try { localStorage.setItem("reparto_url", url); } catch(e) {}
-  status.style.display = "block";
-  status.textContent = "⏳ Leyendo datos de tu Google Sheets...";
+  if (!url) { alert("Pega la URL"); return; }
+  
+  status.textContent = "⏳ Leyendo datos del Sheets...";
+  debugBox.style.display = "none";
   
   try {
     const response = await fetch(url);
-    const data = await response.json();
-    let arrayData = Array.isArray(data) ? data : (data.data || data.clientes || []);
+    const rawData = await response.json();
+    
+    // Si la respuesta no es un array, buscamos dentro de sus propiedades comunes
+    let arrayData = Array.isArray(rawData) ? rawData : (rawData.data || rawData.clientes || []);
 
-    // DETECTOR DE COLUMNA F / OBSERVACIONES ROBUSTO
-    const clientes = arrayData.filter(c => {
-      // Busca la marca 'x' en cualquier propiedad que se llame observaciones, obs, F o f
-      const keys = Object.keys(c);
-      let tieneMarca = false;
-      
-      for (let k of keys) {
-        const kLow = k.toLowerCase();
-        if (kLow.includes("observa") || kLow.includes("obs") || kLow === "f") {
-          const val = (c[k] || "").toString().toLowerCase().trim();
-          if (val === "x") { tieneMarca = true; break; }
-        }
-      }
-      return tieneMarca;
-    }).map(c => {
-      const cod = (c.codigo || c.Codigo || c["CODIGO_CLIENTE"] || c.A || c.a || "").toString().trim();
-      const tel = (c.telefono || c.Telefono || c["TELEFONO"] || c.G || c.g || "").toString().trim();
-      if (tel && cod && !phones[cod]) phones[cod] = tel;
-      
-      // Intentar extraer el orden numérico de las distintas variantes posibles de nombres de columna
-      const ordenRaw = (c.orden || c.Orden || c["ORDEN_RUTA"] || c.E || c.e || "99").toString();
-      const ordenLimpio = parseInt(ordenRaw.replace(/[^\d]/g, "")) || 99;
-
-      return {
-        codigo: cod,
-        nombre: c.nombre || c.Nombre || c["NOMBRE"] || c.B || c.b || "Cliente Sin Nombre",
-        direccion: c.direccion || c.Direccion || c["DIRECCION"] || c.C || c.c || "",
-        ruta: (c.ruta || c.Ruta || c["RUTA"] || c.D || c.d || "180").toString().trim(),
-        orden: ordenLimpio,
-        nota_entrega: c.nota_entrega || c["NOTA_ENTREGA"] || c.H || c.h || "",
-        notes: ""
-      };
-    });
-
-    if (!clientes.length) {
-      status.textContent = '⚠️ Conectado OK, pero el script sigue devolviendo celdas vacías en la lectura. Revisa la macro "Procesar Ruta".';
+    if (!arrayData || arrayData.length === 0) {
+      status.innerHTML = "❌ El script devolvió una lista vacía.<br>Prueba a ejecutar 'Procesar Ruta' primero en tu PC.";
       return;
     }
 
-    pending = clientes;
-    completed = [];
-    buildRutaMap();
-    save();
-    closeCfg();
+    // Muestra una muestra en el cuadro de diagnóstico por si acaso falla el mapeo
+    debugBox.style.display = "block";
+    debugBox.textContent = "MUESTRA RECIBIDA:\n" + JSON.stringify(arrayData.slice(0, 2), null, 2);
+
+    // ANALIZAR Y CARGAR SIN IMPORTAR EL CASING DE LA 'X'
+    let clientesCargados = [];
+    
+    for (let fila of arrayData) {
+      let marcaReparto = false;
+      let orden = 99;
+      let codigo = "", nombre = "", direccion = "", ruta = "180", nota = "";
+
+      // Buscamos dinámicamente las propiedades del objeto JSON que envía la Macro
+      for (let key in fila) {
+        const kLow = key.toLowerCase();
+        const vRaw = (fila[key] || "").toString().trim();
+        const vLow = vRaw.toLowerCase();
+
+        if (kLow.includes("observa") || kLow.includes("obs") || kLow === "f") {
+          if (vLow === "x") marcaReparto = true;
+        }
+        if (kLow.includes("orden") || kLow === "e") {
+          orden = parseInt(vRaw.replace(/[^\d]/g, "")) || 99;
+          // Salvaguarda: si la X se coló en la columna de orden
+          if (vLow.includes("x")) marcaReparto = true;
+        }
+        if (kLow.includes("codigo") || kLow.includes("cód") || kLow === "a") codigo = vRaw;
+        if (kLow.includes("nombre") || kLow === "b") nombre = vRaw;
+        if (kLow.includes("direc") || kLow === "c") direccion = vRaw;
+        if (kLow.includes("ruta") || kLow === "d") ruta = vRaw;
+        if (kLow.includes("nota") || kLow === "h") nota = vRaw;
+        if (kLow.includes("telef") || kLow === "g") { if(codigo && vRaw) phones[codigo] = vRaw; }
+      }
+
+      // Si tiene la marca o si por alguna razón no se filtró en la macro, la agregamos
+      if (marcaReparto) {
+        clientesCargados.push({
+          codigo: codigo || "S/C",
+          nombre: nombre || "Cliente sin nombre",
+          direccion: direccion || "Sin dirección",
+          ruta: ruta || "180",
+          orden: orden,
+          nota_entrega: nota
+        });
+      }
+    }
+
+    if (clientesCargados.length === 0) {
+      status.innerHTML = "⚠️ Conectado OK, pero ninguna fila tiene la 'X'.<br>Mira abajo la muestra de lo que está enviando tu Sheets 👇";
+      return;
+    }
+
+    pending = clientesCargados.sort((a,b) => a.orden - b.orden);
+    status.textContent = `✅ ¡Cargados ${pending.length} clientes con éxito!`;
+    setTimeout(closeCfg, 1200);
     render();
+    
   } catch (err) {
-    status.textContent = "❌ Error al leer la hoja. Asegúrate de que el Web App está bien publicado.";
+    status.textContent = "❌ Error crítico al leer el enlace.";
+    debugBox.style.display = "block";
+    debugBox.textContent = err.toString();
   }
 }
 
-function buildRutaMap() {
-  rutaMap={};
-  const rutas=[...new Set([...pending,...completed].map(c=>c.ruta).filter(Boolean))].sort();
-  rutas.forEach((r,i)=>{ rutaMap[r]=i; });
-}
-
-function filtPending() { return pending.filter(c=>currentRuta==="all"||c.ruta===currentRuta).sort((a,b)=>a.orden - b.orden); }
-function filtCompleted() { return completed.filter(c=>currentRuta==="all"||c.ruta===currentRuta); }
-
-function updateStats() {
-  const fp=filtPending(), fc=filtCompleted(), total=fp.length+fc.length;
-  document.getElementById("s-pend").textContent = fp.length;
-  document.getElementById("s-done").textContent = fc.filter(c=>c.status==="done").length;
-  document.getElementById("s-issue").textContent = fc.filter(c=>c.status==="issue").length;
-  document.getElementById("prog").style.width = total>0?Math.round(fc.length/total*100)+"%":"0%";
-}
-
-function buildRutaBar() {
-  const bar=document.getElementById("ruta-bar");
-  const rutas=[...new Set([...pending,...completed].map(c=>c.ruta).filter(Boolean))].sort();
-  const pills=rutas.map(r=>{
-    const active=currentRuta===r;
-    return `<button class="ruta-pill ${active?"active":""}" onclick="setRuta('${r}')" style="${active?"background:var(--accent-bg);border-color:var(--accent);color:var(--accent-t);":""}">Ruta ${r}</button>`;
-  }).join("");
-  bar.innerHTML=`<span class="ruta-label">Ruta</span><button class="ruta-pill ${currentRuta==="all"?"active":""}" onclick="setRuta('all')" style="${currentRuta==="all"?"background:var(--accent-bg);border-color:var(--accent);color:var(--accent-t);":""}">Todas</button>${pills}`;
-}
-
-function setRuta(r) { currentRuta=r; render(); }
-
-function render() { buildRutaBar(); updateStats(); renderPending(); renderDone(); }
-
-function renderPending() {
-  const list=document.getElementById("pending-list");
-  const rows=filtPending();
-  if(!pending.length&&!completed.length){
-    list.innerHTML=`<div class="empty"><div class="title" style="text-align:center;padding:40px;color:var(--text3);">Pulsa Cargar para sincronizar tu ruta</div></div>`;
+function render() {
+  const list = document.getElementById("pending-list");
+  document.getElementById("s-pend").textContent = pending.length;
+  
+  if (!pending.length) {
+    list.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text3);">Pulsa 'Cargar CSV' arriba para sincronizar.</div>`;
     return;
   }
-  if(!rows.length){
-    list.innerHTML=`<div class="all-done" style="text-align:center;padding:40px;"><div class="title" style="color:var(--green-t);font-weight:700;">¡Todo listo por hoy! 🎉</div></div>`;
-    return;
-  }
-  const next=rows[0];
-  list.innerHTML=`<div class="next-stop">📍 <div><div>Siguiente: <strong>${next.nombre}</strong></div><div class="ns-addr" style="font-size:12px;color:var(--text2);">${next.direccion}</div></div></div>`+
-    rows.map(c=>{
-      const idx=pending.indexOf(c);
-      const exp=expandedId===idx;
-      return `
-      <div class="card rc-0 ${exp?"expanded":""}" id="card-${idx}" style="max-height:${exp?'900px':'165px'}">
-        <div class="card-head" onclick="toggleExp(${idx})">
-          <div style="flex:1;min-width:0;">
-            <div style="display:flex;align-items:center;">
-              <span class="card-order">${c.orden}</span>
-              <span class="card-name">${c.nombre}</span>
-            </div>
-            <div class="card-meta">Cód. ${c.codigo} · Ruta ${c.ruta} ${phones[c.codigo]?'· 📞 '+phones[c.codigo]:''}</div>
-          </div>
-          <span class="chevron ${exp?"open":""}">▼</span>
+
+  list.innerHTML = pending.map(c => `
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <span class="card-order">${c.orden}</span>
+          <span class="card-name">${c.nombre}</span>
+          <div class="card-meta">Cód. ${c.codigo} · Ruta ${c.ruta}</div>
         </div>
-        <div class="card-addr" style="padding:8px 16px 14px;">📍 ${c.direccion}</div>
-        ${c.nota_entrega?`<div style="font-size:13px;color:var(--yellow-t);padding:0 16px 10px;">⚠️ ${c.nota_entrega}</div>`:""}
-        ${exp?`
-        <div class="card-body">
-          <div class="actions">
-            <button class="btn blue" onclick="window.open('http://maps.google.com/?q='+encodeURIComponent('${c.direccion}'),'._blank')">🗺️ Ver Mapa</button>
-            ${phones[c.codigo]?`<button class="btn green" onclick="window.location.href='tel:'+'${phones[c.codigo]}'">📞 Llamar</button>`:''}
-          </div>
-          <div class="actions">
-            <button class="btn green" onclick="markClient(${idx},'done')">✅ Entregado</button>
-            <button class="btn red" onclick="markClient(${idx},'issue')">⚠️ Incidencia</button>
-          </div>
-          <textarea class="notes-ta" rows="2" placeholder="Añadir comentario..." onchange="pending[${idx}].notes=this.value; save();">${c.notes||""}</textarea>
-        </div>`:""}
-      </div>`;
-    }).join("");
-}
-
-function renderDone() {
-  const sec=document.getElementById("done-section");
-  const rows=filtCompleted();
-  if(!rows.length){sec.innerHTML="";return;}
-  sec.innerHTML=`
-    <div class="done-hdr" onclick="showDone=!showDone; renderDone();">
-      <span>📁 Entregados / Incidencias (${rows.length})</span>
-      <span>${showDone?"▲":"▼"}</span>
+      </div>
+      <div class="card-addr">📍 ${c.direccion}</div>
+      ${c.nota_entrega ? `<div style="font-size:13px;color:var(--yellow-t);padding:0 16px 10px;">⚠️ ${c.nota_entrega}</div>` : ''}
     </div>
-    ${showDone?`<div class="done-grid">`+rows.map(c=>{
-      const ci=completed.indexOf(c);
-      return `<div class="done-card">
-        <div style="flex:1;min-width:0;"><div class="done-name">${c.nombre}</div></div>
-        <span class="badge ${c.status}">${c.status==="done"?"OK":"Incidencia"}</span>
-        <button class="undo-btn" onclick="const c={...completed[${ci}]}; delete c.status; pending.push(c); completed.splice(${ci},1); save(); render();">↩️</button>
-      </div>`;
-    }).join("")+`</div>`:""}`;
+  `).join("");
 }
 
-function toggleExp(idx) { expandedId=expandedId===idx?null:idx; renderPending(); }
-function markClient(idx,status) {
-  const card=document.getElementById("card-"+idx);
-  if(card){
-    card.classList.add("removing");
-    setTimeout(()=>{ const c=pending[idx]; c.status=status; completed.unshift({...c}); pending.splice(idx,1); expandedId=null; save(); render(); },300);
-  }
-}
-
-function openConfig() { document.getElementById("cfg-status").style.display="none"; const u=localStorage.getItem("reparto_url"); if(u)document.getElementById("url-input").value=u; document.getElementById("cfg-overlay").classList.remove("hidden"); }
+function openConfig() { document.getElementById("cfg-overlay").classList.remove("hidden"); }
 function closeCfg() { document.getElementById("cfg-overlay").classList.add("hidden"); }
-function openResumen() {
-  const body = document.getElementById("res-body");
-  if (!completed.length) { body.textContent = "Sin clientes gestionados hoy."; }
-  else {
-    let txt = "RESUMEN DE REPARTO\n==================\n";
-    completed.forEach(c => { txt += `${c.status==="done"?"✅":"❌"} [Ruta ${c.ruta}] ${c.nombre} (Cód: ${c.codigo})${c.notes?' -> '+c.notes:''}\n`; });
-    body.textContent = txt;
-  }
-  document.getElementById("res-overlay").classList.remove("hidden");
-}
-function closeResumen() { document.getElementById("res-overlay").classList.add("hidden"); }
-function compartirResumen() { navigator.clipboard.writeText(document.getElementById("res-body").textContent); alert("¡Copiado!"); }
 
-window.onload=function() { setHeaderDate(); loadSaved(); buildRutaMap(); render(); };
+window.onload = function() { setHeaderDate(); render(); };
 </script>
 </body>
 </html>
