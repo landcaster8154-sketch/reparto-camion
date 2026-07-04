@@ -244,6 +244,37 @@
 let pending = [], completed = [], issues = [], phones = {};
 let currentRuta = "all", expandedCardId = null, expandedHistorialId = null, isCompactView = false;
 
+// ─── PERSISTENCIA ─────────────────────────────────────────────────────────────
+function guardarEstado() {
+  try {
+    localStorage.setItem("rr_pending",   JSON.stringify(pending));
+    localStorage.setItem("rr_completed", JSON.stringify(completed));
+    localStorage.setItem("rr_issues",    JSON.stringify(issues));
+    localStorage.setItem("rr_phones",    JSON.stringify(phones));
+    localStorage.setItem("rr_fecha",     new Date().toDateString());
+  } catch(e) {}
+}
+
+function cargarEstado() {
+  try {
+    const fechaGuardada = localStorage.getItem("rr_fecha");
+    const hoy = new Date().toDateString();
+    // Si los datos son de hoy, los recuperamos
+    if (fechaGuardada === hoy) {
+      const p = localStorage.getItem("rr_pending");
+      const c = localStorage.getItem("rr_completed");
+      const i = localStorage.getItem("rr_issues");
+      const ph = localStorage.getItem("rr_phones");
+      if (p)  pending   = JSON.parse(p);
+      if (c)  completed = JSON.parse(c);
+      if (i)  issues    = JSON.parse(i);
+      if (ph) phones    = JSON.parse(ph);
+      return pending.length > 0 || completed.length > 0 || issues.length > 0;
+    }
+  } catch(e) {}
+  return false;
+}
+
 function setHeaderDate() {
   document.getElementById("hdr-date").textContent =
     new Date().toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long' });
@@ -314,6 +345,7 @@ async function cargarDesdeURL() {
     }
 
     pending = cargados.sort((a,b) => a.orden - b.orden);
+    guardarEstado();
     status.textContent = `✅ ¡${pending.length} clientes cargados!`;
     setTimeout(closeCfg, 1200);
     renderRutaBar();
@@ -347,6 +379,7 @@ function marcarEntregado(id, e) {
   const i = pending.findIndex(c => c.id === id);
   if(i > -1) { completed.push(pending[i]); pending.splice(i,1); }
   if(expandedCardId === id) expandedCardId = null;
+  guardarEstado();
   render();
 }
 function marcarIncidencia(id, e) {
@@ -354,6 +387,7 @@ function marcarIncidencia(id, e) {
   const i = pending.findIndex(c => c.id === id);
   if(i > -1) { issues.push(pending[i]); pending.splice(i,1); }
   if(expandedCardId === id) expandedCardId = null;
+  guardarEstado();
   render();
 }
 function recuperarCliente(id, origen, e) {
@@ -362,8 +396,9 @@ function recuperarCliente(id, origen, e) {
   const i = lista.findIndex(c => c.id === id);
   if(i > -1) { pending.push(lista[i]); lista.splice(i,1); }
   pending.sort((a,b) => a.orden - b.orden);
+  guardarEstado();
   render();
-  if (!document.getElementById("historial-overlay").classList.contains("hidden")) renderHistorial();
+  if (!document.getElementById("historial-drawer").classList.contains("open") === false) renderHistorial();
 }
 
 // ─── RENDER PRINCIPAL ─────────────────────────────────────────────────────────
@@ -546,6 +581,24 @@ window.onload = function() {
   setHeaderDate();
   const savedUrl = localStorage.getItem("apps_script_url");
   if (savedUrl) document.getElementById("url-input").value = savedUrl;
+
+  // Recuperar trabajo del día si se cerró la app
+  const recuperado = cargarEstado();
+  if (recuperado) {
+    const tot = pending.length + completed.length + issues.length;
+    const gest = completed.length + issues.length;
+    if (gest > 0) {
+      // Mostrar aviso de que se recuperó el estado
+      setTimeout(() => {
+        const status = document.getElementById("cfg-status");
+        status.textContent = `✅ Trabajo recuperado: ${gest} gestionados, ${pending.length} pendientes.`;
+        document.getElementById("cfg-overlay").classList.remove("hidden");
+        setTimeout(closeCfg, 3000);
+      }, 500);
+    }
+  }
+
+  renderRutaBar();
   render();
 };
 </script>
