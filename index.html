@@ -261,7 +261,6 @@ function cargarEstado() {
   try {
     const fechaGuardada = localStorage.getItem("rr_fecha");
     const hoy = new Date().toDateString();
-    // Si los datos son de hoy, los recuperamos
     if (fechaGuardada === hoy) {
       const p = localStorage.getItem("rr_pending");
       const c = localStorage.getItem("rr_completed");
@@ -288,7 +287,7 @@ function toggleView() {
   render();
 }
 
-// ─── CARGA URL ────────────────────────────────────────────────────────────────
+// ─── CARGA URL CORREGIDA ──────────────────────────────────────────────────────
 async function cargarDesdeURL() {
   const url = document.getElementById("url-input").value.trim();
   const status = document.getElementById("cfg-status");
@@ -302,10 +301,19 @@ async function cargarDesdeURL() {
   try {
     const response = await fetch(url);
     const rawData  = await response.json();
+    // Si rawData es una matriz de objetos, tratamos directamente con ella
     let matriz = Array.isArray(rawData) ? rawData : (rawData.data || rawData.clientes || []);
-    if (!matriz || matriz.length < 2) { status.innerHTML = "❌ El script devolvió una lista vacía."; return; }
+    
+    if (!matriz || matriz.length === 0) { status.innerHTML = "❌ El script devolvió una lista vacía."; return; }
 
-    const cab = matriz[0].map(h => h.toString().toUpperCase().trim());
+    // Identificar encabezados (buscamos en la primera fila o clave de objeto)
+    let cab = [];
+    if (Array.isArray(matriz[0])) {
+        cab = matriz[0].map(h => h.toString().toUpperCase().trim());
+    } else {
+        cab = Object.keys(matriz[0]).map(h => h.toUpperCase().trim());
+    }
+
     const idx = {
       cod:  cab.findIndex(h => h.includes("CODIGO") || h === "A"),
       nom:  cab.findIndex(h => h.includes("NOMBRE") || h === "B"),
@@ -320,9 +328,13 @@ async function cargarDesdeURL() {
     let cargados = [];
     phones = {}; completed = []; issues = []; expandedCardId = null;
 
-    for (let i = 1; i < matriz.length; i++) {
+    // Empezamos desde 0 si los datos ya no tienen encabezados, o 1 si los tienen
+    let inicio = (idx.cod !== -1 || idx.nom !== -1) ? 0 : 1; 
+    
+    for (let i = inicio; i < matriz.length; i++) {
       const f = matriz[i];
-      if (!f || !f.length) continue;
+      if (!f) continue;
+      
       const obs = idx.obs !== -1 ? (f[idx.obs]||"").toString().trim().toUpperCase() : "";
       if (obs !== "X") continue;
 
@@ -342,7 +354,7 @@ async function cargarDesdeURL() {
     }
 
     if (!cargados.length) {
-      status.innerHTML = "⚠️ Ninguna fila tenía la 'X' en observaciones. Ejecuta 'Procesar Ruta' primero.";
+      status.innerHTML = "⚠️ Ninguna fila tenía la 'X' en observaciones.";
       return;
     }
 
@@ -584,13 +596,11 @@ window.onload = function() {
   const savedUrl = localStorage.getItem("apps_script_url");
   if (savedUrl) document.getElementById("url-input").value = savedUrl;
 
-  // Recuperar trabajo del día si se cerró la app
   const recuperado = cargarEstado();
   if (recuperado) {
     const tot = pending.length + completed.length + issues.length;
     const gest = completed.length + issues.length;
     if (gest > 0) {
-      // Mostrar aviso de que se recuperó el estado
       setTimeout(() => {
         const status = document.getElementById("cfg-status");
         status.textContent = `✅ Trabajo recuperado: ${gest} gestionados, ${pending.length} pendientes.`;
