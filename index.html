@@ -183,6 +183,8 @@ body.light .historial-card{box-shadow:0 1px 3px rgba(0,0,0,0.06);}
     <div class="header">
       <div><h1>🚚 Mis Rutas de Reparto</h1><p id="hdr-date"></p></div>
       <div class="hdr-btns">
+        <button class="icon-btn" id="btn-exportar">📤 Exportar</button>
+        <button class="icon-btn" id="btn-importar">📥 Importar</button>
         <button class="icon-btn" id="btn-vista">👁️ Vista</button>
         <button class="icon-btn" id="btn-tema">🌙 Tema</button>
         <button class="icon-btn" id="btn-historial">📋 Historial</button>
@@ -249,6 +251,8 @@ body.light .historial-card{box-shadow:0 1px 3px rgba(0,0,0,0.06);}
     <div class="scroll"><div id="resumen-content" style="display:flex;flex-direction:column;gap:12px;"></div></div>
   </div>
 </div>
+
+<input type="file" id="importar-file" accept=".json" style="display:none;" />
 
 <!-- HISTORIAL -->
 <div class="drawer" id="historial-drawer">
@@ -871,6 +875,54 @@ function abrirPedido(codigo, nombre) {
   document.getElementById("pedido-overlay").classList.remove("hidden");
 }
 
+// ─── EXPORTAR / IMPORTAR SESIÓN ───────────────────────────────────────────────
+function exportarSesion() {
+  var sesion = {
+    fecha: new Date().toDateString(),
+    pending:   pending,
+    completed: completed,
+    issues:    issues,
+    pedidosData: pedidosData,
+    baseDatos: baseDatos
+  };
+  var json = JSON.stringify(sesion);
+  var blob = new Blob([json], {type: "application/json"});
+  var url  = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url;
+  a.download = "sesion_reparto_" + new Date().toLocaleDateString("es-ES").replace(/\//g,"-") + ".json";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function importarSesion(file) {
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var sesion = JSON.parse(e.target.result);
+      if (!sesion.fecha) { alert("Archivo no válido"); return; }
+      pending     = sesion.pending     || [];
+      completed   = sesion.completed   || [];
+      issues      = sesion.issues      || [];
+      pedidosData = sesion.pedidosData || {};
+      if (sesion.baseDatos && sesion.baseDatos.length) {
+        baseDatos = sesion.baseDatos;
+      }
+      guardar();
+      try { localStorage.setItem("rr_pedidos", JSON.stringify(pedidosData)); } catch(ex) {}
+      renderRutaBar();
+      renderReparto();
+      alert("✅ Sesión importada correctamente\n" + pending.length + " pendientes · " + completed.length + " entregados · " + issues.length + " incidencias");
+    } catch(err) {
+      alert("❌ Error al importar: " + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
 // ─── VISTA Y TEMA ─────────────────────────────────────────────────────────────
 var isCompact = false;
 var isLight = false;
@@ -918,6 +970,11 @@ window.addEventListener("load", function() {
   });
 
   // Botones fijos
+  document.getElementById("btn-exportar").addEventListener("click", exportarSesion);
+  document.getElementById("btn-exportar").addEventListener("touchend", function(e) { e.preventDefault(); exportarSesion(); });
+  document.getElementById("btn-importar").addEventListener("click", function() { document.getElementById("importar-file").click(); });
+  document.getElementById("btn-importar").addEventListener("touchend", function(e) { e.preventDefault(); document.getElementById("importar-file").click(); });
+  document.getElementById("importar-file").addEventListener("change", function() { importarSesion(this.files[0]); this.value=""; });
   document.getElementById("btn-vista").addEventListener("click", toggleVista);
   document.getElementById("btn-vista").addEventListener("touchend", function(e) { e.preventDefault(); toggleVista(); });
   document.getElementById("btn-tema").addEventListener("click", toggleTema);
