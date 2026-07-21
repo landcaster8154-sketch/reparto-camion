@@ -144,18 +144,35 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .pedido-desc{flex:1;color:var(--text);}
 .pedido-cod{font-size:11px;color:var(--text3);}
 
-/* MODO CLARO */
+/* MODO CAR STEREO */
+.cards-grid.carstereo { grid-template-columns: 1fr; gap: 14px; }
+.cards-grid.carstereo .card { font-size: 18px; }
+.cards-grid.carstereo .card::before { height: 5px; }
+.cards-grid.carstereo .card-head { padding: 18px 20px; }
+.cards-grid.carstereo .card-order { min-width: 36px; height: 36px; font-size: 16px; margin-right: 12px; }
+.cards-grid.carstereo .card-name { font-size: 20px; font-weight: 800; }
+.cards-grid.carstereo .card-meta { font-size: 14px; margin-top: 4px; }
+.cards-grid.carstereo .card-addr { font-size: 15px; padding: 0 20px 14px; }
+.cards-grid.carstereo .card-nota { font-size: 15px; padding: 4px 20px 12px; }
+.cards-grid.carstereo .chevron { font-size: 18px; }
+.cards-grid.carstereo .drag-handle { font-size: 22px; }
+.cards-grid.carstereo .card.expanded { grid-column: 1/-1; }
+.cards-grid.carstereo .card-body { padding: 18px 20px; gap: 14px; }
+.cards-grid.carstereo .btn { padding: 16px 10px; font-size: 16px; min-width: 100px; }
+.cards-grid.carstereo .next-stop { font-size: 16px; padding: 14px 18px; }
+
+/* MODO CLARO SUAVE — blanco roto, sin brillo */
 body.light{
-  --bg:#f0f0ee;--bg2:#ffffff;--card:#ffffff;--card2:#f5f5f3;
-  --border:#e0deda;--border2:#c8c5bf;
-  --text:#1a1a18;--text2:#5a5a56;--text3:#9a9a94;
-  --accent:#2563eb;--accent-bg:rgba(37,99,235,0.1);--accent-t:#1d4ed8;
-  --green:#16a34a;--green-bg:rgba(22,163,74,0.1);--green-t:#15803d;
-  --red:#dc2626;--red-bg:rgba(220,38,38,0.1);--red-t:#b91c1c;
-  --yellow-t:#92400e;
+  --bg:#e8e6e1;--bg2:#f0ede8;--card:#f5f2ed;--card2:#eceae5;
+  --border:#d4d0c8;--border2:#bab6ae;
+  --text:#2c2a26;--text2:#5c5852;--text3:#8c8880;
+  --accent:#3a6fd8;--accent-bg:rgba(58,111,216,0.1);--accent-t:#2d5cb8;
+  --green:#2a9a52;--green-bg:rgba(42,154,82,0.1);--green-t:#237a42;
+  --red:#c84040;--red-bg:rgba(200,64,64,0.1);--red-t:#a83030;
+  --yellow-t:#8a6200;
 }
-body.light .card{box-shadow:0 1px 3px rgba(0,0,0,0.08);}
-body.light .historial-card{box-shadow:0 1px 3px rgba(0,0,0,0.06);}
+body.light .card{box-shadow:0 1px 3px rgba(0,0,0,0.1);}
+body.light .historial-card{box-shadow:0 1px 3px rgba(0,0,0,0.08);}
 
 /* VISTA COMPACTA */
 .cards-grid.compact{grid-template-columns:repeat(3,1fr);gap:6px;}
@@ -925,19 +942,33 @@ function importarSesion(file) {
 
 // ─── VISTA Y TEMA ─────────────────────────────────────────────────────────────
 var isCompact = false;
+var isCarStereo = false;
 var isLight = false;
 
 function toggleVista() {
-  isCompact = !isCompact;
   var grid = document.getElementById("pending-list");
-  if (isCompact) {
+  var btn  = document.getElementById("btn-vista");
+
+  if (!isCompact && !isCarStereo) {
+    // Normal → Compacto
+    isCompact = true; isCarStereo = false;
     grid.classList.add("compact");
-    document.getElementById("btn-vista").textContent = "🔲 Vista";
-  } else {
+    grid.classList.remove("carstereo");
+    btn.textContent = "🔲 Vista";
+  } else if (isCompact && !isCarStereo) {
+    // Compacto → Car Stereo
+    isCompact = false; isCarStereo = true;
     grid.classList.remove("compact");
-    document.getElementById("btn-vista").textContent = "👁️ Vista";
+    grid.classList.add("carstereo");
+    btn.textContent = "🚗 Vista";
+  } else {
+    // Car Stereo → Normal
+    isCompact = false; isCarStereo = false;
+    grid.classList.remove("compact");
+    grid.classList.remove("carstereo");
+    btn.textContent = "👁️ Vista";
   }
-  try { localStorage.setItem("rr_compact", isCompact ? "1" : "0"); } catch(e) {}
+  try { localStorage.setItem("rr_vista", isCarStereo ? "car" : isCompact ? "compact" : "normal"); } catch(e) {}
 }
 
 function toggleTema() {
@@ -949,10 +980,16 @@ function toggleTema() {
 
 function cargarPrefs() {
   try {
-    var compact = localStorage.getItem("rr_compact");
-    var tema = localStorage.getItem("rr_tema");
-    if (compact === "1") { isCompact = true; document.getElementById("pending-list").classList.add("compact"); document.getElementById("btn-vista").textContent = "🔲 Vista"; }
-    if (tema === "light") { isLight = true; document.body.classList.add("light"); document.getElementById("btn-tema").textContent = "☀️ Tema"; }
+    var vista = localStorage.getItem("rr_vista");
+    var tema  = localStorage.getItem("rr_tema");
+    var grid  = document.getElementById("pending-list");
+    var btn   = document.getElementById("btn-vista");
+    if (vista === "compact") {
+      isCompact = true; grid.classList.add("compact"); btn.textContent = "🔲 Vista";
+    } else if (vista === "car") {
+      isCarStereo = true; grid.classList.add("carstereo"); btn.textContent = "🚗 Vista";
+    }
+    if (tema === "light") { isLight = true; document.body.classList.add("light"); document.getElementById("btn-tema").textContent = "🌤️ Tema"; }
   } catch(e) {}
 }
 
