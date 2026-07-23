@@ -193,6 +193,7 @@ body.light .historial-card{box-shadow:0 1px 3px rgba(0,0,0,0.08);}
     <div class="nav-tab" data-page="pdf"><span class="tab-icon">📄</span>PDF</div>
     <div class="nav-tab" data-page="base"><span class="tab-icon">🗃️</span>Clientes</div>
     <div class="nav-tab" data-page="resumen"><span class="tab-icon">📊</span>Resumen</div>
+    <div class="nav-tab" data-page="musica"><span class="tab-icon">🎵</span>Música</div>
   </div>
 
   <!-- REPARTO -->
@@ -266,6 +267,11 @@ body.light .historial-card{box-shadow:0 1px 3px rgba(0,0,0,0.08);}
   <div class="page" id="page-resumen">
     <div class="header"><div><h1>📊 Resumen del Día</h1><p id="res-fecha"></p></div><div class="hdr-btns"><button class="icon-btn" id="btn-cerrar-resumen">✕ Cerrar</button></div></div>
     <div class="scroll"><div id="resumen-content" style="display:flex;flex-direction:column;gap:12px;"></div></div>
+  </div>
+
+  <!-- MÚSICA (Jukebox aislado en iframe: cero conflictos de CSS/JS con el resto de la app) -->
+  <div class="page" id="page-musica">
+    <iframe id="jukebox-frame" src="jukebox.html" title="Jukebox" style="flex:1;width:100%;border:none;background:#0f1115;"></iframe>
   </div>
 </div>
 
