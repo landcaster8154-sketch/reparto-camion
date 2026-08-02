@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Rutas">
+<meta name="theme-color" content="#0f1117">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
 <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;">
 <title>Mis Rutas de Reparto</title>
 <style>
@@ -1177,6 +1183,35 @@ window.addEventListener("load", function() {
   renderRutaBar();
   renderReparto();
 });
+
+// --- Instalación como app (PWA) y actualizaciones ---
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("./sw.js").then(function (reg) {
+      reg.addEventListener("updatefound", function () {
+        var nuevo = reg.installing;
+        if (!nuevo) return;
+        nuevo.addEventListener("statechange", function () {
+          if (nuevo.state === "activated" && navigator.serviceWorker.controller) {
+            mostrarAvisoActualizacion();
+          }
+        });
+      });
+    }).catch(function (err) {
+      console.warn("No se pudo registrar el service worker:", err);
+    });
+  });
+}
+
+function mostrarAvisoActualizacion() {
+  var barra = document.createElement("div");
+  barra.textContent = "Hay una nueva versión disponible. Toca para actualizar.";
+  barra.style.cssText = "position:fixed;left:0;right:0;bottom:0;z-index:9999;background:#4f7fff;color:#fff;padding:12px 16px;text-align:center;font-size:13px;font-weight:600;cursor:pointer;";
+  var recargar = function () { location.reload(); };
+  barra.addEventListener("click", recargar);
+  barra.addEventListener("touchend", function (e) { e.preventDefault(); recargar(); });
+  document.body.appendChild(barra);
+}
 </script>
 </body>
 </html>
