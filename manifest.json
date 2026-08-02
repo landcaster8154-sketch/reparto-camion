@@ -1,15 +1,33 @@
 {
-  "name": "Rutas de Reparto",
+  "id": "/reparto-camion/",
+  "name": "Mis Rutas de Reparto",
   "short_name": "Rutas",
+  "description": "Gestión de rutas de reparto, clientes, pedidos y cobros.",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
+  "orientation": "any",
   "background_color": "#0f1117",
   "theme_color": "#0f1117",
+  "lang": "es",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/3448/3448650.png",
+      "src": "./icons/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
