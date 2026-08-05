@@ -33,7 +33,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .tab-icon{font-size:16px;display:block;margin-bottom:2px;}
 .app-logo{width:20px;height:20px;border-radius:50%;display:block;margin:0 auto 2px;object-fit:cover;}
 .header-logo{width:26px;height:26px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:6px;}
-.page{display:none;flex:1;flex-direction:column;overflow:hidden;}
+.page{display:none;flex:1;flex-direction:column;overflow:hidden;min-height:0;}
 .page.active{display:flex;}
 .header{background:var(--bg2);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
 .header h1{font-size:17px;font-weight:700;}
@@ -282,7 +282,7 @@ body.light .historial-card{box-shadow:0 1px 3px rgba(0,0,0,0.08);}
 
   <!-- MÚSICA (Jukebox aislado en iframe: cero conflictos de CSS/JS con el resto de la app) -->
   <div class="page" id="page-musica">
-    <iframe id="jukebox-frame" src="jukebox.html?v=3" title="Jukebox" style="flex:1;width:100%;border:none;background:#0f1115;"></iframe>
+    <iframe id="jukebox-frame" src="jukebox.html?v=3" title="Jukebox" style="flex:1;width:100%;height:100%;min-height:0;display:block;border:none;background:#0f1115;"></iframe>
   </div>
 </div>
 
@@ -394,7 +394,6 @@ function showPage(name) {
 // ─── PROCESAR PDF ──────────────────────────────────────────────────────────
 // ─── COBROS (extraídos de la Hoja de Reparto) ──────────────────────────────
 function extraerCobros(texto) {
-  // Cada cliente empieza con una línea "N  CODIGO  NOMBRE..."
   var bloqueRe = /^\d+\s+(\d{4,7})\s+.+$/gm;
   var matches = [];
   var m;
@@ -471,7 +470,7 @@ function procesarPDF() {
       cobro_obligatorio: cobro ? cobro.obligatorio : false,
       cobro_monto: cobro ? cobro.monto : null,
       cobro_forma: cobro ? cobro.forma : null,
-      cobro_cobrado: null // se define al marcar como entregado
+      cobro_cobrado: null
     };
   });
   completed = [];
@@ -532,7 +531,7 @@ function marcarEntregado(id) {
     var cliente = pending[i];
     if (cliente.cobro_monto) {
       if (cliente.cobro_obligatorio) {
-        cliente.cobro_cobrado = true; // obligatorio: se cobra siempre, no hay opción de firmar
+        cliente.cobro_cobrado = true;
       } else {
         var montoStr = cliente.cobro_monto.toFixed(2).replace(".", ",") + "€";
         cliente.cobro_cobrado = confirm(
@@ -630,7 +629,6 @@ function renderReparto() {
 
   list.innerHTML = html;
 
-  // Eventos con addEventListener (compatibles con todos los navegadores y WebViews)
   list.querySelectorAll("[data-toggle]").forEach(function(el) {
     el.addEventListener("click", function() { toggleCard(this.dataset.toggle); });
     el.addEventListener("touchend", function(e) { e.preventDefault(); toggleCard(this.dataset.toggle); });
@@ -648,7 +646,6 @@ function renderReparto() {
     btn.addEventListener("touchend", function(e) { e.stopPropagation(); e.preventDefault(); abrirPedido(this.dataset.cod, this.dataset.nom); });
   });
 
-  // Drag & drop
   list.querySelectorAll(".card[draggable]").forEach(function(card) {
     card.addEventListener("dragstart", function(e) {
       dragSrcIdx = parseInt(this.dataset.idx);
@@ -681,8 +678,24 @@ function renderReparto() {
 }
 
 // ─── HISTORIAL ─────────────────────────────────────────────────────────────
-function openHistorial() { renderHistorial(); document.getElementById("historial-drawer").classList.add("open"); }
-function closeHistorial() { document.getElementById("historial-drawer").classList.remove("open"); expandedHistorialId = null; }
+function openHistorial() {
+  renderHistorial();
+  var d = document.getElementById("historial-drawer");
+  d.classList.add("open");
+  var panel = d.querySelector(".drawer-panel");
+  if (panel) panel.style.transform = "translateY(0)";
+  var backdrop = d.querySelector(".drawer-backdrop");
+  if (backdrop) backdrop.style.opacity = "1";
+}
+function closeHistorial() {
+  var d = document.getElementById("historial-drawer");
+  d.classList.remove("open");
+  var panel = d.querySelector(".drawer-panel");
+  if (panel) panel.style.transform = "";
+  var backdrop = d.querySelector(".drawer-backdrop");
+  if (backdrop) backdrop.style.opacity = "";
+  expandedHistorialId = null;
+}
 function toggleHistorialCard(id) { expandedHistorialId = expandedHistorialId === id ? null : id; renderHistorial(); }
 
 function renderHistorial() {
@@ -939,7 +952,6 @@ function procesarPedidos() {
   for (var i = 0; i < lines.length; i++) {
     var line = lines[i].trim();
 
-    // Detectar cliente: "Cli: XXXXXX NOMBRE..."
     var cliMatch = line.match(/^Cli:\s*(\d+)/);
     if (cliMatch) {
       if (currentCli && currentLineas.length) {
@@ -950,24 +962,19 @@ function procesarPedidos() {
       continue;
     }
 
-    // Detectar línea de producto: "XXXXX Descripción N"
-    // Formato: código(5 dígitos+) espacio descripción espacio cajas(número al final)
     if (currentCli) {
       var prodMatch = line.match(/^(\d{4,6})\s+(.+?)\s+(\d+)\s*$/);
       if (prodMatch) {
         var cod  = prodMatch[1].trim();
         var desc = prodMatch[2].trim();
         var cajas = parseInt(prodMatch[3]);
-        // Ignorar línea de cargo logístico
         if (cod !== "9998") {
           currentLineas.push({ cod: cod, desc: desc, cajas: cajas });
         }
       }
     }
 
-    // Fin de cliente al encontrar "Total cajas"
     if (line.includes("Total cajas Doc") && currentCli) {
-      // Buscar la línea "Suma X" siguiente
       for (var j = i+1; j < Math.min(i+3, lines.length); j++) {
         var sumaMatch = lines[j].trim().match(/^Suma\s+(\d+)/);
         if (sumaMatch) {
@@ -979,7 +986,6 @@ function procesarPedidos() {
       }
     }
   }
-  // Guardar último cliente
   if (currentCli && currentLineas.length) {
     pedidosData[currentCli] = currentLineas;
   }
@@ -990,7 +996,6 @@ function procesarPedidos() {
     return;
   }
 
-  // Guardar en localStorage
   try { localStorage.setItem("rr_pedidos", JSON.stringify(pedidosData)); } catch(e) {}
 
   resultado.innerHTML = '<div class="pdf-result">' +
@@ -1083,19 +1088,16 @@ function toggleVista() {
   var btn  = document.getElementById("btn-vista");
 
   if (!isCompact && !isCarStereo) {
-    // Normal → Compacto
     isCompact = true; isCarStereo = false;
     grid.classList.add("compact");
     grid.classList.remove("carstereo");
     btn.textContent = "🔲 Vista";
   } else if (isCompact && !isCarStereo) {
-    // Compacto → Car Stereo
     isCompact = false; isCarStereo = true;
     grid.classList.remove("compact");
     grid.classList.add("carstereo");
     btn.textContent = "🚗 Vista";
   } else {
-    // Car Stereo → Normal
     isCompact = false; isCarStereo = false;
     grid.classList.remove("compact");
     grid.classList.remove("carstereo");
@@ -1133,13 +1135,11 @@ window.addEventListener("load", function() {
 
   cargar();
 
-  // Navegación
   document.getElementById("nav-tabs").querySelectorAll(".nav-tab").forEach(function(tab) {
     tab.addEventListener("click", function() { showPage(this.dataset.page); });
     tab.addEventListener("touchend", function(e) { e.preventDefault(); showPage(this.dataset.page); });
   });
 
-  // Botones fijos
   document.getElementById("btn-exportar").addEventListener("click", exportarSesion);
   document.getElementById("btn-exportar").addEventListener("touchend", function(e) { e.preventDefault(); exportarSesion(); });
   document.getElementById("btn-importar").addEventListener("click", function() { document.getElementById("importar-file").click(); });
