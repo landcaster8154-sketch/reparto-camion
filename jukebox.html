@@ -107,6 +107,23 @@
     min-height: 0;
     overflow: hidden;
   }
+  #player-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    gap: 8px;
+  }
+  #player-info {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-width: 0;
+  }
+  #info-text { min-width: 0; }
   #cover-wrap {
     position: relative;
     flex: 1 1 auto;
@@ -265,6 +282,41 @@
     padding: 4px 16px;
     min-height: 16px;
   }
+
+  /* ---------- Modo horizontal (pantallas anchas y bajas, ej. estéreo de coche) ---------- */
+  @media (orientation: landscape) and (max-height: 480px) {
+    #player-row {
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+    #cover-wrap {
+      flex: 0 0 auto;
+      width: 36vh;
+      max-width: 36vh;
+      height: 36vh;
+      max-height: 80vh;
+      margin: 0;
+      align-self: center;
+    }
+    #player-info {
+      flex: 1;
+      min-width: 0;
+      justify-content: center;
+      gap: 2px;
+    }
+    #info-text { text-align: left; margin-bottom: 4px; }
+    #np-sub, #track-count { text-align: left; }
+    #progress-wrap { padding: 4px 0 0; }
+    #controls {
+      justify-content: flex-start;
+      gap: 14px;
+      padding: 10px 0 4px;
+    }
+    .ctrl-btn { width: 46px; height: 46px; font-size: 18px; }
+    .ctrl-btn.play { width: 56px; height: 56px; font-size: 22px; }
+  }
 </style>
 </head>
 <body>
@@ -290,14 +342,36 @@
   </div>
 
   <div id="nowplaying">
-    <div id="cover-wrap">
-      <img id="cover-img" alt="Portada">
-      <div id="cover-placeholder">🎵</div>
-      <button id="cover-expand" title="Ver a pantalla completa">⛶</button>
+    <div id="player-row">
+      <div id="cover-wrap">
+        <img id="cover-img" alt="Portada">
+        <div id="cover-placeholder">🎵</div>
+        <button id="cover-expand" title="Ver a pantalla completa">⛶</button>
+      </div>
+      <div id="player-info">
+        <div id="info-text">
+          <p id="np-title" class="empty">Nada en reproducción</p>
+          <p id="np-sub"></p>
+          <p id="track-count">0 canciones cargadas</p>
+        </div>
+
+        <div id="progress-wrap">
+          <input type="range" id="progress" min="0" max="100" value="0">
+          <div id="times">
+            <span id="time-cur">0:00</span>
+            <span id="time-dur">0:00</span>
+          </div>
+        </div>
+
+        <div id="controls">
+          <button class="ctrl-btn" id="btn-shuffle" title="Aleatorio">🔀</button>
+          <button class="ctrl-btn" id="btn-prev" title="Anterior">⏮</button>
+          <button class="ctrl-btn play" id="btn-play" title="Play/Pausa">▶</button>
+          <button class="ctrl-btn" id="btn-next" title="Siguiente">⏭</button>
+          <button class="ctrl-btn" id="btn-repeat" title="Repetir">🔁</button>
+        </div>
+      </div>
     </div>
-    <p id="np-title" class="empty">Nada en reproducción</p>
-    <p id="np-sub"></p>
-    <p id="track-count">0 canciones cargadas</p>
   </div>
 
   <div id="fullscreen-cover">
@@ -308,25 +382,10 @@
     <div id="fs-sub" class="fs-sub"></div>
   </div>
 
-  <div id="progress-wrap">
-    <input type="range" id="progress" min="0" max="100" value="0">
-    <div id="times">
-      <span id="time-cur">0:00</span>
-      <span id="time-dur">0:00</span>
-    </div>
-  </div>
-
-  <div id="controls">
-    <button class="ctrl-btn" id="btn-shuffle" title="Aleatorio">🔀</button>
-    <button class="ctrl-btn" id="btn-prev" title="Anterior">⏮</button>
-    <button class="ctrl-btn play" id="btn-play" title="Play/Pausa">▶</button>
-    <button class="ctrl-btn" id="btn-next" title="Siguiente">⏭</button>
-    <button class="ctrl-btn" id="btn-repeat" title="Repetir">🔁</button>
-  </div>
-
   <div id="status-msg"></div>
 
 </div>
+
 
 <audio id="audio-el"></audio>
 
@@ -742,12 +801,17 @@
     const all = Array.from(e.target.files || []);
     const files = all.filter(f => AUDIO_EXT_RE.test(f.name));
     if(files.length === 0){
-      setStatus("Esa carpeta no tiene archivos de audio compatibles.", 3500);
+      setStatus("No se han detectado archivos de audio compatibles.", 3500);
       folderInput.value = "";
       return;
     }
     // nombre de la carpeta = primer tramo de la ruta relativa (la carpeta que eligió el usuario)
-    const folderName = (files[0].webkitRelativePath || "").split("/")[0] || "Carpeta";
+    let folderName = (files[0].webkitRelativePath || "").split("/")[0] || "";
+    if(!folderName){
+      // Este navegador no ha permitido elegir una carpeta real (solo archivos sueltos),
+      // así que preguntamos el nombre para poder organizarlos igualmente en una lista.
+      folderName = (prompt("Este navegador no permite elegir una carpeta completa, solo archivos sueltos.\n\n¿Qué nombre le ponemos a esta lista con los " + files.length + " archivos elegidos?", "Mi lista") || "").trim() || "Carpeta";
+    }
     setStatus("Guardando " + files.length + " archivo(s) de \"" + folderName + "\"...");
     for(const f of files){
       try {
@@ -756,7 +820,7 @@
         console.error("Error guardando", f.name, err);
       }
     }
-    setStatus("¡Carpeta \"" + folderName + "\" añadida! " + files.length + " canciones.", 3000);
+    setStatus("¡Lista \"" + folderName + "\" añadida! " + files.length + " canciones.", 3000);
     activeFolder = folderName; // saltar directamente a ver la carpeta recién añadida
     try { localStorage.setItem(ACTIVE_FOLDER_KEY, activeFolder); } catch(e) {}
     await loadTracksFromDB(true);
