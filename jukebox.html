@@ -325,7 +325,7 @@
   <header>
     <h1>Chrome<span>Box</span> Jukebox</h1>
     <div class="header-btns">
-      <button class="btn accent" id="btn-add" title="Añadir canciones sueltas">＋ Música</button>
+      <button class="btn accent" id="btn-add" title="Añadir canciones y elegir a qué lista van">＋ Música</button>
       <button class="btn accent" id="btn-add-folder" title="Añadir una carpeta completa">📁 Carpeta</button>
       <button class="btn danger" id="btn-clear" title="Vaciar toda la música guardada">🗑</button>
     </div>
@@ -784,15 +784,25 @@
   fileInput.addEventListener("change", async (e) => {
     const files = Array.from(e.target.files || []);
     if(files.length === 0) return;
-    setStatus("Guardando " + files.length + " archivo(s)...");
+
+    // Averiguamos qué listas existen ya, para que sea fácil añadir a una existente
+    const existentes = Array.from(new Set(tracks.map(t => t.folder || "Sueltos"))).sort((a,b) => a.localeCompare(b, "es"));
+    const pista = existentes.length
+      ? "Listas que ya tienes: " + existentes.join(", ") + "\n\nEscribe el nombre de una de esas para añadir ahí, o un nombre nuevo para crear una lista distinta.\nDéjalo en blanco para \"Sueltos\"."
+      : "Escribe un nombre para esta lista (por ejemplo, el nombre de un álbum o artista).\nDéjalo en blanco para \"Sueltos\".";
+    const folderName = (prompt("¿A qué lista añadimos estas " + files.length + " canciones?\n\n" + pista, "") || "").trim() || "Sueltos";
+
+    setStatus("Guardando " + files.length + " archivo(s) en \"" + folderName + "\"...");
     for(const f of files){
       try {
-        await dbAddTrack(f.name, f, "Sueltos");
+        await dbAddTrack(f.name, f, folderName);
       } catch(err){
         console.error("Error guardando", f.name, err);
       }
     }
-    setStatus("¡Listo! Música guardada localmente.", 2500);
+    setStatus("¡Guardado en \"" + folderName + "\"!", 2500);
+    activeFolder = folderName;
+    try { localStorage.setItem(ACTIVE_FOLDER_KEY, activeFolder); } catch(e) {}
     await loadTracksFromDB(true);
     fileInput.value = "";
   });
