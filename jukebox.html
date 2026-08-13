@@ -283,7 +283,11 @@
     min-height: 16px;
   }
 
-  /* ---------- Modo horizontal (pantallas anchas y bajas, ej. estéreo de coche) ---------- */
+  /* ---------- Modo horizontal (pantallas anchas y bajas, ej. estéreo de coche) ----------
+     Se activa de DOS formas independientes, para que funcione aunque el navegador
+     interprete mal la media query (pasa en algunos Chrome de fábrica de coches):
+     1) Automáticamente si el navegador entiende bien "orientation/max-height".
+     2) Por JavaScript, midiendo el tamaño real de la pantalla (más compatible). */
   @media (orientation: landscape) and (max-height: 480px) {
     #player-row {
       flex-direction: row;
@@ -317,6 +321,37 @@
     .ctrl-btn { width: 46px; height: 46px; font-size: 18px; }
     .ctrl-btn.play { width: 56px; height: 56px; font-size: 22px; }
   }
+  body.modo-horizontal #player-row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+  }
+  body.modo-horizontal #cover-wrap {
+    flex: 0 0 auto;
+    width: 36vh;
+    max-width: 36vh;
+    height: 36vh;
+    max-height: 80vh;
+    margin: 0;
+    align-self: center;
+  }
+  body.modo-horizontal #player-info {
+    flex: 1;
+    min-width: 0;
+    justify-content: center;
+    gap: 2px;
+  }
+  body.modo-horizontal #info-text { text-align: left; margin-bottom: 4px; }
+  body.modo-horizontal #np-sub, body.modo-horizontal #track-count { text-align: left; }
+  body.modo-horizontal #progress-wrap { padding: 4px 0 0; }
+  body.modo-horizontal #controls {
+    justify-content: flex-start;
+    gap: 14px;
+    padding: 10px 0 4px;
+  }
+  body.modo-horizontal .ctrl-btn { width: 46px; height: 46px; font-size: 18px; }
+  body.modo-horizontal .ctrl-btn.play { width: 56px; height: 56px; font-size: 22px; }
 </style>
 </head>
 <body>
@@ -1026,6 +1061,21 @@
     updateNowPlaying();
     setStatus("Recuperada: " + track.name, 3000);
   }
+
+  // Comprueba el tamaño real de la ventana y activa el modo horizontal
+  // (portada a la izquierda, controles a la derecha) cuando la pantalla es
+  // ancha y baja, como la de un estéreo de coche. No depende de que el
+  // navegador entienda bien las media queries de CSS, así que funciona
+  // incluso en navegadores de fábrica más limitados.
+  function actualizarModoPantalla(){
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    const esAnchaYBaja = h > 0 && (w / h) > 1.3 && h <= 520;
+    document.body.classList.toggle("modo-horizontal", esAnchaYBaja);
+  }
+  window.addEventListener("resize", actualizarModoPantalla);
+  window.addEventListener("orientationchange", () => setTimeout(actualizarModoPantalla, 200));
+  actualizarModoPantalla();
 
   async function init(){
     try {
