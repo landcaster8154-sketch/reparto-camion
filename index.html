@@ -84,6 +84,8 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .card-cobro.opcional{color:var(--yellow-t);}
 .chevron{font-size:12px;color:var(--text3);transition:transform 0.2s;flex-shrink:0;margin-top:2px;}
 .chevron.open{transform:rotate(180deg);}
+.chevron-btn{font-size:14px;color:var(--text3);transition:transform 0.2s;flex-shrink:0;cursor:pointer;padding:10px 10px 10px 14px;margin:-10px -10px -10px 0;}
+.chevron-btn.open{transform:rotate(180deg);}
 .drag-handle{cursor:grab;color:var(--text3);font-size:16px;padding:0 4px 0 0;flex-shrink:0;}
 .card-body{border-top:1px solid var(--border);padding:12px 14px;display:flex;flex-direction:column;gap:8px;background:var(--card2);}
 .actions{display:flex;gap:6px;flex-wrap:wrap;}
@@ -169,7 +171,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .cards-grid.carstereo .card-meta { font-size: 14px; margin-top: 4px; }
 .cards-grid.carstereo .card-addr { font-size: 15px; padding: 0 20px 14px; }
 .cards-grid.carstereo .card-nota { font-size: 15px; padding: 4px 20px 12px; }
-.cards-grid.carstereo .chevron { font-size: 18px; }
+.cards-grid.carstereo .chevron, .cards-grid.carstereo .chevron-btn { font-size: 18px; }
 .cards-grid.carstereo .drag-handle { font-size: 22px; }
 .cards-grid.carstereo .card.expanded { grid-column: 1/-1; }
 .cards-grid.carstereo .card-body { padding: 18px 20px; gap: 14px; }
@@ -673,7 +675,7 @@ function renderReparto() {
     if (c.esNuevo) badges += ' <span class="badge-nuevo">🆕 NUEVO</span>';
     if (c.esPrestado) badges += ' <span class="badge-prestado">🔁 Ruta ' + c.rutaCasa + '</span>';
     html += '<div class="' + cardClass + '" id="card-' + idx + '" draggable="true" data-idx="' + idx + '" data-id="' + c.id + '">' +
-      '<div class="card-head" data-toggle="' + c.id + '">' +
+      '<div class="card-head">' +
         '<div style="display:flex;align-items:center;flex:1;min-width:0;">' +
           '<span class="drag-handle" title="Arrastrar">⠿</span>' +
           '<span class="card-order">' + c.orden + '</span>' +
@@ -682,7 +684,7 @@ function renderReparto() {
             '<div class="card-meta">Cód. ' + c.codigo + ' · Ruta ' + c.ruta + (tel ? ' · 📞 ' + tel : '') + '</div>' +
           '</div>' +
         '</div>' +
-        '<div class="chevron' + (exp ? " open" : "") + '">▼</div>' +
+        '<div class="chevron-btn' + (exp ? " open" : "") + '" data-toggle="' + c.id + '">▼</div>' +
       '</div>' +
       '<div class="card-addr">📍 ' + c.direccion + '</div>';
     html += (c.nota_entrega ? '<div class="card-nota">⚠️ ' + c.nota_entrega + '</div>' : '');
