@@ -347,6 +347,7 @@ const BASE_INICIAL = [{"codigo": "549746", "nombre": "HORNO DE CONCHI", "direcci
 var baseDatos = [];
 var pedidosData = {}; // { "codigo_cliente": [ {cod, desc, cajas}, ... ] }
 var posicionesCruzadas = {}; // { "180": { "codigo_cliente_de_otra_ruta": ordenAprendido }, "186": {...} }
+var APP_VERSION = "v2.2 · flechita+aprendizaje";
 var pending = [], completed = [], issues = [];
 var currentRuta = "all";
 var expandedCardId = null;
@@ -1236,7 +1237,7 @@ function cargarPrefs() {
 // ─── INIT ───────────────────────────────────────────────────────────────────
 window.addEventListener("load", function() {
   document.getElementById("hdr-date").textContent =
-    new Date().toLocaleDateString("es-ES", {weekday:"long",day:"numeric",month:"long"});
+    new Date().toLocaleDateString("es-ES", {weekday:"long",day:"numeric",month:"long"}) + " · " + APP_VERSION;
 
   cargar();
 
