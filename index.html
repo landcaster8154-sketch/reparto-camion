@@ -67,6 +67,10 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .card.done-card::before{background:var(--green);}
 .card.issue-card{border-color:rgba(239,68,68,0.3);}
 .card.issue-card::before{background:var(--red);}
+.card.sinubicar-card{border-color:rgba(251,191,36,0.5);}
+.card.sinubicar-card::before{background:var(--yellow-t);}
+.badge-nuevo{display:inline-block;background:var(--yellow-t);color:#000;padding:1px 7px;border-radius:8px;font-size:10px;font-weight:800;vertical-align:middle;}
+.badge-prestado{display:inline-block;background:var(--accent-bg);color:var(--accent-t);padding:1px 7px;border-radius:8px;font-size:10px;font-weight:800;vertical-align:middle;}
 .card.dragging{opacity:0.5;}
 .card.drag-over{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-bg);}
 .card-head{padding:12px 14px;cursor:pointer;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
@@ -340,6 +344,7 @@ const BASE_INICIAL = [{"codigo": "549746", "nombre": "HORNO DE CONCHI", "direcci
 
 var baseDatos = [];
 var pedidosData = {}; // { "codigo_cliente": [ {cod, desc, cajas}, ... ] }
+var posicionesCruzadas = {}; // { "180": { "codigo_cliente_de_otra_ruta": ordenAprendido }, "186": {...} }
 var pending = [], completed = [], issues = [];
 var currentRuta = "all";
 var expandedCardId = null;
@@ -354,6 +359,7 @@ function guardar() {
     localStorage.setItem("rr_pending",   JSON.stringify(pending));
     localStorage.setItem("rr_completed", JSON.stringify(completed));
     localStorage.setItem("rr_issues",    JSON.stringify(issues));
+    localStorage.setItem("rr_posiciones_cruzadas", JSON.stringify(posicionesCruzadas));
     localStorage.setItem("rr_fecha",     new Date().toDateString());
   } catch(e) {}
 }
@@ -366,6 +372,9 @@ function cargar() {
     } else {
       baseDatos = JSON.parse(JSON.stringify(BASE_INICIAL));
     }
+    var pc = localStorage.getItem("rr_posiciones_cruzadas");
+    if (pc) { try { posicionesCruzadas = JSON.parse(pc); } catch(ex) { posicionesCruzadas = {}; } }
+
     var fecha = localStorage.getItem("rr_fecha");
     var hoy = new Date().toDateString();
     if (fecha === hoy) {
@@ -418,6 +427,42 @@ function extraerCobros(texto) {
   return cobros;
 }
 
+// ─── DETECCIÓN DE CÓDIGOS EN EL PDF (aunque no estén en la base) ──────────
+function extraerCodigosPDF(texto) {
+  var codigos = {};
+  var lines = texto.split("\n");
+  lines.forEach(function(line) {
+    var m = line.match(/(\d{6})\D*(.*)/);
+    if (m) {
+      var cod = m[1];
+      var resto = m[2] ? m[2].trim() : "";
+      if (!codigos[cod]) codigos[cod] = resto;
+    }
+  });
+  return codigos;
+}
+
+function maxOrdenRuta(ruta) {
+  var max = 0;
+  baseDatos.forEach(function(c) { if (c.ruta === ruta && c.orden > max) max = c.orden; });
+  return max;
+}
+
+// Tras cada reordenación manual, guarda la posición para que la app la recuerde mañana.
+function persistirOrdenAprendido() {
+  pending.forEach(function(item) {
+    if (item.esPrestado) {
+      if (!posicionesCruzadas[item.ruta]) posicionesCruzadas[item.ruta] = {};
+      posicionesCruzadas[item.ruta][item.codigo] = item.orden;
+      item.sinUbicar = false;
+    } else {
+      var idx = baseDatos.findIndex(function(b) { return b.codigo === item.codigo; });
+      if (idx > -1) baseDatos[idx].orden = item.orden;
+      if (item.esNuevo) item.sinUbicar = false;
+    }
+  });
+}
+
 function procesarPDF() {
   var texto = document.getElementById("pdf-texto").value;
   var resultado = document.getElementById("pdf-resultado");
@@ -440,31 +485,60 @@ function procesarPDF() {
     return;
   }
 
-  baseDatos.forEach(function(c) { c.activo = false; });
+  var codigosPDF = extraerCodigosPDF(texto);
+  var codigos = Object.keys(codigosPDF);
 
-  var marcados = 0;
-  baseDatos.forEach(function(c) {
-    if (c.ruta === numRuta && c.codigo && texto.includes(c.codigo)) {
-      c.activo = true;
-      marcados++;
+  if (!codigos.length) {
+    resultado.innerHTML = '<div style="color:var(--red-t);padding:12px;background:var(--red-bg);border-radius:8px;">❌ No se detectaron códigos de cliente (6 dígitos) en el PDF.</div>';
+    return;
+  }
+
+  var nuevosClientes = [];
+  var prestados = [];
+  var itemsBase = [];
+  var siguienteOrdenNuevo = maxOrdenRuta(numRuta) + 1;
+
+  codigos.forEach(function(codigo) {
+    var idx = baseDatos.findIndex(function(c) { return c.codigo === codigo; });
+    if (idx === -1) {
+      var nombreDetectado = codigosPDF[codigo] || ("Cliente " + codigo);
+      var nuevo = { codigo: codigo, nombre: nombreDetectado, direccion: "", ruta: numRuta, orden: siguienteOrdenNuevo, telefono: "", nota: "" };
+      baseDatos.push(nuevo);
+      siguienteOrdenNuevo++;
+      nuevosClientes.push(nuevo);
+      itemsBase.push({ codigo: codigo, esNuevo: true, esPrestado: false, sinUbicar: true, rutaCasa: numRuta, ordenEfectivo: nuevo.orden });
+    } else {
+      var c = baseDatos[idx];
+      if (c.ruta === numRuta) {
+        itemsBase.push({ codigo: codigo, esNuevo: false, esPrestado: false, sinUbicar: false, rutaCasa: c.ruta, ordenEfectivo: c.orden });
+      } else {
+        var guardado = posicionesCruzadas[numRuta] ? posicionesCruzadas[numRuta][codigo] : undefined;
+        var sinUbicar = (guardado === undefined || guardado === null);
+        var ordenEf = sinUbicar ? siguienteOrdenNuevo++ : guardado;
+        prestados.push(c);
+        itemsBase.push({ codigo: codigo, esNuevo: false, esPrestado: true, sinUbicar: sinUbicar, rutaCasa: c.ruta, ordenEfectivo: ordenEf });
+      }
     }
   });
 
-  var activos = baseDatos
-    .filter(function(c) { return c.activo && c.ruta === numRuta; })
-    .sort(function(a,b) { return a.orden - b.orden; });
+  itemsBase.sort(function(a,b) { return a.ordenEfectivo - b.ordenEfectivo; });
 
   var cobros = extraerCobros(texto);
 
-  pending = activos.map(function(c, i) {
-    var cobro = cobros[c.codigo] || null;
+  pending = itemsBase.map(function(item, i) {
+    var c = baseDatos.find(function(b) { return b.codigo === item.codigo; });
+    var cobro = cobros[item.codigo] || null;
     return {
-      id: c.codigo + "_" + i,
-      codigo: c.codigo,
+      id: item.codigo + "_" + i,
+      codigo: item.codigo,
       nombre: c.nombre,
       direccion: c.direccion,
-      ruta: c.ruta,
-      orden: c.orden,
+      ruta: numRuta,
+      rutaCasa: item.rutaCasa,
+      esNuevo: item.esNuevo,
+      esPrestado: item.esPrestado,
+      sinUbicar: item.sinUbicar,
+      orden: i + 1,
       nota_entrega: c.nota || "",
       telefono: c.telefono || "",
       cobro_obligatorio: cobro ? cobro.obligatorio : false,
@@ -481,9 +555,13 @@ function procesarPDF() {
   var totalCobros = Object.keys(cobros).filter(function(k){return cobros[k].obligatorio;})
     .reduce(function(s,k){return s + cobros[k].monto;}, 0);
 
+  var avisoNuevos = nuevosClientes.length ? ('<div style="color:var(--yellow-t);font-weight:600;margin-top:4px;">🆕 ' + nuevosClientes.length + ' cliente(s) nuevo(s) — colócalo(s) y quedará guardado para mañana</div>') : '';
+  var avisoPrestados = prestados.length ? ('<div style="color:var(--accent-t);font-weight:600;margin-top:4px;">🔁 ' + prestados.length + ' cliente(s) de otra ruta añadido(s) hoy</div>') : '';
+
   resultado.innerHTML = '<div class="pdf-result">' +
     '<div style="font-size:15px;font-weight:700;color:var(--accent-t);margin-bottom:6px;">✅ Ruta ' + numRuta + ' detectada</div>' +
-    '<div style="color:var(--green-t);font-weight:600;">📦 ' + marcados + ' clientes para mañana</div>' +
+    '<div style="color:var(--green-t);font-weight:600;">📦 ' + pending.length + ' clientes para mañana</div>' +
+    avisoNuevos + avisoPrestados +
     (totalCobros > 0 ? '<div style="color:var(--yellow-t);font-weight:600;margin-top:4px;">💶 ' + totalCobros.toFixed(2).replace(".", ",") + '€ en cobros obligatorios detectados</div>' : '') +
     '<div style="margin-top:8px;font-size:12px;color:var(--text3);">Ve a 🚚 Reparto para empezar</div>' +
     '</div>';
@@ -590,13 +668,17 @@ function renderReparto() {
     var exp = expandedCardId === c.id;
     var tel = c.telefono || "";
     var mapUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(c.direccion);
-    html += '<div class="card' + (exp ? " expanded" : "") + '" id="card-' + idx + '" draggable="true" data-idx="' + idx + '" data-id="' + c.id + '">' +
+    var cardClass = "card" + (exp ? " expanded" : "") + (c.sinUbicar ? " sinubicar-card" : "");
+    var badges = '';
+    if (c.esNuevo) badges += ' <span class="badge-nuevo">🆕 NUEVO</span>';
+    if (c.esPrestado) badges += ' <span class="badge-prestado">🔁 Ruta ' + c.rutaCasa + '</span>';
+    html += '<div class="' + cardClass + '" id="card-' + idx + '" draggable="true" data-idx="' + idx + '" data-id="' + c.id + '">' +
       '<div class="card-head" data-toggle="' + c.id + '">' +
         '<div style="display:flex;align-items:center;flex:1;min-width:0;">' +
           '<span class="drag-handle" title="Arrastrar">⠿</span>' +
           '<span class="card-order">' + c.orden + '</span>' +
           '<div style="min-width:0;">' +
-            '<div class="card-name">' + c.nombre + '</div>' +
+            '<div class="card-name">' + c.nombre + badges + '</div>' +
             '<div class="card-meta">Cód. ' + c.codigo + ' · Ruta ' + c.ruta + (tel ? ' · 📞 ' + tel : '') + '</div>' +
           '</div>' +
         '</div>' +
@@ -630,8 +712,24 @@ function renderReparto() {
   list.innerHTML = html;
 
   list.querySelectorAll("[data-toggle]").forEach(function(el) {
+    var touchStartX = 0, touchStartY = 0, touchMoved = false;
     el.addEventListener("click", function() { toggleCard(this.dataset.toggle); });
-    el.addEventListener("touchend", function(e) { e.preventDefault(); toggleCard(this.dataset.toggle); });
+    el.addEventListener("touchstart", function(e) {
+      touchMoved = false;
+      var t = e.touches[0];
+      touchStartX = t.clientX; touchStartY = t.clientY;
+    }, { passive: true });
+    el.addEventListener("touchmove", function(e) {
+      var t = e.touches[0];
+      if (Math.abs(t.clientX - touchStartX) > 10 || Math.abs(t.clientY - touchStartY) > 10) {
+        touchMoved = true;
+      }
+    }, { passive: true });
+    el.addEventListener("touchend", function(e) {
+      if (touchMoved) return; // fue scroll, no un toque
+      e.preventDefault();
+      toggleCard(this.dataset.toggle);
+    });
   });
   list.querySelectorAll("[data-action=entregado]").forEach(function(btn) {
     btn.addEventListener("click", function(e) { e.stopPropagation(); marcarEntregado(this.dataset.id); });
@@ -666,6 +764,7 @@ function renderReparto() {
       var moved = pending.splice(dragSrcIdx, 1)[0];
       pending.splice(targetIdx, 0, moved);
       pending.forEach(function(c, i) { c.orden = i + 1; });
+      persistirOrdenAprendido();
       dragSrcIdx = null;
       expandedCardId = null;
       guardar(); renderReparto();
@@ -1038,7 +1137,8 @@ function exportarSesion() {
     completed: completed,
     issues:    issues,
     pedidosData: pedidosData,
-    baseDatos: baseDatos
+    baseDatos: baseDatos,
+    posicionesCruzadas: posicionesCruzadas
   };
   var json = JSON.stringify(sesion);
   var blob = new Blob([json], {type: "application/json"});
@@ -1065,6 +1165,9 @@ function importarSesion(file) {
       pedidosData = sesion.pedidosData || {};
       if (sesion.baseDatos && sesion.baseDatos.length) {
         baseDatos = sesion.baseDatos;
+      }
+      if (sesion.posicionesCruzadas) {
+        posicionesCruzadas = sesion.posicionesCruzadas;
       }
       guardar();
       try { localStorage.setItem("rr_pedidos", JSON.stringify(pedidosData)); } catch(ex) {}
