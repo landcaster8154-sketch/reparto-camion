@@ -347,7 +347,7 @@ const BASE_INICIAL = [{"codigo": "549746", "nombre": "HORNO DE CONCHI", "direcci
 var baseDatos = [];
 var pedidosData = {}; // { "codigo_cliente": [ {cod, desc, cajas}, ... ] }
 var posicionesCruzadas = {}; // { "180": { "codigo_cliente_de_otra_ruta": ordenAprendido }, "186": {...} }
-var APP_VERSION = "v2.2 · flechita+aprendizaje";
+var APP_VERSION = "v2.3 · deteccion-precisa-pdf";
 var pending = [], completed = [], issues = [];
 var currentRuta = "all";
 var expandedCardId = null;
@@ -418,13 +418,13 @@ function extraerCobros(texto) {
     var end = (i + 1 < matches.length) ? matches[i+1].entryStart : texto.length;
     var bloque = texto.substring(start, end);
 
-    var obligatorio = bloque.match(/(\d{5,})\s*\*\s*([\d]+,\d{2})\s*Efectivo\s+(\S+)/);
-    var opcional = !obligatorio && bloque.match(/(\d{5,})\s+([\d]+,\d{2})\s*Efectivo\s+(\S+)/);
+    var obligatorio = bloque.match(/(\d{5,})\s*\*\s*([\d]+,\d{2})\s+(\S.*?)\s*$/m);
+    var opcional = !obligatorio && bloque.match(/(\d{5,})\s+([\d]+,\d{2})\s+(\S.*?)\s*$/m);
 
     if (obligatorio) {
-      cobros[matches[i].codigo] = { obligatorio: true, monto: parseFloat(obligatorio[2].replace(",", ".")), forma: "Efectivo " + obligatorio[3] };
+      cobros[matches[i].codigo] = { obligatorio: true, monto: parseFloat(obligatorio[2].replace(",", ".")), forma: obligatorio[3].trim() };
     } else if (opcional) {
-      cobros[matches[i].codigo] = { obligatorio: false, monto: parseFloat(opcional[2].replace(",", ".")), forma: "Efectivo " + opcional[3] };
+      cobros[matches[i].codigo] = { obligatorio: false, monto: parseFloat(opcional[2].replace(",", ".")), forma: opcional[3].trim() };
     }
   }
   return cobros;
@@ -434,8 +434,13 @@ function extraerCobros(texto) {
 function extraerCodigosPDF(texto) {
   var codigos = {};
   var lines = texto.split("\n");
+  // Una línea de cliente REAL siempre remata con teléfono + horario, p.ej:
+  // "18 577286 LIVING LEGANES Avenida... 28911 LEGANES 667643429 06:00-12:00"
+  // Las líneas de albarán/cobro/matrícula NO tienen ese remate, así se descartan solas.
+  var re = /^\d+\s+(\d{6})\s+(.+?)\s+(?:\+34)?\d{9}\s+\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}\s*$/;
   lines.forEach(function(line) {
-    var m = line.match(/(\d{6})\D*(.*)/);
+    var l = line.trim();
+    var m = l.match(re);
     if (m) {
       var cod = m[1];
       var resto = m[2] ? m[2].trim() : "";
