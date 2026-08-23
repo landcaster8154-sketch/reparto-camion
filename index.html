@@ -347,7 +347,7 @@ const BASE_INICIAL = [{"codigo": "549746", "nombre": "HORNO DE CONCHI", "direcci
 var baseDatos = [];
 var pedidosData = {}; // { "codigo_cliente": [ {cod, desc, cajas}, ... ] }
 var posicionesCruzadas = {}; // { "180": { "codigo_cliente_de_otra_ruta": ordenAprendido }, "186": {...} }
-var APP_VERSION = "v2.3 · deteccion-precisa-pdf";
+var APP_VERSION = "v2.4 · deteccion-sin-telefono";
 var pending = [], completed = [], issues = [];
 var currentRuta = "all";
 var expandedCardId = null;
@@ -434,10 +434,11 @@ function extraerCobros(texto) {
 function extraerCodigosPDF(texto) {
   var codigos = {};
   var lines = texto.split("\n");
-  // Una línea de cliente REAL siempre remata con teléfono + horario, p.ej:
+  // Una línea de cliente REAL siempre remata en un horario HH:MM-HH:MM, p.ej:
   // "18 577286 LIVING LEGANES Avenida... 28911 LEGANES 667643429 06:00-12:00"
+  // (el teléfono antes del horario puede faltar o venir raro, así que no lo exigimos)
   // Las líneas de albarán/cobro/matrícula NO tienen ese remate, así se descartan solas.
-  var re = /^\d+\s+(\d{6})\s+(.+?)\s+(?:\+34)?\d{9}\s+\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}\s*$/;
+  var re = /^\d+\s+(\d{6})\s+(.+)\s+\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}\s*$/;
   lines.forEach(function(line) {
     var l = line.trim();
     var m = l.match(re);
