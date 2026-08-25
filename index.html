@@ -71,6 +71,14 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .card.sinubicar-card::before{background:var(--yellow-t);}
 .badge-nuevo{display:inline-block;background:var(--yellow-t);color:#000;padding:1px 7px;border-radius:8px;font-size:10px;font-weight:800;vertical-align:middle;}
 .badge-prestado{display:inline-block;background:var(--accent-bg);color:var(--accent-t);padding:1px 7px;border-radius:8px;font-size:10px;font-weight:800;vertical-align:middle;}
+.franja-header{grid-column:1/-1;display:flex;align-items:center;gap:8px;font-size:11px;font-weight:800;letter-spacing:.03em;margin:14px 0 6px;padding:6px 4px;}
+.franja-header:first-child{margin-top:0;}
+.franja-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.franja-count{margin-left:auto;font-size:11px;font-weight:800;padding:2px 9px;border-radius:10px;}
+.franja-empty{grid-column:1/-1;border:2px dashed var(--border2);border-radius:var(--radius-sm);padding:14px;text-align:center;color:var(--text3);font-size:12px;margin-bottom:6px;}
+.horario-editor{border-top:1px dashed var(--border2);padding-top:10px;margin-top:2px;display:flex;flex-direction:column;gap:6px;}
+.horario-editor .field-label{margin-bottom:0;font-size:11px;}
+.horario-editor .field-input{margin-bottom:2px;}
 .card.dragging{opacity:0.5;}
 .card.drag-over{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-bg);}
 .card-head{padding:12px 14px;cursor:pointer;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
@@ -276,6 +284,9 @@ body.light .historial-card{box-shadow:0 1px 3px rgba(0,0,0,0.08);}
         <option value="180">R.180</option>
         <option value="186">R.186</option>
       </select>
+      <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2);white-space:nowrap;padding:0 4px;">
+        <input type="checkbox" id="search-sin-direccion" style="width:15px;height:15px;" /> 🆕 Por repasar
+      </label>
     </div>
     <div class="scroll" style="padding:0;"><div id="lista-clientes"></div></div>
   </div>
@@ -332,6 +343,7 @@ body.light .historial-card{box-shadow:0 1px 3px rgba(0,0,0,0.08);}
       <div style="flex:1;"><div class="field-label">Orden</div><input class="field-input" id="fc-orden" type="number" placeholder="99" /></div>
     </div>
     <div><div class="field-label">Teléfono</div><input class="field-input" id="fc-telefono" type="tel" placeholder="612 345 678" /></div>
+    <div><div class="field-label">Horario habitual</div><input class="field-input" id="fc-horario" placeholder="Ej: 08:00-09:00" /></div>
     <div><div class="field-label">Nota de entrega</div><input class="field-input" id="fc-nota" placeholder="Ej: Abre a las 8..." /></div>
     <div class="sheet-btns" style="margin-top:4px;">
       <button class="sheet-btn danger" id="btn-borrar-cliente" style="display:none;">🗑️ Borrar</button>
@@ -347,7 +359,9 @@ const BASE_INICIAL = [{"codigo": "549746", "nombre": "HORNO DE CONCHI", "direcci
 var baseDatos = [];
 var pedidosData = {}; // { "codigo_cliente": [ {cod, desc, cajas}, ... ] }
 var posicionesCruzadas = {}; // { "180": { "codigo_cliente_de_otra_ruta": ordenAprendido }, "186": {...} }
-var APP_VERSION = "v2.4 · deteccion-sin-telefono";
+var franjasManuales = {}; // { "180": { "codigo_cliente": "urgente"|"segunda"|"ultima" }, "186": {...} }
+var horarioAbiertoId = null;
+var APP_VERSION = "v2.5 · franjas-horarias";
 var pending = [], completed = [], issues = [];
 var currentRuta = "all";
 var expandedCardId = null;
@@ -363,6 +377,7 @@ function guardar() {
     localStorage.setItem("rr_completed", JSON.stringify(completed));
     localStorage.setItem("rr_issues",    JSON.stringify(issues));
     localStorage.setItem("rr_posiciones_cruzadas", JSON.stringify(posicionesCruzadas));
+    localStorage.setItem("rr_franjas_manuales", JSON.stringify(franjasManuales));
     localStorage.setItem("rr_fecha",     new Date().toDateString());
   } catch(e) {}
 }
@@ -377,6 +392,8 @@ function cargar() {
     }
     var pc = localStorage.getItem("rr_posiciones_cruzadas");
     if (pc) { try { posicionesCruzadas = JSON.parse(pc); } catch(ex) { posicionesCruzadas = {}; } }
+    var fm = localStorage.getItem("rr_franjas_manuales");
+    if (fm) { try { franjasManuales = JSON.parse(fm); } catch(ex) { franjasManuales = {}; } }
 
     var fecha = localStorage.getItem("rr_fecha");
     var hoy = new Date().toDateString();
@@ -438,17 +455,43 @@ function extraerCodigosPDF(texto) {
   // "18 577286 LIVING LEGANES Avenida... 28911 LEGANES 667643429 06:00-12:00"
   // (el teléfono antes del horario puede faltar o venir raro, así que no lo exigimos)
   // Las líneas de albarán/cobro/matrícula NO tienen ese remate, así se descartan solas.
-  var re = /^\d+\s+(\d{6})\s+(.+)\s+\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}\s*$/;
+  var re = /^\d+\s+(\d{6})\s+(.+?)\s+(\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2})\s*$/;
   lines.forEach(function(line) {
     var l = line.trim();
     var m = l.match(re);
     if (m) {
       var cod = m[1];
       var resto = m[2] ? m[2].trim() : "";
-      if (!codigos[cod]) codigos[cod] = resto;
+      var horario = m[3] ? m[3].replace(/\s+/g, "") : "";
+      if (!codigos[cod]) codigos[cod] = { nombre: resto, horario: horario };
     }
   });
   return codigos;
+}
+
+// ─── FRANJAS HORARIAS (Primera hora urgente / Segunda hora / Última hora) ──
+var FRANJA_ORDEN = ["urgente", "segunda", "ultima"];
+var FRANJA_RANK = { urgente: 0, segunda: 1, ultima: 2 };
+var FRANJA_META = {
+  urgente: { label: "PRIMERA HORA · URGENTE", color: "var(--red-t)", bg: "rgba(239,68,68,0.15)", dot: "#ef4444" },
+  segunda: { label: "SEGUNDA HORA", color: "var(--yellow-t)", bg: "rgba(251,191,36,0.15)", dot: "#fbbf24" },
+  ultima:  { label: "ÚLTIMA HORA", color: "var(--text2)", bg: "rgba(90,96,128,0.2)", dot: "var(--text3)" }
+};
+
+function calcularFranja(horario) {
+  if (!horario) return "ultima";
+  var m = horario.match(/^(\d{1,2}):(\d{2})/);
+  if (!m) return "ultima";
+  var totalMin = parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+  if (totalMin === 0) return "ultima"; // 00:00-00:00 = sin restricción horaria
+  if (totalMin < 9 * 60) return "urgente";
+  if (totalMin < 12 * 60) return "segunda";
+  return "ultima";
+}
+
+function franjaEfectiva(ruta, codigo, horario) {
+  if (franjasManuales[ruta] && franjasManuales[ruta][codigo]) return franjasManuales[ruta][codigo];
+  return calcularFranja(horario);
 }
 
 function maxOrdenRuta(ruta) {
@@ -469,6 +512,8 @@ function persistirOrdenAprendido() {
       if (idx > -1) baseDatos[idx].orden = item.orden;
       if (item.esNuevo) item.sinUbicar = false;
     }
+    if (!franjasManuales[item.ruta]) franjasManuales[item.ruta] = {};
+    franjasManuales[item.ruta][item.codigo] = item.franja;
   });
 }
 
@@ -508,29 +553,38 @@ function procesarPDF() {
   var siguienteOrdenNuevo = maxOrdenRuta(numRuta) + 1;
 
   codigos.forEach(function(codigo) {
+    var info = codigosPDF[codigo];
+    var horarioDetectado = info.horario || "";
     var idx = baseDatos.findIndex(function(c) { return c.codigo === codigo; });
     if (idx === -1) {
-      var nombreDetectado = codigosPDF[codigo] || ("Cliente " + codigo);
-      var nuevo = { codigo: codigo, nombre: nombreDetectado, direccion: "", ruta: numRuta, orden: siguienteOrdenNuevo, telefono: "", nota: "" };
+      var nombreDetectado = info.nombre || ("Cliente " + codigo);
+      var nuevo = { codigo: codigo, nombre: nombreDetectado, direccion: "", ruta: numRuta, orden: siguienteOrdenNuevo, telefono: "", nota: "", horario: "" };
       baseDatos.push(nuevo);
       siguienteOrdenNuevo++;
       nuevosClientes.push(nuevo);
-      itemsBase.push({ codigo: codigo, esNuevo: true, esPrestado: false, sinUbicar: true, rutaCasa: numRuta, ordenEfectivo: nuevo.orden });
+      itemsBase.push({ codigo: codigo, esNuevo: true, esPrestado: false, sinUbicar: true, rutaCasa: numRuta, ordenEfectivo: nuevo.orden, horario: horarioDetectado });
     } else {
       var c = baseDatos[idx];
+      var horarioUtil = (horarioDetectado && horarioDetectado !== "00:00-00:00") ? horarioDetectado : "";
+      var horarioEf = horarioUtil || c.horario || "";
       if (c.ruta === numRuta) {
-        itemsBase.push({ codigo: codigo, esNuevo: false, esPrestado: false, sinUbicar: false, rutaCasa: c.ruta, ordenEfectivo: c.orden });
+        itemsBase.push({ codigo: codigo, esNuevo: false, esPrestado: false, sinUbicar: false, rutaCasa: c.ruta, ordenEfectivo: c.orden, horario: horarioEf });
       } else {
         var guardado = posicionesCruzadas[numRuta] ? posicionesCruzadas[numRuta][codigo] : undefined;
         var sinUbicar = (guardado === undefined || guardado === null);
         var ordenEf = sinUbicar ? siguienteOrdenNuevo++ : guardado;
         prestados.push(c);
-        itemsBase.push({ codigo: codigo, esNuevo: false, esPrestado: true, sinUbicar: sinUbicar, rutaCasa: c.ruta, ordenEfectivo: ordenEf });
+        itemsBase.push({ codigo: codigo, esNuevo: false, esPrestado: true, sinUbicar: sinUbicar, rutaCasa: c.ruta, ordenEfectivo: ordenEf, horario: horarioEf });
       }
     }
   });
 
   itemsBase.sort(function(a,b) { return a.ordenEfectivo - b.ordenEfectivo; });
+
+  itemsBase.forEach(function(item) {
+    item.franja = franjaEfectiva(numRuta, item.codigo, item.horario);
+  });
+  itemsBase.sort(function(a,b) { return FRANJA_RANK[a.franja] - FRANJA_RANK[b.franja]; });
 
   var cobros = extraerCobros(texto);
 
@@ -548,7 +602,10 @@ function procesarPDF() {
       esPrestado: item.esPrestado,
       sinUbicar: item.sinUbicar,
       orden: i + 1,
+      horario: item.horario,
+      franja: item.franja,
       nota_entrega: c.nota || "",
+      nota_hoy: "",
       telefono: c.telefono || "",
       cobro_obligatorio: cobro ? cobro.obligatorio : false,
       cobro_monto: cobro ? cobro.monto : null,
@@ -559,6 +616,7 @@ function procesarPDF() {
   completed = [];
   issues = [];
   expandedCardId = null;
+  horarioAbiertoId = null;
   guardar();
 
   var totalCobros = Object.keys(cobros).filter(function(k){return cobros[k].obligatorio;})
@@ -641,9 +699,127 @@ function recuperarCliente(id, origen) {
   var lista = origen === "done" ? completed : issues;
   var i = lista.findIndex(function(c) { return c.id === id; });
   if (i > -1) { pending.push(lista[i]); lista.splice(i, 1); }
-  pending.sort(function(a,b) { return a.orden - b.orden; });
+  pending.sort(function(a,b) {
+    var ra = FRANJA_RANK[a.franja] !== undefined ? FRANJA_RANK[a.franja] : 2;
+    var rb = FRANJA_RANK[b.franja] !== undefined ? FRANJA_RANK[b.franja] : 2;
+    if (ra !== rb) return ra - rb;
+    return a.orden - b.orden;
+  });
   guardar(); renderReparto();
   if (document.getElementById("historial-drawer").classList.contains("open")) renderHistorial();
+}
+
+function indiceFinFranja(franja) {
+  var rank = FRANJA_RANK[franja];
+  var idx = 0;
+  for (var i = 0; i < pending.length; i++) {
+    if (FRANJA_RANK[pending[i].franja] <= rank) idx = i + 1; else break;
+  }
+  return idx;
+}
+
+function toggleHorarioEditor(id) {
+  horarioAbiertoId = horarioAbiertoId === id ? null : id;
+  renderReparto();
+}
+
+function guardarHorario(id, siempre) {
+  var item = pending.find(function(p) { return p.id === id; });
+  if (!item) return;
+  var inputHorario = document.getElementById("horario-input-" + id);
+  var inputNota = document.getElementById("nota-input-" + id);
+  var horarioVal = inputHorario ? inputHorario.value.trim() : "";
+  var notaVal = inputNota ? inputNota.value.trim() : "";
+
+  item.horario = horarioVal;
+  item.franja = calcularFranja(horarioVal);
+
+  if (siempre) {
+    var idx = baseDatos.findIndex(function(b) { return b.codigo === item.codigo; });
+    if (idx > -1) {
+      baseDatos[idx].horario = horarioVal;
+      if (notaVal) baseDatos[idx].nota = notaVal;
+    }
+    if (notaVal) item.nota_entrega = notaVal;
+    item.nota_hoy = "";
+  } else {
+    item.nota_hoy = notaVal;
+  }
+
+  // Reordena dentro de su nueva franja (al final de ella) para mantener la agrupación.
+  var actualIdx = pending.indexOf(item);
+  pending.splice(actualIdx, 1);
+  var destIdx = indiceFinFranja(item.franja);
+  pending.splice(destIdx, 0, item);
+  pending.forEach(function(c, i) { c.orden = i + 1; });
+  if (!franjasManuales[item.ruta]) franjasManuales[item.ruta] = {};
+  franjasManuales[item.ruta][item.codigo] = item.franja;
+
+  horarioAbiertoId = null;
+  guardar();
+  renderReparto();
+}
+
+function renderCardHtml(c) {
+  var idx = pending.indexOf(c);
+  var exp = expandedCardId === c.id;
+  var horAbierto = horarioAbiertoId === c.id;
+  var tel = c.telefono || "";
+  var mapUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(c.direccion);
+  var cardClass = "card" + (exp ? " expanded" : "") + (c.sinUbicar ? " sinubicar-card" : "");
+  var badges = "";
+  if (c.esNuevo) badges += ' <span class="badge-nuevo">🆕 NUEVO</span>';
+  if (c.esPrestado) badges += ' <span class="badge-prestado">🔁 Ruta ' + c.rutaCasa + "</span>";
+  var html = '<div class="' + cardClass + '" id="card-' + idx + '" draggable="true" data-idx="' + idx + '" data-id="' + c.id + '" data-franja="' + c.franja + '">' +
+    '<div class="card-head">' +
+      '<div style="display:flex;align-items:center;flex:1;min-width:0;">' +
+        '<span class="drag-handle" title="Arrastrar">⠿</span>' +
+        '<span class="card-order">' + c.orden + "</span>" +
+        '<div style="min-width:0;">' +
+          '<div class="card-name">' + c.nombre + badges + "</div>" +
+          '<div class="card-meta">Cód. ' + c.codigo + " · Ruta " + c.ruta + (tel ? " · 📞 " + tel : "") + (c.horario ? " · 🕐 " + c.horario : "") + "</div>" +
+        "</div>" +
+      "</div>" +
+      '<div class="chevron-btn' + (exp ? " open" : "") + '" data-toggle="' + c.id + '">▼</div>' +
+    "</div>" +
+    '<div class="card-addr">📍 ' + c.direccion + "</div>";
+  html += (c.nota_entrega ? '<div class="card-nota">⚠️ ' + c.nota_entrega + "</div>" : "");
+  html += (c.nota_hoy ? '<div class="card-nota" style="color:var(--accent-t);">📝 Hoy: ' + c.nota_hoy + "</div>" : "");
+  if (c.cobro_monto) {
+    var montoTxt = c.cobro_monto.toFixed(2).replace(".", ",") + "€";
+    html += c.cobro_obligatorio
+      ? '<div class="card-cobro obligatorio">💶 COBRAR ' + montoTxt + " (obligatorio)</div>"
+      : '<div class="card-cobro opcional">💶 ' + montoTxt + " opcional (o firma)</div>";
+  }
+
+  if (exp) {
+    html += '<div class="card-body">';
+    html += '<div class="actions">' +
+      '<button class="btn green" data-action="entregado" data-id="' + c.id + '">✔️ Entregado</button>' +
+      '<button class="btn red" data-action="incidencia" data-id="' + c.id + '">❌ Incidencia</button>' +
+      '<button class="btn" style="border-color:rgba(79,127,255,0.4);background:rgba(79,127,255,0.1);color:var(--accent-t);" data-action="horario" data-id="' + c.id + '">🕐 Horario</button>' +
+      "</div>" +
+      '<div class="actions">' +
+      '<a class="btn blue" href="' + mapUrl + '" target="_blank">🗺️ Navegar</a>' +
+      (tel ? '<a class="btn blue" href="tel:' + tel + '">📞 Llamar</a>' : '<span class="btn" style="opacity:0.4;cursor:default;">📞 Sin tel.</span>') +
+      '<button class="btn" style="border-color:rgba(251,191,36,0.4);background:rgba(245,158,11,0.1);color:var(--yellow-t);" data-action="pedido" data-cod="' + c.codigo + '" data-nom="' + c.nombre.replace(/"/g, "&quot;") + '">📦 Pedido</button>' +
+      "</div>";
+    if (horAbierto) {
+      html += '<div class="horario-editor">' +
+        '<div class="field-label">Horario de hoy</div>' +
+        '<input class="field-input" id="horario-input-' + c.id + '" value="' + (c.horario || "") + '" placeholder="08:00-09:00" />' +
+        '<div class="field-label">Nota de hoy</div>' +
+        '<input class="field-input" id="nota-input-' + c.id + '" value="' + (c.nota_hoy || "").replace(/"/g, "&quot;") + '" placeholder="Ej: entrar por la trasera hoy" />' +
+        '<div class="actions">' +
+        '<button class="btn blue" data-action="horario-hoy" data-id="' + c.id + '">📅 Solo hoy</button>' +
+        '<button class="btn" style="background:var(--accent);border-color:var(--accent);color:#fff;" data-action="horario-siempre" data-id="' + c.id + '">📌 Guardar siempre</button>' +
+        "</div>" +
+        "</div>";
+    }
+    html += "</div>";
+  }
+  html += "</div>";
+  return html;
 }
 
 function renderReparto() {
@@ -672,50 +848,18 @@ function renderReparto() {
   var next = fp[0];
   var html = '<div class="next-stop">⚡ SIGUIENTE: <strong>' + next.nombre + '</strong> · Orden ' + next.orden + ' · Ruta ' + next.ruta + '</div>';
 
-  fp.forEach(function(c) {
-    var idx = pending.indexOf(c);
-    var exp = expandedCardId === c.id;
-    var tel = c.telefono || "";
-    var mapUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(c.direccion);
-    var cardClass = "card" + (exp ? " expanded" : "") + (c.sinUbicar ? " sinubicar-card" : "");
-    var badges = '';
-    if (c.esNuevo) badges += ' <span class="badge-nuevo">🆕 NUEVO</span>';
-    if (c.esPrestado) badges += ' <span class="badge-prestado">🔁 Ruta ' + c.rutaCasa + '</span>';
-    html += '<div class="' + cardClass + '" id="card-' + idx + '" draggable="true" data-idx="' + idx + '" data-id="' + c.id + '">' +
-      '<div class="card-head">' +
-        '<div style="display:flex;align-items:center;flex:1;min-width:0;">' +
-          '<span class="drag-handle" title="Arrastrar">⠿</span>' +
-          '<span class="card-order">' + c.orden + '</span>' +
-          '<div style="min-width:0;">' +
-            '<div class="card-name">' + c.nombre + badges + '</div>' +
-            '<div class="card-meta">Cód. ' + c.codigo + ' · Ruta ' + c.ruta + (tel ? ' · 📞 ' + tel : '') + '</div>' +
-          '</div>' +
-        '</div>' +
-        '<div class="chevron-btn' + (exp ? " open" : "") + '" data-toggle="' + c.id + '">▼</div>' +
-      '</div>' +
-      '<div class="card-addr">📍 ' + c.direccion + '</div>';
-    html += (c.nota_entrega ? '<div class="card-nota">⚠️ ' + c.nota_entrega + '</div>' : '');
-    if (c.cobro_monto) {
-      var montoTxt = c.cobro_monto.toFixed(2).replace(".", ",") + '€';
-      html += c.cobro_obligatorio
-        ? '<div class="card-cobro obligatorio">💶 COBRAR ' + montoTxt + ' (obligatorio)</div>'
-        : '<div class="card-cobro opcional">💶 ' + montoTxt + ' opcional (o firma)</div>';
+  FRANJA_ORDEN.forEach(function(franja) {
+    var meta = FRANJA_META[franja];
+    var items = fp.filter(function(c) { return c.franja === franja; });
+    html += '<div class="franja-header" data-franja="' + franja + '" style="color:' + meta.color + ';">' +
+      '<span class="franja-dot" style="background:' + meta.dot + ';"></span>' + meta.label +
+      '<span class="franja-count" style="background:' + meta.bg + ';color:' + meta.color + ';">' + items.length + '</span>' +
+      '</div>';
+    if (!items.length) {
+      html += '<div class="franja-empty" data-franja="' + franja + '">Sin clientes — suelta aquí una tarjeta para moverla a esta franja</div>';
+    } else {
+      items.forEach(function(c) { html += renderCardHtml(c); });
     }
-
-    if (exp) {
-      html += '<div class="card-body">';
-      html += '<div class="actions">' +
-        '<button class="btn green" data-action="entregado" data-id="' + c.id + '">✔️ Entregado</button>' +
-        '<button class="btn red" data-action="incidencia" data-id="' + c.id + '">❌ Incidencia</button>' +
-        '</div>' +
-        '<div class="actions">' +
-        '<a class="btn blue" href="' + mapUrl + '" target="_blank">🗺️ Navegar</a>' +
-        (tel ? '<a class="btn blue" href="tel:' + tel + '">📞 Llamar</a>' : '<span class="btn" style="opacity:0.4;cursor:default;">📞 Sin tel.</span>') +
-        '<button class="btn" style="border-color:rgba(251,191,36,0.4);background:rgba(245,158,11,0.1);color:var(--yellow-t);" data-action="pedido" data-cod="' + c.codigo + '" data-nom="' + c.nombre.replace(/"/g, "&quot;") + '">📦 Pedido</button>' +
-        '</div>' +
-        '</div></div>';
-    }
-    html += '</div>';
   });
 
   list.innerHTML = html;
@@ -752,6 +896,18 @@ function renderReparto() {
     btn.addEventListener("click", function(e) { e.stopPropagation(); abrirPedido(this.dataset.cod, this.dataset.nom); });
     btn.addEventListener("touchend", function(e) { e.stopPropagation(); e.preventDefault(); abrirPedido(this.dataset.cod, this.dataset.nom); });
   });
+  list.querySelectorAll("[data-action=horario]").forEach(function(btn) {
+    btn.addEventListener("click", function(e) { e.stopPropagation(); toggleHorarioEditor(this.dataset.id); });
+    btn.addEventListener("touchend", function(e) { e.stopPropagation(); e.preventDefault(); toggleHorarioEditor(this.dataset.id); });
+  });
+  list.querySelectorAll("[data-action='horario-hoy']").forEach(function(btn) {
+    btn.addEventListener("click", function(e) { e.stopPropagation(); guardarHorario(this.dataset.id, false); });
+    btn.addEventListener("touchend", function(e) { e.stopPropagation(); e.preventDefault(); guardarHorario(this.dataset.id, false); });
+  });
+  list.querySelectorAll("[data-action='horario-siempre']").forEach(function(btn) {
+    btn.addEventListener("click", function(e) { e.stopPropagation(); guardarHorario(this.dataset.id, true); });
+    btn.addEventListener("touchend", function(e) { e.stopPropagation(); e.preventDefault(); guardarHorario(this.dataset.id, true); });
+  });
 
   list.querySelectorAll(".card[draggable]").forEach(function(card) {
     card.addEventListener("dragstart", function(e) {
@@ -761,6 +917,7 @@ function renderReparto() {
     });
     card.addEventListener("dragover", function(e) {
       e.preventDefault();
+      e.stopPropagation();
       e.dataTransfer.dropEffect = "move";
       list.querySelectorAll(".card").forEach(function(c) { c.classList.remove("drag-over"); });
       var targetIdx = parseInt(this.dataset.idx);
@@ -768,10 +925,13 @@ function renderReparto() {
     });
     card.addEventListener("drop", function(e) {
       e.preventDefault();
+      e.stopPropagation();
       var targetIdx = parseInt(this.dataset.idx);
+      var targetFranja = this.dataset.franja;
       if (dragSrcIdx === null || dragSrcIdx === targetIdx) return;
       var moved = pending.splice(dragSrcIdx, 1)[0];
       pending.splice(targetIdx, 0, moved);
+      moved.franja = targetFranja;
       pending.forEach(function(c, i) { c.orden = i + 1; });
       persistirOrdenAprendido();
       dragSrcIdx = null;
@@ -781,6 +941,27 @@ function renderReparto() {
     card.addEventListener("dragend", function() {
       dragSrcIdx = null;
       list.querySelectorAll(".card").forEach(function(c) { c.classList.remove("dragging"); c.classList.remove("drag-over"); });
+    });
+  });
+
+  list.querySelectorAll(".franja-header, .franja-empty").forEach(function(zona) {
+    zona.addEventListener("dragover", function(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+    });
+    zona.addEventListener("drop", function(e) {
+      e.preventDefault();
+      if (dragSrcIdx === null) return;
+      var franjaDestino = this.dataset.franja;
+      var moved = pending.splice(dragSrcIdx, 1)[0];
+      moved.franja = franjaDestino;
+      var destIdx = indiceFinFranja(franjaDestino);
+      pending.splice(destIdx, 0, moved);
+      pending.forEach(function(c, i) { c.orden = i + 1; });
+      persistirOrdenAprendido();
+      dragSrcIdx = null;
+      expandedCardId = null;
+      guardar(); renderReparto();
     });
   });
 }
@@ -863,11 +1044,13 @@ function renderBase() {
 function filtrarClientes() {
   var q = document.getElementById("search-input").value.toLowerCase();
   var r = document.getElementById("search-ruta").value;
+  var soloSinDireccion = document.getElementById("search-sin-direccion").checked;
   var lista = document.getElementById("lista-clientes");
   var filtrados = baseDatos.filter(function(c) {
     var mq = !q || c.nombre.toLowerCase().includes(q) || c.codigo.includes(q) || c.direccion.toLowerCase().includes(q);
     var mr = !r || c.ruta === r;
-    return mq && mr;
+    var msd = !soloSinDireccion || !c.direccion;
+    return mq && mr && msd;
   });
   if (!filtrados.length) { lista.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text3);">Sin resultados</div>'; return; }
   var html = "";
@@ -875,7 +1058,7 @@ function filtrarClientes() {
     var idx = baseDatos.indexOf(c);
     html += '<div class="cliente-row" data-edit="' + idx + '">' +
       '<div class="cliente-codigo">' + c.codigo + '</div>' +
-      '<div class="cliente-info"><div class="cliente-nombre">' + c.nombre + '</div><div class="cliente-dir">' + c.direccion + '</div></div>' +
+      '<div class="cliente-info"><div class="cliente-nombre">' + c.nombre + (!c.direccion ? ' <span class="badge-nuevo">🆕</span>' : '') + '</div><div class="cliente-dir">' + (c.direccion || "Sin dirección todavía") + (c.horario ? " · 🕐 " + c.horario : "") + '</div></div>' +
       '<span class="cliente-ruta ruta-' + c.ruta + '">R' + c.ruta + '</span>' +
       '</div>';
   });
@@ -899,9 +1082,10 @@ function abrirFormCliente(idx) {
     document.getElementById("fc-ruta").value = c.ruta || "180";
     document.getElementById("fc-orden").value = c.orden || "";
     document.getElementById("fc-telefono").value = c.telefono || "";
+    document.getElementById("fc-horario").value = c.horario || "";
     document.getElementById("fc-nota").value = c.nota || "";
   } else {
-    ["fc-codigo","fc-nombre","fc-direccion","fc-telefono","fc-nota","fc-orden"].forEach(function(id) { document.getElementById(id).value = ""; });
+    ["fc-codigo","fc-nombre","fc-direccion","fc-telefono","fc-horario","fc-nota","fc-orden"].forEach(function(id) { document.getElementById(id).value = ""; });
     document.getElementById("fc-ruta").value = "180";
   }
   document.getElementById("form-cliente-overlay").classList.remove("hidden");
@@ -919,6 +1103,7 @@ function guardarCliente() {
     ruta: document.getElementById("fc-ruta").value,
     orden: parseInt(document.getElementById("fc-orden").value) || 99,
     telefono: document.getElementById("fc-telefono").value.trim(),
+    horario: document.getElementById("fc-horario").value.trim(),
     nota: document.getElementById("fc-nota").value.trim(),
     activo: false
   };
@@ -1147,7 +1332,8 @@ function exportarSesion() {
     issues:    issues,
     pedidosData: pedidosData,
     baseDatos: baseDatos,
-    posicionesCruzadas: posicionesCruzadas
+    posicionesCruzadas: posicionesCruzadas,
+    franjasManuales: franjasManuales
   };
   var json = JSON.stringify(sesion);
   var blob = new Blob([json], {type: "application/json"});
@@ -1177,6 +1363,9 @@ function importarSesion(file) {
       }
       if (sesion.posicionesCruzadas) {
         posicionesCruzadas = sesion.posicionesCruzadas;
+      }
+      if (sesion.franjasManuales) {
+        franjasManuales = sesion.franjasManuales;
       }
       guardar();
       try { localStorage.setItem("rr_pedidos", JSON.stringify(pedidosData)); } catch(ex) {}
@@ -1286,6 +1475,7 @@ window.addEventListener("load", function() {
   document.getElementById("btn-borrar-cliente").addEventListener("touchend", function(e) { e.preventDefault(); borrarCliente(); });
   document.getElementById("search-input").addEventListener("input", filtrarClientes);
   document.getElementById("search-ruta").addEventListener("change", filtrarClientes);
+  document.getElementById("search-sin-direccion").addEventListener("change", filtrarClientes);
 
   cargarPrefs();
   try {
