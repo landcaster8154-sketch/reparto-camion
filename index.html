@@ -231,6 +231,7 @@ body.light .historial-card{box-shadow:0 1px 3px rgba(0,0,0,0.08);}
         <button class="icon-btn" id="btn-vista">👁️ Vista</button>
         <button class="icon-btn" id="btn-tema">🌙 Tema</button>
         <button class="icon-btn" id="btn-historial">📋 Historial</button>
+        <button class="icon-btn" id="btn-incidencias-pedido">📝 Incidencias</button>
       </div>
     </div>
     <div class="stats">
@@ -318,6 +319,20 @@ body.light .historial-card{box-shadow:0 1px 3px rgba(0,0,0,0.08);}
   </div>
 </div>
 
+<!-- INCIDENCIAS DE PEDIDO (observaciones) -->
+<div class="drawer" id="incidencias-drawer">
+  <div class="drawer-backdrop" id="incidencias-backdrop"></div>
+  <div class="drawer-panel">
+    <div class="drawer-handle"></div>
+    <div class="drawer-header">
+      <div><h2>📝 Incidencias de Pedidos</h2><p>Se guardan 30 días · busca por cliente o código</p></div>
+      <button class="drawer-close" id="btn-close-incidencias">✕ Cerrar</button>
+    </div>
+    <div style="padding:10px 16px 0;"><input class="search-input" id="incidencias-search" placeholder="🔍 Buscar cliente o código..." style="width:100%;" /></div>
+    <div class="drawer-scroll"><div class="historial-list" id="incidencias-content"></div></div>
+  </div>
+</div>
+
 <!-- OVERLAY PEDIDO -->
 <div class="overlay hidden" id="pedido-overlay">
   <div class="sheet" style="max-width:500px;">
@@ -361,7 +376,9 @@ var pedidosData = {}; // { "codigo_cliente": [ {cod, desc, cajas}, ... ] }
 var posicionesCruzadas = {}; // { "180": { "codigo_cliente_de_otra_ruta": ordenAprendido }, "186": {...} }
 var franjasManuales = {}; // { "180": { "codigo_cliente": "urgente"|"segunda"|"ultima" }, "186": {...} }
 var horarioAbiertoId = null;
-var APP_VERSION = "v2.5 · franjas-horarias";
+var observacionAbiertaId = null;
+var incidenciasPedido = []; // { id, codigo, nombre, ruta, fecha, texto, timestamp }
+var APP_VERSION = "v2.7 · observaciones-pedido";
 var pending = [], completed = [], issues = [];
 var currentRuta = "all";
 var expandedCardId = null;
@@ -378,8 +395,29 @@ function guardar() {
     localStorage.setItem("rr_issues",    JSON.stringify(issues));
     localStorage.setItem("rr_posiciones_cruzadas", JSON.stringify(posicionesCruzadas));
     localStorage.setItem("rr_franjas_manuales", JSON.stringify(franjasManuales));
+    localStorage.setItem("rr_incidencias_pedido", JSON.stringify(incidenciasPedido));
     localStorage.setItem("rr_fecha",     new Date().toDateString());
   } catch(e) {}
+}
+
+// Elimina observaciones de pedido con más de 30 días para no acumular basura.
+function limpiarIncidenciasAntiguas() {
+  var LIMITE_MS = 30 * 24 * 60 * 60 * 1000;
+  var ahora = Date.now();
+  incidenciasPedido = incidenciasPedido.filter(function(o) {
+    return (ahora - o.timestamp) < LIMITE_MS;
+  });
+}
+
+// Rellena campos que puedan faltar en clientes pendientes cargados de sesiones
+// anteriores a la función de franjas horarias, para que nunca se queden "invisibles".
+function sanearPending(lista) {
+  (lista || []).forEach(function(p) {
+    if (!p.franja) p.franja = calcularFranja(p.horario || "");
+    if (p.horario === undefined) p.horario = "";
+    if (p.nota_hoy === undefined) p.nota_hoy = "";
+  });
+  return lista;
 }
 
 function cargar() {
@@ -394,6 +432,9 @@ function cargar() {
     if (pc) { try { posicionesCruzadas = JSON.parse(pc); } catch(ex) { posicionesCruzadas = {}; } }
     var fm = localStorage.getItem("rr_franjas_manuales");
     if (fm) { try { franjasManuales = JSON.parse(fm); } catch(ex) { franjasManuales = {}; } }
+    var ip = localStorage.getItem("rr_incidencias_pedido");
+    if (ip) { try { incidenciasPedido = JSON.parse(ip); } catch(ex) { incidenciasPedido = []; } }
+    limpiarIncidenciasAntiguas();
 
     var fecha = localStorage.getItem("rr_fecha");
     var hoy = new Date().toDateString();
@@ -401,9 +442,9 @@ function cargar() {
       var p = localStorage.getItem("rr_pending");
       var c = localStorage.getItem("rr_completed");
       var i = localStorage.getItem("rr_issues");
-      if (p) pending   = JSON.parse(p);
-      if (c) completed = JSON.parse(c);
-      if (i) issues    = JSON.parse(i);
+      if (p) pending   = sanearPending(JSON.parse(p));
+      if (c) completed = sanearPending(JSON.parse(c));
+      if (i) issues    = sanearPending(JSON.parse(i));
     }
   } catch(e) {
     baseDatos = JSON.parse(JSON.stringify(BASE_INICIAL));
@@ -760,10 +801,95 @@ function guardarHorario(id, siempre) {
   renderReparto();
 }
 
+function toggleObservacionEditor(id) {
+  observacionAbiertaId = observacionAbiertaId === id ? null : id;
+  renderReparto();
+}
+
+function guardarObservacion(id) {
+  var item = pending.find(function(p) { return p.id === id; });
+  if (!item) return;
+  var ta = document.getElementById("obs-input-" + id);
+  var texto = ta ? ta.value.trim() : "";
+  if (!texto) { observacionAbiertaId = null; renderReparto(); return; }
+  incidenciasPedido.push({
+    id: "obs_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7),
+    codigo: item.codigo,
+    nombre: item.nombre,
+    ruta: item.ruta,
+    fecha: new Date().toLocaleDateString("es-ES"),
+    texto: texto,
+    timestamp: Date.now()
+  });
+  observacionAbiertaId = null;
+  guardar();
+  renderReparto();
+}
+
+function eliminarObservacion(id) {
+  if (!confirm("¿Borrar esta observación?")) return;
+  var idx = incidenciasPedido.findIndex(function(o) { return o.id === id; });
+  if (idx > -1) incidenciasPedido.splice(idx, 1);
+  guardar();
+  renderIncidenciasPedido();
+}
+
+function openIncidenciasPedido() {
+  renderIncidenciasPedido();
+  var d = document.getElementById("incidencias-drawer");
+  d.classList.add("open");
+  var panel = d.querySelector(".drawer-panel");
+  if (panel) panel.style.transform = "translateY(0)";
+  var backdrop = d.querySelector(".drawer-backdrop");
+  if (backdrop) backdrop.style.opacity = "1";
+}
+function closeIncidenciasPedido() {
+  var d = document.getElementById("incidencias-drawer");
+  d.classList.remove("open");
+  var panel = d.querySelector(".drawer-panel");
+  if (panel) panel.style.transform = "";
+  var backdrop = d.querySelector(".drawer-backdrop");
+  if (backdrop) backdrop.style.opacity = "";
+}
+
+function renderIncidenciasPedido() {
+  var searchEl = document.getElementById("incidencias-search");
+  var q = searchEl ? searchEl.value.toLowerCase() : "";
+  var content = document.getElementById("incidencias-content");
+  var lista = incidenciasPedido.filter(function(o) {
+    return !q || o.nombre.toLowerCase().includes(q) || o.codigo.includes(q);
+  }).sort(function(a, b) { return b.timestamp - a.timestamp; });
+
+  if (!lista.length) {
+    content.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text3);">Sin observaciones registradas (se guardan 30 días).</div>';
+    return;
+  }
+  var html = "";
+  lista.forEach(function(o) {
+    html += '<div class="historial-card">' +
+      '<div class="historial-head" style="cursor:default;align-items:flex-start;">' +
+        '<div class="historial-info">' +
+          '<div class="historial-name">' + o.nombre + "</div>" +
+          '<div class="historial-meta">Cód. ' + o.codigo + " · Ruta " + o.ruta + " · " + o.fecha + "</div>" +
+          '<div style="margin-top:6px;font-size:13px;color:var(--text);">' + o.texto + "</div>" +
+        "</div>" +
+        '<button class="btn red" style="flex:none;padding:6px 10px;" data-del-obs="' + o.id + '">🗑️</button>' +
+      "</div>" +
+    "</div>";
+  });
+  content.innerHTML = html;
+  content.querySelectorAll("[data-del-obs]").forEach(function(btn) {
+    btn.addEventListener("click", function(e) { e.stopPropagation(); eliminarObservacion(this.dataset.delObs); });
+    btn.addEventListener("touchend", function(e) { e.stopPropagation(); e.preventDefault(); eliminarObservacion(this.dataset.delObs); });
+  });
+}
+
 function renderCardHtml(c) {
   var idx = pending.indexOf(c);
   var exp = expandedCardId === c.id;
   var horAbierto = horarioAbiertoId === c.id;
+  var obsAbierta = observacionAbiertaId === c.id;
+  var numObs = incidenciasPedido.filter(function(o) { return o.codigo === c.codigo; }).length;
   var tel = c.telefono || "";
   var mapUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(c.direccion);
   var cardClass = "card" + (exp ? " expanded" : "") + (c.sinUbicar ? " sinubicar-card" : "");
@@ -777,7 +903,7 @@ function renderCardHtml(c) {
         '<span class="card-order">' + c.orden + "</span>" +
         '<div style="min-width:0;">' +
           '<div class="card-name">' + c.nombre + badges + "</div>" +
-          '<div class="card-meta">Cód. ' + c.codigo + " · Ruta " + c.ruta + (tel ? " · 📞 " + tel : "") + (c.horario ? " · 🕐 " + c.horario : "") + "</div>" +
+          '<div class="card-meta">Cód. ' + c.codigo + " · Ruta " + c.ruta + (tel ? " · 📞 " + tel : "") + (c.horario ? " · 🕐 " + c.horario : "") + (numObs ? ' · <span style="color:var(--yellow-t);font-weight:700;">📝 ' + numObs + '</span>' : "") + "</div>" +
         "</div>" +
       "</div>" +
       '<div class="chevron-btn' + (exp ? " open" : "") + '" data-toggle="' + c.id + '">▼</div>' +
@@ -798,6 +924,7 @@ function renderCardHtml(c) {
       '<button class="btn green" data-action="entregado" data-id="' + c.id + '">✔️ Entregado</button>' +
       '<button class="btn red" data-action="incidencia" data-id="' + c.id + '">❌ Incidencia</button>' +
       '<button class="btn" style="border-color:rgba(79,127,255,0.4);background:rgba(79,127,255,0.1);color:var(--accent-t);" data-action="horario" data-id="' + c.id + '">🕐 Horario</button>' +
+      '<button class="btn" style="border-color:rgba(251,191,36,0.5);background:rgba(251,191,36,0.1);color:var(--yellow-t);" data-action="observacion" data-id="' + c.id + '">📝 Observación' + (numObs ? " (" + numObs + ")" : "") + '</button>' +
       "</div>" +
       '<div class="actions">' +
       '<a class="btn blue" href="' + mapUrl + '" target="_blank">🗺️ Navegar</a>' +
@@ -815,6 +942,24 @@ function renderCardHtml(c) {
         '<button class="btn" style="background:var(--accent);border-color:var(--accent);color:#fff;" data-action="horario-siempre" data-id="' + c.id + '">📌 Guardar siempre</button>' +
         "</div>" +
         "</div>";
+    }
+    if (obsAbierta) {
+      html += '<div class="horario-editor">' +
+        '<div class="field-label">Nueva observación de pedido (código ' + c.codigo + ' · ' + c.nombre + ')</div>' +
+        '<textarea class="field-textarea" id="obs-input-' + c.id + '" style="min-height:70px;" placeholder="Ej: faltó una caja de croissants"></textarea>' +
+        '<div class="actions">' +
+        '<button class="btn" data-action="obs-cancelar" data-id="' + c.id + '">Cancelar</button>' +
+        '<button class="btn" style="background:var(--accent);border-color:var(--accent);color:#fff;" data-action="obs-guardar" data-id="' + c.id + '">💾 Guardar observación</button>' +
+        "</div>";
+      if (numObs) {
+        html += '<div class="field-label" style="margin-top:6px;">Observaciones anteriores de este cliente</div>';
+        incidenciasPedido.filter(function(o) { return o.codigo === c.codigo; })
+          .sort(function(a, b) { return b.timestamp - a.timestamp; })
+          .forEach(function(o) {
+            html += '<div style="font-size:12px;color:var(--text2);padding:6px 0;border-top:1px solid var(--border);"><strong style="color:var(--text3);">' + o.fecha + ':</strong> ' + o.texto + "</div>";
+          });
+      }
+      html += "</div>";
     }
     html += "</div>";
   }
@@ -907,6 +1052,18 @@ function renderReparto() {
   list.querySelectorAll("[data-action='horario-siempre']").forEach(function(btn) {
     btn.addEventListener("click", function(e) { e.stopPropagation(); guardarHorario(this.dataset.id, true); });
     btn.addEventListener("touchend", function(e) { e.stopPropagation(); e.preventDefault(); guardarHorario(this.dataset.id, true); });
+  });
+  list.querySelectorAll("[data-action=observacion]").forEach(function(btn) {
+    btn.addEventListener("click", function(e) { e.stopPropagation(); toggleObservacionEditor(this.dataset.id); });
+    btn.addEventListener("touchend", function(e) { e.stopPropagation(); e.preventDefault(); toggleObservacionEditor(this.dataset.id); });
+  });
+  list.querySelectorAll("[data-action='obs-guardar']").forEach(function(btn) {
+    btn.addEventListener("click", function(e) { e.stopPropagation(); guardarObservacion(this.dataset.id); });
+    btn.addEventListener("touchend", function(e) { e.stopPropagation(); e.preventDefault(); guardarObservacion(this.dataset.id); });
+  });
+  list.querySelectorAll("[data-action='obs-cancelar']").forEach(function(btn) {
+    btn.addEventListener("click", function(e) { e.stopPropagation(); toggleObservacionEditor(this.dataset.id); });
+    btn.addEventListener("touchend", function(e) { e.stopPropagation(); e.preventDefault(); toggleObservacionEditor(this.dataset.id); });
   });
 
   list.querySelectorAll(".card[draggable]").forEach(function(card) {
@@ -1333,7 +1490,8 @@ function exportarSesion() {
     pedidosData: pedidosData,
     baseDatos: baseDatos,
     posicionesCruzadas: posicionesCruzadas,
-    franjasManuales: franjasManuales
+    franjasManuales: franjasManuales,
+    incidenciasPedido: incidenciasPedido
   };
   var json = JSON.stringify(sesion);
   var blob = new Blob([json], {type: "application/json"});
@@ -1354,9 +1512,9 @@ function importarSesion(file) {
     try {
       var sesion = JSON.parse(e.target.result);
       if (!sesion.fecha) { alert("Archivo no válido"); return; }
-      pending     = sesion.pending     || [];
-      completed   = sesion.completed   || [];
-      issues      = sesion.issues      || [];
+      pending     = sanearPending(sesion.pending     || []);
+      completed   = sanearPending(sesion.completed   || []);
+      issues      = sanearPending(sesion.issues      || []);
       pedidosData = sesion.pedidosData || {};
       if (sesion.baseDatos && sesion.baseDatos.length) {
         baseDatos = sesion.baseDatos;
@@ -1366,6 +1524,10 @@ function importarSesion(file) {
       }
       if (sesion.franjasManuales) {
         franjasManuales = sesion.franjasManuales;
+      }
+      if (sesion.incidenciasPedido) {
+        incidenciasPedido = sesion.incidenciasPedido;
+        limpiarIncidenciasAntiguas();
       }
       guardar();
       try { localStorage.setItem("rr_pedidos", JSON.stringify(pedidosData)); } catch(ex) {}
@@ -1457,6 +1619,12 @@ window.addEventListener("load", function() {
   document.getElementById("drawer-backdrop").addEventListener("click", closeHistorial);
   document.getElementById("btn-close-historial").addEventListener("click", closeHistorial);
   document.getElementById("btn-close-historial").addEventListener("touchend", function(e) { e.preventDefault(); closeHistorial(); });
+  document.getElementById("btn-incidencias-pedido").addEventListener("click", openIncidenciasPedido);
+  document.getElementById("btn-incidencias-pedido").addEventListener("touchend", function(e) { e.preventDefault(); openIncidenciasPedido(); });
+  document.getElementById("incidencias-backdrop").addEventListener("click", closeIncidenciasPedido);
+  document.getElementById("btn-close-incidencias").addEventListener("click", closeIncidenciasPedido);
+  document.getElementById("btn-close-incidencias").addEventListener("touchend", function(e) { e.preventDefault(); closeIncidenciasPedido(); });
+  document.getElementById("incidencias-search").addEventListener("input", renderIncidenciasPedido);
   document.getElementById("btn-procesar-pdf").addEventListener("click", procesarPDF);
   document.getElementById("btn-procesar-pdf").addEventListener("touchend", function(e) { e.preventDefault(); procesarPDF(); });
   document.getElementById("btn-limpiar-pdf").addEventListener("click", function() { document.getElementById("pdf-texto").value = ""; document.getElementById("pdf-resultado").innerHTML = ""; });
