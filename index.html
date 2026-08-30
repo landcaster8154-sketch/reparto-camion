@@ -147,6 +147,56 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .pdf-area{background:var(--card);border:2px dashed var(--border2);border-radius:var(--radius);padding:14px;font-size:13px;color:var(--text2);resize:none;width:100%;min-height:180px;font-family:inherit;line-height:1.5;}
 .pdf-area:focus{outline:none;border-color:var(--accent);}
 .pdf-result{background:var(--card2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;font-size:13px;line-height:1.7;}
+
+/* ── Repaso de Carga ── */
+.rp-summary{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:10px;}
+.rp-bar{background:var(--bg2);border-radius:8px;height:9px;overflow:hidden;margin-top:8px;}
+.rp-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-t));width:0%;transition:width .25s ease;}
+.rp-bar-label{display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-top:6px;}
+.rp-toolbar{display:flex;gap:8px;margin-bottom:8px;}
+.rp-toolbar input{flex:1;background:var(--card);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:var(--radius-sm);font-size:14px;}
+.rp-learn-bar{background:var(--card2);border:1px dashed var(--border2);border-radius:var(--radius);padding:12px;margin-bottom:10px;}
+.rp-learn-btn{width:100%;background:transparent;border:1px solid var(--accent);color:var(--accent-t);border-radius:var(--radius-sm);padding:10px;font-weight:700;font-size:13px;margin-bottom:8px;}
+.rp-learn-btn.active{background:var(--accent);color:#fff;}
+.rp-learn-io{display:flex;gap:8px;}
+.rp-learn-io button{flex:1;background:var(--card);border:1px solid var(--border);color:var(--text2);border-radius:8px;padding:8px;font-size:11.5px;}
+.rp-learn-count{font-size:11.5px;color:var(--text3);margin-top:8px;text-align:center;}
+.rp-row{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--border2);border-radius:var(--radius-sm);padding:11px 12px;display:flex;align-items:center;gap:10px;margin-bottom:7px;}
+.rp-row.ok{border-left-color:var(--green);background:linear-gradient(0deg,var(--green-bg),var(--green-bg)),var(--card);}
+.rp-row.partial{border-left-color:#f5a524;}
+.rp-row.over{border-left-color:var(--red);background:linear-gradient(0deg,var(--red-bg),var(--red-bg)),var(--card);}
+.rp-row .rp-info{flex:1;min-width:0;}
+.rp-row .rp-codigo{font-weight:700;color:var(--accent-t);font-size:13.5px;}
+.rp-row .rp-desc{font-size:13px;color:var(--text);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rp-row .rp-clientes{font-size:11px;color:var(--text3);margin-top:2px;}
+.rp-stepper{display:flex;align-items:center;gap:7px;flex-shrink:0;}
+.rp-stepper button{width:30px;height:30px;border-radius:7px;border:1px solid var(--border);background:var(--card2);color:var(--text);font-size:17px;}
+.rp-qty{min-width:48px;text-align:center;font-weight:700;font-size:15px;}
+.rp-qty .of{color:var(--text3);font-weight:400;font-size:12px;}
+.rp-fab-row{display:flex;gap:10px;padding:10px 0 4px;}
+.rp-fab-row .sheet-btn{flex:1;}
+.rp-modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:80;display:none;flex-direction:column;}
+.rp-modal-backdrop.open{display:flex;}
+.rp-modal-head{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--border);background:var(--bg2);}
+.rp-modal-head h3{margin:0;font-size:15px;color:var(--text);}
+.rp-close{background:var(--card2);border:1px solid var(--border);color:var(--text);width:32px;height:32px;border-radius:8px;font-size:15px;}
+#rp-reader, #rp-filereader{width:100%;max-width:480px;margin:0 auto;}
+.rp-scan-status{text-align:center;color:var(--text2);font-size:13px;padding:10px 16px;}
+.rp-manual{padding:10px 16px;display:flex;gap:8px;border-top:1px solid var(--border);}
+.rp-manual input{flex:1;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:10px;}
+.rp-assign-list{padding:8px 16px 20px;overflow-y:auto;}
+.rp-assign-item{width:100%;text-align:left;background:var(--card);border:1px solid var(--border);border-radius:9px;padding:10px 12px;margin-bottom:7px;color:var(--text);display:flex;justify-content:space-between;gap:10px;}
+.rp-assign-item .rp-codigo{color:var(--accent-t);font-weight:700;}
+.rp-assign-item .d{font-size:12px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rp-ticket-wrap{flex:1;overflow-y:auto;display:flex;justify-content:center;padding:20px 12px 40px;}
+.rp-ticket{width:100%;max-width:330px;background:#F4F1E8;color:#1a1a1a;font-family:monospace;font-size:12px;padding:16px;border-radius:2px;box-shadow:0 10px 26px rgba(0,0,0,0.4);}
+.rp-ticket .center{text-align:center;}
+.rp-ticket hr{border:none;border-top:1px dashed #999;margin:9px 0;}
+.rp-ticket .line{display:flex;justify-content:space-between;gap:8px;margin:3px 0;}
+.rp-ticket .miss{margin:6px 0 9px;padding-bottom:6px;border-bottom:1px dotted #ccc;}
+.rp-ticket .miss .c{font-weight:700;}
+.rp-ticket .ok-t{color:#1c7a43;font-weight:700;}
+.rp-ticket .miss-t{color:#a3271f;font-weight:700;}
 .search-bar{display:flex;gap:8px;padding:10px 14px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;}
 .search-input{flex:1;padding:8px 12px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--bg);color:var(--text);font-size:13px;}
 .search-input:focus{outline:none;border-color:var(--accent);}
@@ -210,12 +260,14 @@ body.light .historial-card{box-shadow:0 1px 3px rgba(0,0,0,0.08);}
 .cards-grid.compact .drag-handle{display:none;}
 .cards-grid.compact .card.expanded{grid-column:1/-1;}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 </head>
 <body>
 <div id="app">
   <div class="nav-tabs" id="nav-tabs">
     <div class="nav-tab active" data-page="reparto"><img class="app-logo" src="data:image/jpeg;base64,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" alt="Logo">Reparto</div>
     <div class="nav-tab" data-page="pdf"><span class="tab-icon">📄</span>PDF</div>
+    <div class="nav-tab" data-page="repaso"><span class="tab-icon">🔍</span>Repaso</div>
     <div class="nav-tab" data-page="base"><span class="tab-icon">🗃️</span>Clientes</div>
     <div class="nav-tab" data-page="resumen"><span class="tab-icon">📊</span>Resumen</div>
     <div class="nav-tab" data-page="musica"><span class="tab-icon">🎵</span>Música</div>
@@ -268,6 +320,96 @@ body.light .historial-card{box-shadow:0 1px 3px rgba(0,0,0,0.08);}
           <button class="sheet-btn" id="btn-limpiar-pedidos">🗑️ Limpiar</button>
         </div>
         <div id="pedidos-resultado"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REPASO DE CARGA -->
+  <div class="page" id="page-repaso">
+    <div class="header"><div><h1>🔍 Repaso de Carga</h1><p id="rp-header-meta">Escanea las cajas del almacén contra tu pedido de hoy</p></div></div>
+    <div class="scroll">
+      <div id="rp-empty" style="display:none;" class="empty-msg">
+        <div style="font-size:48px;margin-bottom:10px;">📦</div>
+        <div style="font-size:15px;font-weight:600;color:var(--text2);margin-bottom:6px;">Todavía no hay pedidos cargados</div>
+        <div style="font-size:13px;line-height:1.6;">Ve a la pestaña 📄 PDF, procesa el<br>PDF de Pedidos de hoy, y vuelve aquí</div>
+      </div>
+
+      <div id="rp-content" style="display:none;">
+        <div class="rp-summary">
+          <div class="rp-bar-label"><span id="rp-progress-text">0 / 0 cajas</span><span id="rp-refs-text">0 / 0 referencias</span></div>
+          <div class="rp-bar"><div class="rp-bar-fill" id="rp-bar-fill"></div></div>
+        </div>
+
+        <div class="rp-toolbar">
+          <input type="text" id="rp-search" placeholder="Buscar por código o nombre…">
+        </div>
+
+        <div class="rp-learn-bar">
+          <button class="rp-learn-btn" id="rp-learn-btn">📚 Modo aprendizaje en vivo (no cuenta cajas)</button>
+          <button class="rp-learn-btn" id="rp-photo-btn">🖼️ Aprender desde fotos de etiquetas</button>
+          <input type="file" id="rp-photo-input" accept="image/*" multiple style="display:none;">
+          <div class="rp-learn-io">
+            <button id="rp-export-btn">Exportar códigos</button>
+            <button id="rp-import-btn">Importar códigos</button>
+            <input type="file" id="rp-import-file" accept="application/json" style="display:none;">
+          </div>
+          <div class="rp-learn-count" id="rp-learn-count"></div>
+        </div>
+
+        <div id="rp-list"></div>
+      </div>
+
+      <div class="rp-fab-row">
+        <button class="sheet-btn" id="rp-ticket-btn">🧾 Resumen</button>
+        <button class="sheet-btn primary" id="rp-scan-btn">📷 Escanear caja</button>
+        <button class="sheet-btn" id="rp-reset-btn">🗑️ Reiniciar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal escaneo en vivo -->
+  <div class="rp-modal-backdrop" id="rp-scan-modal">
+    <div class="rp-modal-head"><h3>Escanear código de barras</h3><button class="rp-close" id="rp-close-scan">✕</button></div>
+    <div id="rp-reader"></div>
+    <div class="rp-scan-status" id="rp-scan-status">Apunta la cámara a la etiqueta de la caja…</div>
+    <div class="rp-manual">
+      <input type="text" id="rp-manual-code" inputmode="numeric" placeholder="…o escribe el código a mano">
+      <button class="sheet-btn primary" style="width:auto;padding:10px 16px;" id="rp-manual-add">OK</button>
+    </div>
+  </div>
+
+  <!-- Modal asignar código nuevo -->
+  <div class="rp-modal-backdrop" id="rp-assign-modal">
+    <div class="rp-modal-head"><h3>Código nuevo detectado</h3><button class="rp-close" id="rp-close-assign">✕</button></div>
+    <div class="rp-scan-status" id="rp-assign-raw" style="color:var(--accent-t);"></div>
+    <div class="rp-scan-status" style="margin-top:-6px;">¿A qué referencia corresponde? (se recordará)</div>
+    <div class="rp-assign-list" id="rp-assign-list"></div>
+  </div>
+
+  <!-- Modal aprender desde fotos -->
+  <div class="rp-modal-backdrop" id="rp-photo-modal">
+    <div class="rp-modal-head"><h3>Aprender desde fotos</h3><button class="rp-close" id="rp-close-photo">✕</button></div>
+    <div class="rp-scan-status" id="rp-photo-progress" style="color:var(--accent-t);font-weight:700;"></div>
+    <div class="rp-scan-status" id="rp-photo-status">Elige las fotos de etiquetas que hayas hecho hoy.</div>
+    <div class="rp-manual">
+      <input type="text" id="rp-photo-manual" inputmode="numeric" placeholder="¿No se lee bien? Escribe el número de debajo del código">
+      <button class="sheet-btn primary" style="width:auto;padding:10px 16px;" id="rp-photo-manual-btn">OK</button>
+    </div>
+    <div style="padding:0 16px 20px;">
+      <button class="sheet-btn" style="width:100%;" id="rp-skip-photo">Saltar esta foto</button>
+    </div>
+  </div>
+  <div id="rp-filereader" style="display:none;"></div>
+
+  <!-- Modal resumen / tique -->
+  <div class="rp-modal-backdrop" id="rp-ticket-modal">
+    <div class="rp-modal-head"><h3>Resumen del repaso</h3><button class="rp-close" id="rp-close-ticket">✕</button></div>
+    <div class="rp-ticket-wrap">
+      <div>
+        <div class="rp-ticket" id="rp-ticket-content"></div>
+        <div style="margin-top:14px;max-width:330px;">
+          <button class="sheet-btn primary" style="width:100%;" id="rp-share-btn">Enviar a camaristas</button>
+        </div>
       </div>
     </div>
   </div>
@@ -459,6 +601,7 @@ function showPage(name) {
   document.querySelector("[data-page=" + name + "]").classList.add("active");
   if (name === "base") renderBase();
   if (name === "resumen") renderResumen();
+  if (name === "repaso") renderRepaso();
 }
 
 // ─── PROCESAR PDF ──────────────────────────────────────────────────────────
@@ -1591,6 +1734,427 @@ function cargarPrefs() {
   } catch(e) {}
 }
 
+// ─── REPASO DE CARGA ────────────────────────────────────────────────────────
+var rpRefs = {};              // { codigo: {desc, total, clientes:[{nombre,cajas}]} }
+var rpState = { counted: {} };
+var rpBarcodeMap = {};        // { codigoBarras: codigoReferencia } — persistente entre días
+var rpHtml5QrCode = null;
+var rpFileQrCode = null;
+var rpLearnMode = false;
+var rpLastScan = { code: null, t: 0 };
+var rpCurrentAssignOnDone = null;
+var rpPhotoQueue = [];
+var rpPhotoIndex = 0;
+
+function rpStorageKey() {
+  return "rr_repaso_" + new Date().toISOString().slice(0, 10);
+}
+
+function rpLoadState() {
+  try {
+    var raw = localStorage.getItem(rpStorageKey());
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return { counted: {} };
+}
+function rpSaveState() {
+  try { localStorage.setItem(rpStorageKey(), JSON.stringify(rpState)); } catch (e) {}
+}
+function rpLoadMap() {
+  try {
+    var raw = localStorage.getItem("rr_barcodeMap");
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return {};
+}
+function rpSaveMap() {
+  try { localStorage.setItem("rr_barcodeMap", JSON.stringify(rpBarcodeMap)); } catch (e) {}
+}
+
+function rpBuildRefs() {
+  rpRefs = {};
+  var clienteNombre = {};
+  baseDatos.forEach(function(c) { clienteNombre[c.codigo] = c.nombre; });
+
+  Object.keys(pedidosData).forEach(function(codCliente) {
+    var lineas = pedidosData[codCliente] || [];
+    var nombre = clienteNombre[codCliente] || ("Cliente " + codCliente);
+    lineas.forEach(function(l) {
+      if (!rpRefs[l.cod]) rpRefs[l.cod] = { desc: l.desc, total: 0, clientes: [] };
+      rpRefs[l.cod].total += l.cajas;
+      rpRefs[l.cod].clientes.push({ nombre: nombre, cajas: l.cajas });
+    });
+  });
+}
+
+function rpCodesSorted() { return Object.keys(rpRefs).sort(); }
+function rpTotalRoute() {
+  return Object.values(rpRefs).reduce(function(a, r) { return a + r.total; }, 0);
+}
+function rpStatusOf(codigo) {
+  var need = rpRefs[codigo].total, got = rpState.counted[codigo] || 0;
+  if (got === 0) return "pending";
+  if (got < need) return "partial";
+  if (got === need) return "ok";
+  return "over";
+}
+function rpUpdateLearnCount() {
+  var el = document.getElementById("rp-learn-count");
+  if (el) el.textContent = Object.keys(rpBarcodeMap).length + " códigos de barras ya reconocidos";
+}
+
+function renderRepaso() {
+  rpBuildRefs();
+  var codes = rpCodesSorted();
+  var empty = document.getElementById("rp-empty");
+  var content = document.getElementById("rp-content");
+
+  if (!codes.length) {
+    empty.style.display = "block";
+    content.style.display = "none";
+    return;
+  }
+  empty.style.display = "none";
+  content.style.display = "block";
+
+  if (rpState._loadedKey !== rpStorageKey()) {
+    rpState = rpLoadState();
+    rpState._loadedKey = rpStorageKey();
+  }
+  codes.forEach(function(c) { if (rpState.counted[c] === undefined) rpState.counted[c] = 0; });
+  rpBarcodeMap = rpLoadMap();
+  rpUpdateLearnCount();
+
+  document.getElementById("rp-header-meta").textContent =
+    Object.keys(pedidosData).length + " clientes · " + rpTotalRoute() + " cajas en total";
+
+  rpRenderList();
+}
+
+function rpRenderList() {
+  var q = (document.getElementById("rp-search").value || "").trim().toLowerCase();
+  var list = document.getElementById("rp-list");
+  list.innerHTML = "";
+  var codes = rpCodesSorted();
+
+  codes.forEach(function(codigo) {
+    var ref = rpRefs[codigo];
+    if (q && codigo.indexOf(q) === -1 && ref.desc.toLowerCase().indexOf(q) === -1) return;
+    var st = rpStatusOf(codigo);
+    var clientesTxt = ref.clientes.length > 1 ? ref.clientes.length + " clientes distintos" : ref.clientes[0].nombre;
+
+    var row = document.createElement("div");
+    row.className = "rp-row " + st;
+    row.innerHTML =
+      '<div class="rp-info">' +
+        '<div class="rp-codigo">' + codigo + '</div>' +
+        '<div class="rp-desc">' + ref.desc + '</div>' +
+        '<div class="rp-clientes">' + clientesTxt + '</div>' +
+      '</div>' +
+      '<div class="rp-stepper">' +
+        '<button data-action="minus" data-code="' + codigo + '">−</button>' +
+        '<div class="rp-qty"><span>' + rpState.counted[codigo] + '</span><span class="of"> / ' + ref.total + '</span></div>' +
+        '<button data-action="plus" data-code="' + codigo + '">+</button>' +
+      '</div>';
+    list.appendChild(row);
+  });
+
+  rpUpdateProgress();
+}
+
+function rpUpdateProgress() {
+  var countedTotal = Object.values(rpState.counted).reduce(function(a, b) { return a + b; }, 0);
+  var codes = rpCodesSorted();
+  var refsDone = codes.filter(function(c) { return rpStatusOf(c) === "ok"; }).length;
+  document.getElementById("rp-progress-text").textContent = countedTotal + " / " + rpTotalRoute() + " cajas";
+  document.getElementById("rp-refs-text").textContent = refsDone + " / " + codes.length + " referencias";
+  var pct = rpTotalRoute() ? Math.min(100, Math.round((countedTotal / rpTotalRoute()) * 100)) : 0;
+  document.getElementById("rp-bar-fill").style.width = pct + "%";
+}
+
+function rpFlash() { if (navigator.vibrate) navigator.vibrate(60); }
+
+function rpRegisterScan(rawCode) {
+  rawCode = rawCode.trim();
+  var now = Date.now();
+  if (rawCode === rpLastScan.code && (now - rpLastScan.t) < 1200) return;
+  rpLastScan = { code: rawCode, t: now };
+
+  var codigo = rpRefs[rawCode] ? rawCode : rpBarcodeMap[rawCode];
+  var status = document.getElementById("rp-scan-status");
+
+  if (codigo) {
+    rpFlash();
+    if (rpLearnMode) {
+      status.textContent = "Ya conocido: " + rawCode + " → " + codigo + " (" + rpRefs[codigo].desc + "). Sigue escaneando…";
+    } else {
+      rpState.counted[codigo] = (rpState.counted[codigo] || 0) + 1;
+      rpSaveState();
+      rpRenderList();
+      status.textContent = "✔ " + codigo + " · " + rpRefs[codigo].desc + " (" + rpState.counted[codigo] + "/" + rpRefs[codigo].total + ")";
+    }
+  } else {
+    rpOpenAssign(rawCode);
+  }
+}
+
+function rpOpenAssign(rawCode, onDone) {
+  rpCurrentAssignOnDone = onDone || null;
+  document.getElementById("rp-assign-raw").textContent = "Código leído: " + rawCode;
+  var list = document.getElementById("rp-assign-list");
+  list.innerHTML = "";
+  var ordered = rpCodesSorted().sort(function(a, b) {
+    var ao = rpStatusOf(a) === "ok" ? 1 : 0, bo = rpStatusOf(b) === "ok" ? 1 : 0;
+    return ao - bo;
+  });
+  ordered.forEach(function(codigo) {
+    var ref = rpRefs[codigo];
+    var b = document.createElement("button");
+    b.className = "rp-assign-item";
+    b.innerHTML = '<span><span class="rp-codigo">' + codigo + '</span><br><span class="d">' + ref.desc + '</span></span><span class="of">' + rpState.counted[codigo] + '/' + ref.total + '</span>';
+    b.addEventListener("click", function() {
+      rpBarcodeMap[rawCode] = codigo;
+      rpSaveMap();
+      rpFlash();
+      document.getElementById("rp-assign-modal").classList.remove("open");
+      rpUpdateLearnCount();
+      var status = document.getElementById("rp-scan-status");
+      if (rpLearnMode || rpCurrentAssignOnDone) {
+        status.textContent = "✔ Guardado: " + rawCode + " → " + codigo + ". No se ha sumado ninguna caja.";
+      } else {
+        rpState.counted[codigo] = (rpState.counted[codigo] || 0) + 1;
+        rpSaveState();
+        rpRenderList();
+        status.textContent = "✔ Guardado: " + rawCode + " → " + codigo + ". Sigue escaneando…";
+      }
+      if (rpCurrentAssignOnDone) { var cb = rpCurrentAssignOnDone; rpCurrentAssignOnDone = null; cb(); }
+    });
+    list.appendChild(b);
+  });
+  document.getElementById("rp-assign-modal").classList.add("open");
+}
+
+async function rpStartScanner() {
+  document.getElementById("rp-scan-modal").classList.add("open");
+  document.getElementById("rp-scan-status").textContent = "Iniciando cámara…";
+  rpHtml5QrCode = new Html5Qrcode("rp-reader");
+  var config = {
+    fps: 12,
+    qrbox: { width: 260, height: 140 },
+    formatsToSupport: [
+      Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8,
+      Html5QrcodeSupportedFormats.CODE_128, Html5QrcodeSupportedFormats.UPC_A,
+      Html5QrcodeSupportedFormats.QR_CODE
+    ]
+  };
+  try {
+    await rpHtml5QrCode.start({ facingMode: "environment" }, config,
+      function(decodedText) { rpRegisterScan(decodedText); },
+      function() {});
+    document.getElementById("rp-scan-status").textContent = "Apunta la cámara a la etiqueta de la caja…";
+  } catch (err) {
+    document.getElementById("rp-scan-status").textContent = "No se pudo abrir la cámara. Revisa permisos, o escribe el código a mano.";
+  }
+}
+async function rpStopScanner() {
+  if (rpHtml5QrCode) {
+    try { await rpHtml5QrCode.stop(); rpHtml5QrCode.clear(); } catch (e) {}
+    rpHtml5QrCode = null;
+  }
+}
+
+function rpGetFileScanner() {
+  if (!rpFileQrCode) rpFileQrCode = new Html5Qrcode("rp-filereader");
+  return rpFileQrCode;
+}
+
+function rpProcessDecodedPhoto(rawCode) {
+  rawCode = rawCode.trim();
+  var codigo = rpRefs[rawCode] ? rawCode : rpBarcodeMap[rawCode];
+  var photoStatus = document.getElementById("rp-photo-status");
+  if (codigo) {
+    photoStatus.textContent = "Ya conocido: " + rawCode + " → " + codigo + " (" + rpRefs[codigo].desc + "). Pasando a la siguiente…";
+    rpUpdateLearnCount();
+    rpPhotoIndex++;
+    setTimeout(rpProcessNextPhoto, 600);
+  } else {
+    rpOpenAssign(rawCode, function() { rpPhotoIndex++; rpProcessNextPhoto(); });
+  }
+}
+
+async function rpProcessNextPhoto() {
+  var progress = document.getElementById("rp-photo-progress");
+  var status = document.getElementById("rp-photo-status");
+  if (rpPhotoIndex >= rpPhotoQueue.length) {
+    progress.textContent = "";
+    status.textContent = "Terminado: " + rpPhotoQueue.length + " foto(s) procesadas. Ya puedes cerrar esta ventana.";
+    return;
+  }
+  var file = rpPhotoQueue[rpPhotoIndex];
+  progress.textContent = "Foto " + (rpPhotoIndex + 1) + " de " + rpPhotoQueue.length;
+  status.textContent = "Leyendo el código de barras de la foto…";
+  try {
+    var decoded = await rpGetFileScanner().scanFile(file, false);
+    rpProcessDecodedPhoto(decoded);
+  } catch (err) {
+    status.textContent = 'No se ha podido leer el código en esta foto. Escríbelo a mano, o pulsa "Saltar esta foto".';
+  }
+}
+
+function rpBuildTicket() {
+  var now = new Date();
+  var hora = now.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+  var missing = [], okCount = 0;
+  rpCodesSorted().forEach(function(codigo) {
+    var ref = rpRefs[codigo], got = rpState.counted[codigo] || 0;
+    if (got < ref.total) missing.push({ codigo: codigo, desc: ref.desc, falta: ref.total - got, got: got, total: ref.total });
+    else okCount++;
+  });
+  var countedTotal = Object.values(rpState.counted).reduce(function(a, b) { return a + b; }, 0);
+
+  var html = '<h3 class="center">PARTE DE REPASO</h3>' +
+    '<div class="center">' + document.getElementById("hdr-date").textContent + ' · ' + hora + '</div><hr>' +
+    '<div class="line"><span>Referencias OK</span><span class="ok-t">' + okCount + '</span></div>' +
+    '<div class="line"><span>Referencias con falta</span><span class="miss-t">' + missing.length + '</span></div>' +
+    '<div class="line"><span>Cajas contadas</span><span>' + countedTotal + ' / ' + rpTotalRoute() + '</span></div><hr>';
+
+  if (!missing.length) {
+    html += '<div class="center ok-t" style="margin:10px 0;">✔ CARGA COMPLETA</div>';
+  } else {
+    html += '<div style="font-weight:700;margin-bottom:4px;">FALTAN:</div>';
+    missing.forEach(function(m) {
+      html += '<div class="miss"><span class="c">' + m.codigo + '</span> — ' + m.desc + '<br>Faltan ' + m.falta + ' caja(s) (tienes ' + m.got + ' de ' + m.total + ')</div>';
+    });
+  }
+  document.getElementById("rp-ticket-content").innerHTML = html;
+
+  var text = "PARTE DE REPASO\n" + document.getElementById("hdr-date").textContent + " " + hora + "\n\n";
+  text += missing.length === 0 ? "CARGA COMPLETA, sin faltas.\n" : "FALTAN:\n";
+  missing.forEach(function(m) { text += "- " + m.codigo + " " + m.desc + ": faltan " + m.falta + " (tiene " + m.got + "/" + m.total + ")\n"; });
+  return text;
+}
+
+function rpWireEvents() {
+  document.getElementById("rp-search").addEventListener("input", rpRenderList);
+
+  document.getElementById("rp-list").addEventListener("click", function(e) {
+    var btn = e.target.closest("button[data-action]");
+    if (!btn) return;
+    var codigo = btn.dataset.code, delta = btn.dataset.action === "plus" ? 1 : -1;
+    rpState.counted[codigo] = Math.max(0, (rpState.counted[codigo] || 0) + delta);
+    rpSaveState();
+    rpRenderList();
+  });
+
+  document.getElementById("rp-reset-btn").addEventListener("click", function() {
+    if (confirm("¿Reiniciar el repaso de hoy? Se pondrán todas las cantidades a 0.")) {
+      rpCodesSorted().forEach(function(c) { rpState.counted[c] = 0; });
+      rpSaveState();
+      rpRenderList();
+    }
+  });
+
+  document.getElementById("rp-scan-btn").addEventListener("click", function() {
+    rpLearnMode = false;
+    var b = document.getElementById("rp-learn-btn");
+    b.classList.remove("active");
+    b.textContent = "📚 Modo aprendizaje en vivo (no cuenta cajas)";
+    rpStartScanner();
+  });
+  document.getElementById("rp-close-scan").addEventListener("click", async function() {
+    await rpStopScanner();
+    document.getElementById("rp-scan-modal").classList.remove("open");
+  });
+  document.getElementById("rp-manual-add").addEventListener("click", function() {
+    var v = document.getElementById("rp-manual-code").value.trim();
+    if (v) { rpRegisterScan(v); document.getElementById("rp-manual-code").value = ""; }
+  });
+  document.getElementById("rp-manual-code").addEventListener("keydown", function(e) {
+    if (e.key === "Enter") document.getElementById("rp-manual-add").click();
+  });
+
+  document.getElementById("rp-learn-btn").addEventListener("click", function() {
+    rpLearnMode = !rpLearnMode;
+    var b = this;
+    b.classList.toggle("active", rpLearnMode);
+    b.textContent = rpLearnMode
+      ? "📚 Modo aprendizaje ACTIVO — toca para volver al repaso normal"
+      : "📚 Modo aprendizaje en vivo (no cuenta cajas)";
+    rpUpdateLearnCount();
+    rpStartScanner();
+  });
+
+  document.getElementById("rp-close-assign").addEventListener("click", function() {
+    document.getElementById("rp-assign-modal").classList.remove("open");
+    if (rpCurrentAssignOnDone) { var cb = rpCurrentAssignOnDone; rpCurrentAssignOnDone = null; cb(); }
+  });
+
+  document.getElementById("rp-export-btn").addEventListener("click", function() {
+    var blob = new Blob([JSON.stringify(rpBarcodeMap, null, 2)], { type: "application/json" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = "codigos-europastry.json"; a.click();
+    URL.revokeObjectURL(url);
+  });
+  document.getElementById("rp-import-btn").addEventListener("click", function() {
+    document.getElementById("rp-import-file").click();
+  });
+  document.getElementById("rp-import-file").addEventListener("change", function(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      try {
+        var imported = JSON.parse(ev.target.result);
+        Object.assign(rpBarcodeMap, imported);
+        rpSaveMap();
+        rpUpdateLearnCount();
+        alert("Códigos importados: ahora reconoces " + Object.keys(rpBarcodeMap).length + " en total.");
+      } catch (err) { alert("El archivo no es un JSON de códigos válido."); }
+    };
+    reader.readAsText(file);
+  });
+
+  document.getElementById("rp-photo-btn").addEventListener("click", function() {
+    document.getElementById("rp-photo-input").click();
+  });
+  document.getElementById("rp-photo-input").addEventListener("change", function(e) {
+    rpPhotoQueue = Array.from(e.target.files);
+    rpPhotoIndex = 0;
+    if (!rpPhotoQueue.length) return;
+    document.getElementById("rp-photo-modal").classList.add("open");
+    rpProcessNextPhoto();
+    e.target.value = "";
+  });
+  document.getElementById("rp-photo-manual-btn").addEventListener("click", function() {
+    var v = document.getElementById("rp-photo-manual").value.trim();
+    if (v) { document.getElementById("rp-photo-manual").value = ""; rpProcessDecodedPhoto(v); }
+  });
+  document.getElementById("rp-photo-manual").addEventListener("keydown", function(e) {
+    if (e.key === "Enter") document.getElementById("rp-photo-manual-btn").click();
+  });
+  document.getElementById("rp-skip-photo").addEventListener("click", function() {
+    rpPhotoIndex++; rpProcessNextPhoto();
+  });
+  document.getElementById("rp-close-photo").addEventListener("click", function() {
+    document.getElementById("rp-photo-modal").classList.remove("open");
+  });
+
+  document.getElementById("rp-ticket-btn").addEventListener("click", function() {
+    var text = rpBuildTicket();
+    document.getElementById("rp-share-btn").dataset.text = text;
+    document.getElementById("rp-ticket-modal").classList.add("open");
+  });
+  document.getElementById("rp-close-ticket").addEventListener("click", function() {
+    document.getElementById("rp-ticket-modal").classList.remove("open");
+  });
+  document.getElementById("rp-share-btn").addEventListener("click", async function() {
+    var text = this.dataset.text || "";
+    if (navigator.share) { try { await navigator.share({ text: text }); } catch (e) {} }
+    else { window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank"); }
+  });
+}
+
 // ─── INIT ───────────────────────────────────────────────────────────────────
 window.addEventListener("load", function() {
   document.getElementById("hdr-date").textContent =
@@ -1652,6 +2216,7 @@ window.addEventListener("load", function() {
   } catch(e) {}
   renderRutaBar();
   renderReparto();
+  rpWireEvents();
 });
 
 // --- Instalación como app (PWA) y actualizaciones ---
