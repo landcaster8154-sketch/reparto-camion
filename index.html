@@ -407,6 +407,7 @@ body.light .historial-card{box-shadow:0 1px 3px rgba(0,0,0,0.08);}
     <div class="rp-modal-head"><h3>Códigos de barras guardados</h3><button class="rp-close" id="rp-close-codes">✕</button></div>
     <div class="rp-toolbar" style="padding:12px 16px 0;">
       <input type="text" id="rp-codes-search" placeholder="Buscar por código o referencia…">
+      <button class="rp-close" id="rp-clear-all-codes" title="Borrar todos" style="width:auto;padding:0 10px;">🗑 Todos</button>
     </div>
     <div class="rp-assign-list" id="rp-codes-list"></div>
   </div>
@@ -1884,8 +1885,25 @@ function rpUpdateProgress() {
 
 function rpFlash() { if (navigator.vibrate) navigator.vibrate(60); }
 
+// Las etiquetas de caja de Europastry usan formato GS1-128: además del GTIN
+// (identificador fijo del producto) meten en el mismo código el lote y la
+// fecha de caducidad, que cambian cada partida. Si guardásemos el código tal
+// cual, la app "olvidaría" el producto en cuanto cambiara el lote. Por eso
+// aquí nos quedamos solo con el GTIN (Identificador de Aplicación 01, 14
+// dígitos) y descartamos el resto.
+function rpNormalizeCode(raw) {
+  if (!raw) return raw;
+  var s = String(raw);
+  var conParentesis = s.match(/\(01\)\s*(\d{14})/);
+  if (conParentesis) return conParentesis[1];
+  var limpio = s.replace(/[\x00-\x1f]/g, ""); // quita separadores de control (FNC1/GS)
+  var sinParentesis = limpio.match(/01(\d{14})/);
+  if (sinParentesis) return sinParentesis[1];
+  return limpio.trim();
+}
+
 function rpRegisterScan(rawCode) {
-  rawCode = rawCode.trim();
+  rawCode = rpNormalizeCode(rawCode);
   var now = Date.now();
   if (rawCode === rpLastScan.code && (now - rpLastScan.t) < 1200) return;
   rpLastScan = { code: rawCode, t: now };
@@ -1979,7 +1997,7 @@ function rpGetFileScanner() {
 }
 
 function rpProcessDecodedPhoto(rawCode) {
-  rawCode = rawCode.trim();
+  rawCode = rpNormalizeCode(rawCode);
   var codigo = rpRefs[rawCode] ? rawCode : rpBarcodeMap[rawCode];
   var photoStatus = document.getElementById("rp-photo-status");
   if (codigo) {
@@ -2104,9 +2122,11 @@ function rpRenderCodesList() {
     var row = document.createElement("div");
     row.className = "rp-assign-item";
     row.style.cursor = "default";
+    row.style.alignItems = "center";
     row.innerHTML =
       '<span><span class="rp-codigo">' + codigo + '</span> — ' + desc +
-      '<br><span class="d">Código de barras: ' + barcode + '</span></span>';
+      '<br><span class="d">Código de barras: ' + barcode + '</span></span>' +
+      '<button data-barcode="' + barcode.replace(/"/g, "&quot;") + '" class="rp-delete-code" style="flex:0 0 auto;background:var(--red-bg);border:1px solid var(--red);color:var(--red-t);border-radius:8px;padding:6px 10px;font-size:16px;">🗑</button>';
     list.appendChild(row);
   });
 }
@@ -2224,6 +2244,28 @@ function rpWireEvents() {
   document.getElementById("rp-codes-search").addEventListener("input", rpRenderCodesList);
   document.getElementById("rp-close-codes").addEventListener("click", function() {
     document.getElementById("rp-codes-modal").classList.remove("open");
+  });
+  document.getElementById("rp-codes-list").addEventListener("click", function(e) {
+    var btn = e.target.closest(".rp-delete-code");
+    if (!btn) return;
+    var barcode = btn.dataset.barcode;
+    var codigo = rpBarcodeMap[barcode];
+    var desc = (rpRefs[codigo] && rpRefs[codigo].desc) || codigo;
+    if (confirm('¿Olvidar este código de barras (asignado a "' + desc + '")?')) {
+      delete rpBarcodeMap[barcode];
+      rpSaveMap();
+      rpUpdateLearnCount();
+      rpRenderCodesList();
+    }
+  });
+  document.getElementById("rp-clear-all-codes").addEventListener("click", function() {
+    if (!Object.keys(rpBarcodeMap).length) return;
+    if (confirm("¿Borrar TODOS los códigos de barras aprendidos? Esto no se puede deshacer.")) {
+      rpBarcodeMap = {};
+      rpSaveMap();
+      rpUpdateLearnCount();
+      rpRenderCodesList();
+    }
   });
 
   document.getElementById("rp-ticket-btn").addEventListener("click", function() {
