@@ -353,6 +353,7 @@ body.light .historial-card{box-shadow:0 1px 3px rgba(0,0,0,0.08);}
             <button id="rp-import-btn">Importar códigos</button>
             <input type="file" id="rp-import-file" accept="application/json" style="display:none;">
           </div>
+          <button class="rp-learn-btn" id="rp-view-codes-btn" style="margin-top:8px;">📋 Ver códigos guardados</button>
           <div class="rp-learn-count" id="rp-learn-count"></div>
         </div>
 
@@ -400,6 +401,15 @@ body.light .historial-card{box-shadow:0 1px 3px rgba(0,0,0,0.08);}
     </div>
   </div>
   <div id="rp-filereader" style="display:none;"></div>
+
+  <!-- Modal ver códigos guardados -->
+  <div class="rp-modal-backdrop" id="rp-codes-modal">
+    <div class="rp-modal-head"><h3>Códigos de barras guardados</h3><button class="rp-close" id="rp-close-codes">✕</button></div>
+    <div class="rp-toolbar" style="padding:12px 16px 0;">
+      <input type="text" id="rp-codes-search" placeholder="Buscar por código o referencia…">
+    </div>
+    <div class="rp-assign-list" id="rp-codes-list"></div>
+  </div>
 
   <!-- Modal resumen / tique -->
   <div class="rp-modal-backdrop" id="rp-ticket-modal">
@@ -1982,6 +1992,40 @@ function rpProcessDecodedPhoto(rawCode) {
   }
 }
 
+function rpResizeImageBlob(file, maxDim) {
+  return new Promise(function(resolve, reject) {
+    var img = new Image();
+    var url = URL.createObjectURL(file);
+    img.onload = function() {
+      var scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+      var w = Math.max(1, Math.round(img.width * scale));
+      var h = Math.max(1, Math.round(img.height * scale));
+      var canvas = document.createElement("canvas");
+      canvas.width = w; canvas.height = h;
+      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      canvas.toBlob(function(blob) {
+        if (blob) resolve(blob); else reject(new Error("no-blob"));
+      }, "image/jpeg", 0.92);
+    };
+    img.onerror = function(e) { URL.revokeObjectURL(url); reject(e); };
+    img.src = url;
+  });
+}
+
+async function rpTryDecodeFile(file) {
+  var scanner = rpGetFileScanner();
+  // Las fotos de móvil a resolución completa a veces fallan donde una versión
+  // más pequeña del mismo encuadre sí se lee bien. Probamos varios tamaños.
+  var candidates = [file];
+  try { candidates.push(await rpResizeImageBlob(file, 1000)); } catch (e) {}
+  try { candidates.push(await rpResizeImageBlob(file, 700)); } catch (e) {}
+  for (var i = 0; i < candidates.length; i++) {
+    try { return await scanner.scanFile(candidates[i], false); } catch (e) { /* probar el siguiente */ }
+  }
+  throw new Error("no-decode");
+}
+
 async function rpProcessNextPhoto() {
   var progress = document.getElementById("rp-photo-progress");
   var status = document.getElementById("rp-photo-status");
@@ -1994,7 +2038,7 @@ async function rpProcessNextPhoto() {
   progress.textContent = "Foto " + (rpPhotoIndex + 1) + " de " + rpPhotoQueue.length;
   status.textContent = "Leyendo el código de barras de la foto…";
   try {
-    var decoded = await rpGetFileScanner().scanFile(file, false);
+    var decoded = await rpTryDecodeFile(file);
     rpProcessDecodedPhoto(decoded);
   } catch (err) {
     status.textContent = 'No se ha podido leer el código en esta foto. Escríbelo a mano, o pulsa "Saltar esta foto".';
@@ -2032,6 +2076,39 @@ function rpBuildTicket() {
   text += missing.length === 0 ? "CARGA COMPLETA, sin faltas.\n" : "FALTAN:\n";
   missing.forEach(function(m) { text += "- " + m.codigo + " " + m.desc + ": faltan " + m.falta + " (tiene " + m.got + "/" + m.total + ")\n"; });
   return text;
+}
+
+function rpRenderCodesList() {
+  var q = (document.getElementById("rp-codes-search").value || "").trim().toLowerCase();
+  var list = document.getElementById("rp-codes-list");
+  list.innerHTML = "";
+  var entries = Object.keys(rpBarcodeMap);
+
+  if (!entries.length) {
+    list.innerHTML = '<div class="rp-scan-status">Todavía no has enseñado ningún código de barras.</div>';
+    return;
+  }
+
+  entries.sort(function(a, b) {
+    var da = (rpRefs[rpBarcodeMap[a]] && rpRefs[rpBarcodeMap[a]].desc) || "";
+    var db = (rpRefs[rpBarcodeMap[b]] && rpRefs[rpBarcodeMap[b]].desc) || "";
+    return da.localeCompare(db);
+  });
+
+  entries.forEach(function(barcode) {
+    var codigo = rpBarcodeMap[barcode];
+    var ref = rpRefs[codigo];
+    var desc = ref ? ref.desc : "(referencia no está en el pedido de hoy)";
+    if (q && barcode.indexOf(q) === -1 && codigo.toLowerCase().indexOf(q) === -1 && desc.toLowerCase().indexOf(q) === -1) return;
+
+    var row = document.createElement("div");
+    row.className = "rp-assign-item";
+    row.style.cursor = "default";
+    row.innerHTML =
+      '<span><span class="rp-codigo">' + codigo + '</span> — ' + desc +
+      '<br><span class="d">Código de barras: ' + barcode + '</span></span>';
+    list.appendChild(row);
+  });
 }
 
 function rpWireEvents() {
@@ -2138,6 +2215,15 @@ function rpWireEvents() {
   });
   document.getElementById("rp-close-photo").addEventListener("click", function() {
     document.getElementById("rp-photo-modal").classList.remove("open");
+  });
+
+  document.getElementById("rp-view-codes-btn").addEventListener("click", function() {
+    rpRenderCodesList();
+    document.getElementById("rp-codes-modal").classList.add("open");
+  });
+  document.getElementById("rp-codes-search").addEventListener("input", rpRenderCodesList);
+  document.getElementById("rp-close-codes").addEventListener("click", function() {
+    document.getElementById("rp-codes-modal").classList.remove("open");
   });
 
   document.getElementById("rp-ticket-btn").addEventListener("click", function() {
