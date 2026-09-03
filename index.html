@@ -24,6 +24,19 @@
   --yellow-t:#fbbf24;
   --radius:14px;--radius-sm:10px;
 }
+.conduccion-wrap{display:flex;flex-direction:column;height:100%;}
+.conduccion-top{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.conduccion-top .titulo{font-size:13px;font-weight:800;letter-spacing:.04em;color:var(--accent-t);text-transform:uppercase;}
+.conduccion-top .pend{font-size:13px;color:var(--text2);}
+.conduccion-body{flex:1;overflow:auto;padding:22px;display:flex;flex-direction:column;gap:16px;}
+.conduccion-nombre{font-size:34px;font-weight:800;line-height:1.15;}
+.conduccion-dir{font-size:18px;color:var(--text2);display:flex;gap:8px;align-items:flex-start;}
+.conduccion-horario{font-size:20px;font-weight:700;color:var(--yellow-t);}
+.conduccion-cobro{font-size:20px;font-weight:800;padding:10px 16px;border-radius:var(--radius-sm);}
+.conduccion-estado{border-radius:var(--radius);border:2px solid var(--border);padding:26px;text-align:center;font-size:28px;font-weight:800;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:130px;}
+.conduccion-estado.entregado{border-color:var(--green);color:var(--green-t);background:var(--green-bg);}
+.conduccion-btn-grande{font-size:20px;font-weight:800;padding:20px;border-radius:var(--radius);border:none;flex:1;color:#fff;}
+.conduccion-fin{text-align:center;padding:60px 20px;color:var(--text2);}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:15px;}
 #app{display:flex;flex-direction:column;height:100vh;height:100dvh;}
@@ -278,6 +291,7 @@ body.light .historial-card{box-shadow:0 1px 3px rgba(0,0,0,0.08);}
     <div class="header">
       <div><h1><img class="header-logo" src="data:image/jpeg;base64,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" alt="Logo">Mis Rutas de Reparto</h1><p id="hdr-date"></p></div>
       <div class="hdr-btns">
+        <button class="icon-btn" style="background:var(--accent);border-color:var(--accent);color:#fff;" id="btn-conduccion">🚗 Conducción</button>
         <button class="icon-btn" id="btn-exportar">📤 Exportar</button>
         <button class="icon-btn" id="btn-importar">📥 Importar</button>
         <button class="icon-btn" id="btn-vista">👁️ Vista</button>
@@ -294,6 +308,18 @@ body.light .historial-card{box-shadow:0 1px 3px rgba(0,0,0,0.08);}
     <div class="prog-wrap"><div class="prog-fill" id="prog" style="width:0%"></div></div>
     <div class="ruta-bar" id="ruta-bar"></div>
     <div class="scroll"><div class="cards-grid" id="pending-list"></div></div>
+  </div>
+
+  <!-- MODO CONDUCCIÓN -->
+  <div class="page" id="page-conduccion" style="background:var(--bg);">
+    <div class="conduccion-wrap">
+      <div class="conduccion-top">
+        <div class="titulo">Modo Conducción</div>
+        <div class="pend"><span id="cd-pendientes">0</span> pendientes</div>
+        <button class="icon-btn" style="border-color:var(--red);color:var(--red-t);" id="btn-salir-conduccion">⟵ Salir</button>
+      </div>
+      <div class="conduccion-body" id="conduccion-body"></div>
+    </div>
   </div>
 
   <!-- PDF -->
@@ -513,6 +539,10 @@ body.light .historial-card{box-shadow:0 1px 3px rgba(0,0,0,0.08);}
     <div><div class="field-label">Teléfono</div><input class="field-input" id="fc-telefono" type="tel" placeholder="612 345 678" /></div>
     <div><div class="field-label">Horario habitual</div><input class="field-input" id="fc-horario" placeholder="Ej: 08:00-09:00" /></div>
     <div><div class="field-label">Nota de entrega</div><input class="field-input" id="fc-nota" placeholder="Ej: Abre a las 8..." /></div>
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 0;">
+      <input type="checkbox" id="fc-dum360" style="width:18px;height:18px;" />
+      <label for="fc-dum360" style="font-size:13px;color:var(--text2);cursor:pointer;">🅿️ Punto con zona DUM 360</label>
+    </div>
     <div class="sheet-btns" style="margin-top:4px;">
       <button class="sheet-btn danger" id="btn-borrar-cliente" style="display:none;">🗑️ Borrar</button>
       <button class="sheet-btn" id="btn-cancelar-cliente" style="margin-left:auto;">Cancelar</button>
@@ -863,7 +893,88 @@ function renderRutaBar() {
 }
 
 function setRuta(r) { currentRuta = r; expandedCardId = null; renderRutaBar(); renderReparto(); }
-function toggleCard(id) { expandedCardId = expandedCardId === id ? null : id; renderReparto(); }
+function refrescarVista() {
+  if (document.getElementById("page-conduccion").classList.contains("active")) renderConduccion();
+  else renderReparto();
+}
+function toggleCard(id) { expandedCardId = expandedCardId === id ? null : id; refrescarVista(); }
+
+// ─── MODO CONDUCCIÓN ────────────────────────────────────────────────────────
+function abrirConduccion() {
+  document.querySelectorAll(".page").forEach(function(p) { p.classList.remove("active"); });
+  document.getElementById("page-conduccion").classList.add("active");
+  var fp = filtPending();
+  if (fp.length) expandedCardId = fp[0].id;
+  renderConduccion();
+}
+function cerrarConduccion() {
+  document.getElementById("page-conduccion").classList.remove("active");
+  document.getElementById("page-reparto").classList.add("active");
+  renderReparto();
+}
+function renderConduccion() {
+  var fp = filtPending();
+  document.getElementById("cd-pendientes").textContent = fp.length;
+  var body = document.getElementById("conduccion-body");
+  if (!fp.length) {
+    body.innerHTML = '<div class="conduccion-fin"><div style="font-size:60px;">🎉</div><div style="font-size:20px;font-weight:800;color:var(--text);margin-top:10px;">¡Ruta finalizada!</div></div>';
+    return;
+  }
+  var c = fp[0];
+  body.innerHTML = '<div class="cards-grid carstereo">' + renderCardHtml(c) + '</div>';
+
+  var scope = body;
+  scope.querySelectorAll("[data-toggle]").forEach(function(el) {
+    el.addEventListener("click", function() { toggleCard(this.dataset.toggle); });
+    el.addEventListener("touchend", function(e) { e.preventDefault(); toggleCard(this.dataset.toggle); });
+  });
+  scope.querySelectorAll("[data-action=entregado]").forEach(function(btn) {
+    btn.addEventListener("click", function(e) { e.stopPropagation(); marcarEntregado(this.dataset.id); });
+    btn.addEventListener("touchend", function(e) { e.stopPropagation(); e.preventDefault(); marcarEntregado(this.dataset.id); });
+  });
+  scope.querySelectorAll("[data-action=incidencia]").forEach(function(btn) {
+    btn.addEventListener("click", function(e) { e.stopPropagation(); marcarIncidencia(this.dataset.id); });
+    btn.addEventListener("touchend", function(e) { e.stopPropagation(); e.preventDefault(); marcarIncidencia(this.dataset.id); });
+  });
+  scope.querySelectorAll("[data-action=dum360]").forEach(function(btn) {
+    btn.addEventListener("click", function(e) { e.stopPropagation(); abrirDum360(); });
+    btn.addEventListener("touchend", function(e) { e.stopPropagation(); e.preventDefault(); abrirDum360(); });
+  });
+  scope.querySelectorAll("[data-action=pedido]").forEach(function(btn) {
+    btn.addEventListener("click", function(e) { e.stopPropagation(); abrirPedido(this.dataset.cod, this.dataset.nom); });
+    btn.addEventListener("touchend", function(e) { e.stopPropagation(); e.preventDefault(); abrirPedido(this.dataset.cod, this.dataset.nom); });
+  });
+  scope.querySelectorAll("[data-action=horario]").forEach(function(btn) {
+    btn.addEventListener("click", function(e) { e.stopPropagation(); toggleHorarioEditor(this.dataset.id); });
+    btn.addEventListener("touchend", function(e) { e.stopPropagation(); e.preventDefault(); toggleHorarioEditor(this.dataset.id); });
+  });
+  scope.querySelectorAll("[data-action='horario-hoy']").forEach(function(btn) {
+    btn.addEventListener("click", function(e) { e.stopPropagation(); guardarHorario(this.dataset.id, false); });
+    btn.addEventListener("touchend", function(e) { e.stopPropagation(); e.preventDefault(); guardarHorario(this.dataset.id, false); });
+  });
+  scope.querySelectorAll("[data-action='horario-siempre']").forEach(function(btn) {
+    btn.addEventListener("click", function(e) { e.stopPropagation(); guardarHorario(this.dataset.id, true); });
+    btn.addEventListener("touchend", function(e) { e.stopPropagation(); e.preventDefault(); guardarHorario(this.dataset.id, true); });
+  });
+  scope.querySelectorAll("[data-action=observacion]").forEach(function(btn) {
+    btn.addEventListener("click", function(e) { e.stopPropagation(); toggleObservacionEditor(this.dataset.id); });
+    btn.addEventListener("touchend", function(e) { e.stopPropagation(); e.preventDefault(); toggleObservacionEditor(this.dataset.id); });
+  });
+  scope.querySelectorAll("[data-action='obs-guardar']").forEach(function(btn) {
+    btn.addEventListener("click", function(e) { e.stopPropagation(); guardarObservacion(this.dataset.id); });
+    btn.addEventListener("touchend", function(e) { e.stopPropagation(); e.preventDefault(); guardarObservacion(this.dataset.id); });
+  });
+  scope.querySelectorAll("[data-action='obs-cancelar']").forEach(function(btn) {
+    btn.addEventListener("click", function(e) { e.stopPropagation(); toggleObservacionEditor(this.dataset.id); });
+    btn.addEventListener("touchend", function(e) { e.stopPropagation(); e.preventDefault(); toggleObservacionEditor(this.dataset.id); });
+  });
+}
+
+// TODO: sustituir por el enlace/esquema real de la app DUM 360 cuando lo tengamos
+var DUM360_URL = "https://www.google.com/search?q=DUM+360+app";
+function abrirDum360() {
+  window.open(DUM360_URL, "_blank");
+}
 
 function marcarEntregado(id) {
   var i = pending.findIndex(function(c) { return c.id === id; });
@@ -883,12 +994,12 @@ function marcarEntregado(id) {
     completed.push(cliente);
     pending.splice(i, 1);
   }
-  expandedCardId = null; guardar(); renderReparto();
+  expandedCardId = null; guardar(); refrescarVista();
 }
 function marcarIncidencia(id) {
   var i = pending.findIndex(function(c) { return c.id === id; });
   if (i > -1) { issues.push(pending[i]); pending.splice(i, 1); }
-  expandedCardId = null; guardar(); renderReparto();
+  expandedCardId = null; guardar(); refrescarVista();
 }
 function recuperarCliente(id, origen) {
   var lista = origen === "done" ? completed : issues;
@@ -952,12 +1063,12 @@ function guardarHorario(id, siempre) {
 
   horarioAbiertoId = null;
   guardar();
-  renderReparto();
+  refrescarVista();
 }
 
 function toggleObservacionEditor(id) {
   observacionAbiertaId = observacionAbiertaId === id ? null : id;
-  renderReparto();
+  refrescarVista();
 }
 
 function guardarObservacion(id) {
@@ -965,7 +1076,7 @@ function guardarObservacion(id) {
   if (!item) return;
   var ta = document.getElementById("obs-input-" + id);
   var texto = ta ? ta.value.trim() : "";
-  if (!texto) { observacionAbiertaId = null; renderReparto(); return; }
+  if (!texto) { observacionAbiertaId = null; refrescarVista(); return; }
   incidenciasPedido.push({
     id: "obs_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7),
     codigo: item.codigo,
@@ -977,7 +1088,7 @@ function guardarObservacion(id) {
   });
   observacionAbiertaId = null;
   guardar();
-  renderReparto();
+  refrescarVista();
 }
 
 function eliminarObservacion(id) {
@@ -1084,6 +1195,7 @@ function renderCardHtml(c) {
       '<a class="btn blue" href="' + mapUrl + '" target="_blank">🗺️ Navegar</a>' +
       (tel ? '<a class="btn blue" href="tel:' + tel + '">📞 Llamar</a>' : '<span class="btn" style="opacity:0.4;cursor:default;">📞 Sin tel.</span>') +
       '<button class="btn" style="border-color:rgba(251,191,36,0.4);background:rgba(245,158,11,0.1);color:var(--yellow-t);" data-action="pedido" data-cod="' + c.codigo + '" data-nom="' + c.nombre.replace(/"/g, "&quot;") + '">📦 Pedido</button>' +
+      (c.dum360 ? '<button class="btn" style="border-color:rgba(245,166,35,0.5);background:rgba(245,166,35,0.12);color:#f5a623;" data-action="dum360" data-id="' + c.id + '">🅿️ DUM 360</button>' : "") +
       "</div>";
     if (horAbierto) {
       html += '<div class="horario-editor">' +
@@ -1190,6 +1302,10 @@ function renderReparto() {
   list.querySelectorAll("[data-action=incidencia]").forEach(function(btn) {
     btn.addEventListener("click", function(e) { e.stopPropagation(); marcarIncidencia(this.dataset.id); });
     btn.addEventListener("touchend", function(e) { e.stopPropagation(); e.preventDefault(); marcarIncidencia(this.dataset.id); });
+  });
+  list.querySelectorAll("[data-action=dum360]").forEach(function(btn) {
+    btn.addEventListener("click", function(e) { e.stopPropagation(); abrirDum360(); });
+    btn.addEventListener("touchend", function(e) { e.stopPropagation(); e.preventDefault(); abrirDum360(); });
   });
   list.querySelectorAll("[data-action=pedido]").forEach(function(btn) {
     btn.addEventListener("click", function(e) { e.stopPropagation(); abrirPedido(this.dataset.cod, this.dataset.nom); });
@@ -1395,9 +1511,11 @@ function abrirFormCliente(idx) {
     document.getElementById("fc-telefono").value = c.telefono || "";
     document.getElementById("fc-horario").value = c.horario || "";
     document.getElementById("fc-nota").value = c.nota || "";
+    document.getElementById("fc-dum360").checked = !!c.dum360;
   } else {
     ["fc-codigo","fc-nombre","fc-direccion","fc-telefono","fc-horario","fc-nota","fc-orden"].forEach(function(id) { document.getElementById(id).value = ""; });
     document.getElementById("fc-ruta").value = "180";
+    document.getElementById("fc-dum360").checked = false;
   }
   document.getElementById("form-cliente-overlay").classList.remove("hidden");
 }
@@ -1416,6 +1534,7 @@ function guardarCliente() {
     telefono: document.getElementById("fc-telefono").value.trim(),
     horario: document.getElementById("fc-horario").value.trim(),
     nota: document.getElementById("fc-nota").value.trim(),
+    dum360: document.getElementById("fc-dum360").checked,
     activo: false
   };
   if (editingClienteIdx !== null && !isNaN(editingClienteIdx)) {
@@ -2297,6 +2416,10 @@ window.addEventListener("load", function() {
 
   document.getElementById("btn-exportar").addEventListener("click", exportarSesion);
   document.getElementById("btn-exportar").addEventListener("touchend", function(e) { e.preventDefault(); exportarSesion(); });
+  document.getElementById("btn-conduccion").addEventListener("click", abrirConduccion);
+  document.getElementById("btn-conduccion").addEventListener("touchend", function(e) { e.preventDefault(); abrirConduccion(); });
+  document.getElementById("btn-salir-conduccion").addEventListener("click", cerrarConduccion);
+  document.getElementById("btn-salir-conduccion").addEventListener("touchend", function(e) { e.preventDefault(); cerrarConduccion(); });
   document.getElementById("btn-importar").addEventListener("click", function() { document.getElementById("importar-file").click(); });
   document.getElementById("btn-importar").addEventListener("touchend", function(e) { e.preventDefault(); document.getElementById("importar-file").click(); });
   document.getElementById("importar-file").addEventListener("change", function() { importarSesion(this.files[0]); this.value=""; });
