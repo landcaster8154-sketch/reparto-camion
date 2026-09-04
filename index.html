@@ -28,15 +28,20 @@
 .conduccion-top{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);flex-shrink:0;}
 .conduccion-top .titulo{font-size:13px;font-weight:800;letter-spacing:.04em;color:var(--accent-t);text-transform:uppercase;}
 .conduccion-top .pend{font-size:13px;color:var(--text2);}
-.conduccion-body{flex:1;overflow:auto;padding:22px;display:flex;flex-direction:column;gap:16px;}
-.conduccion-nombre{font-size:34px;font-weight:800;line-height:1.15;}
-.conduccion-dir{font-size:18px;color:var(--text2);display:flex;gap:8px;align-items:flex-start;}
-.conduccion-horario{font-size:20px;font-weight:700;color:var(--yellow-t);}
-.conduccion-cobro{font-size:20px;font-weight:800;padding:10px 16px;border-radius:var(--radius-sm);}
-.conduccion-estado{border-radius:var(--radius);border:2px solid var(--border);padding:26px;text-align:center;font-size:28px;font-weight:800;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:130px;}
-.conduccion-estado.entregado{border-color:var(--green);color:var(--green-t);background:var(--green-bg);}
-.conduccion-btn-grande{font-size:20px;font-weight:800;padding:20px;border-radius:var(--radius);border:none;flex:1;color:#fff;}
+.conduccion-body{flex:1;overflow:auto;padding:14px;}
 .conduccion-fin{text-align:center;padding:60px 20px;color:var(--text2);}
+.cd-grid{display:flex;gap:14px;height:100%;min-height:320px;align-items:stretch;}
+.cd-grid #cd-card-slot{flex:1;display:flex;min-width:0;}
+.cd-grid #cd-card-slot .cards-grid{width:100%;}
+.cd-grid #cd-card-slot .card{display:flex;flex-direction:column;justify-content:center;height:100%;width:100%;}
+.cd-grid #cd-card-slot .card:not(.expanded) .card-head{padding:22px 24px;}
+.cd-grid #cd-card-slot .card:not(.expanded) .card-name{font-size:30px !important;line-height:1.2;}
+.cd-grid #cd-card-slot .card:not(.expanded) .card-meta{font-size:17px !important;margin-top:8px;}
+.cd-grid #cd-card-slot .card:not(.expanded) .card-addr{font-size:19px !important;padding:0 24px 20px;}
+.cd-grid #cd-card-slot .card:not(.expanded) .card-order{min-width:44px;height:44px;font-size:19px;}
+.cd-grid #cd-card-slot .card:not(.expanded) .chevron-btn{font-size:24px;}
+.cd-entregado-btn{flex:1;font-size:30px;font-weight:800;border:none;border-radius:var(--radius);background:var(--green);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;}
+.cd-grid.expanded-mode .cd-entregado-btn{display:none;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:15px;}
 #app{display:flex;flex-direction:column;height:100vh;height:100dvh;}
@@ -318,7 +323,12 @@ body.light .historial-card{box-shadow:0 1px 3px rgba(0,0,0,0.08);}
         <div class="pend"><span id="cd-pendientes">0</span> pendientes</div>
         <button class="icon-btn" style="border-color:var(--red);color:var(--red-t);" id="btn-salir-conduccion">⟵ Salir</button>
       </div>
-      <div class="conduccion-body" id="conduccion-body"></div>
+      <div class="conduccion-body" id="conduccion-body">
+        <div class="cd-grid" id="cd-grid">
+          <div id="cd-card-slot"></div>
+          <button class="cd-entregado-btn" id="cd-btn-entregado-mega">✔️<br>ENTREGADO</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -920,10 +930,18 @@ function renderConduccion() {
     body.innerHTML = '<div class="conduccion-fin"><div style="font-size:60px;">🎉</div><div style="font-size:20px;font-weight:800;color:var(--text);margin-top:10px;">¡Ruta finalizada!</div></div>';
     return;
   }
+  body.innerHTML = '<div class="cd-grid" id="cd-grid"><div id="cd-card-slot"></div><button class="cd-entregado-btn" id="cd-btn-entregado-mega">✔️<br>ENTREGADO</button></div>';
   var c = fp[0];
-  body.innerHTML = '<div class="cards-grid carstereo">' + renderCardHtml(c) + '</div>';
+  var slot = document.getElementById("cd-card-slot");
+  slot.innerHTML = '<div class="cards-grid carstereo">' + renderCardHtml(c) + '</div>';
+  var exp = expandedCardId === c.id;
+  document.getElementById("cd-grid").classList.toggle("expanded-mode", exp);
 
-  var scope = body;
+  var mega = document.getElementById("cd-btn-entregado-mega");
+  mega.addEventListener("click", function() { marcarEntregado(c.id); });
+  mega.addEventListener("touchend", function(e) { e.preventDefault(); marcarEntregado(c.id); });
+
+  var scope = slot;
   scope.querySelectorAll("[data-toggle]").forEach(function(el) {
     el.addEventListener("click", function() { toggleCard(this.dataset.toggle); });
     el.addEventListener("touchend", function(e) { e.preventDefault(); toggleCard(this.dataset.toggle); });
