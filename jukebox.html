@@ -32,6 +32,10 @@
     max-width: 900px;
     margin: 0 auto;
   }
+  #app.queue-mode header,
+  #app.queue-mode #folder-bar {
+    display: none;
+  }
   header {
     padding: 14px 16px 10px;
     display:flex;
@@ -95,6 +99,77 @@
     flex-shrink: 0;
   }
 
+  #view-tabs {
+    display: flex;
+    gap: 8px;
+    padding: 8px 16px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .view-tab {
+    flex: 1;
+    padding: 9px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--panel-2);
+    color: var(--text-dim);
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    touch-action: manipulation;
+  }
+  .view-tab.active { background: var(--accent); color: #08222a; border-color: var(--accent); }
+
+  .view { flex: 1; display: none; flex-direction: column; min-height: 0; overflow: hidden; }
+  .view.active { display: flex; }
+
+  #queue-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 6px 8px;
+    min-height: 0;
+  }
+  .q-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 8px;
+    border-radius: 10px;
+    touch-action: manipulation;
+  }
+  .q-item:active { background: var(--panel-2); }
+  .q-item.playing { background: rgba(77,208,225,0.10); }
+  .q-cover {
+    position: relative;
+    width: 48px; height: 48px;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: var(--panel-2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; color: var(--text-dim);
+  }
+  .q-cover img { width:100%; height:100%; object-fit: cover; }
+  .q-play {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 16px;
+  }
+  .q-item:not(.playing) .q-play { display: none; }
+  .q-item:active .q-play { display: flex; }
+  .q-info { flex: 1; min-width: 0; text-align: left; }
+  .q-name {
+    font-size: 14px; font-weight: 600;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .q-name.playing { color: var(--accent); }
+  .q-sub {
+    font-size: 12px; color: var(--text-dim);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
   #nowplaying {
     flex: 1;
     display: flex;
@@ -102,39 +177,23 @@
     align-items: center;
     justify-content: center;
     padding: 10px 16px;
-    text-align:center;
+    text-align: center;
     background: linear-gradient(180deg, var(--panel), var(--bg));
     min-height: 0;
     overflow: hidden;
   }
-  #player-row {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    flex: 1;
-    min-height: 0;
-    width: 100%;
-    gap: 8px;
-  }
-  #player-info {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    min-width: 0;
-  }
-  #info-text { min-width: 0; }
   #cover-wrap {
     position: relative;
     flex: 1 1 auto;
-    min-height: 0;
+    min-height: 120px;
+    min-width: 120px;
     width: auto;
-    max-width: min(70vw, 420px);
+    max-width: min(70vw, 380px);
     max-height: 100%;
     aspect-ratio: 1 / 1;
     align-self: center;
     margin: 0 auto 12px;
-    border-radius: 18px;
+    border-radius: 16px;
     overflow: hidden;
     background: var(--panel-2);
     border: 1px solid var(--border);
@@ -149,13 +208,13 @@
     display:none;
   }
   #cover-placeholder {
-    font-size: clamp(48px, 14vmin, 90px);
+    font-size: clamp(40px, 12vmin, 80px);
     color: var(--text-dim);
   }
   #cover-expand {
     position:absolute;
     bottom:10px; right:10px;
-    width:40px; height:40px;
+    width:36px; height:36px;
     border-radius:50%;
     background: rgba(0,0,0,0.55);
     color:#fff;
@@ -163,20 +222,18 @@
     display:flex;
     align-items:center;
     justify-content:center;
-    font-size:18px;
+    font-size:16px;
     cursor:pointer;
   }
-  #np-title { font-size: 19px; font-weight:600; margin:0 0 2px; }
+  #nowplaying-text { flex-shrink: 0; width: 100%; }
+  #np-title { font-size: 17px; font-weight:600; margin:0 0 2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   #np-title.empty { color: var(--text-dim); font-weight:400; }
-  #np-sub { font-size: 13px; color: var(--text-dim); margin:0; }
-  #track-count { font-size: 12px; color: var(--text-dim); margin-top: 6px; }
+  #np-sub { font-size: 12px; color: var(--text-dim); margin:0; }
+  #track-count { display:none; }
 
   #fullscreen-cover {
     position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
+    inset: 0;
     background: #000;
     display:none;
     align-items:center;
@@ -247,6 +304,30 @@
     padding: 2px 2px 0;
   }
 
+  #volume-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 16px 2px;
+  }
+  #volume-wrap .vol-icon { font-size: 15px; color: var(--text-dim); flex-shrink:0; }
+  #volume {
+    flex: 1;
+    height: 5px;
+    -webkit-appearance:none;
+    appearance:none;
+    background: var(--panel-2);
+    border-radius: 4px;
+    outline:none;
+  }
+  #volume::-webkit-slider-thumb {
+    -webkit-appearance:none;
+    width:14px; height:14px;
+    border-radius:50%;
+    background: var(--accent);
+    cursor:pointer;
+  }
+
   #controls {
     display:flex;
     align-items:center;
@@ -283,75 +364,26 @@
     min-height: 16px;
   }
 
-  /* ---------- Modo horizontal (pantallas anchas y bajas, ej. estéreo de coche) ----------
-     Se activa de DOS formas independientes, para que funcione aunque el navegador
-     interprete mal la media query (pasa en algunos Chrome de fábrica de coches):
-     1) Automáticamente si el navegador entiende bien "orientation/max-height".
-     2) Por JavaScript, midiendo el tamaño real de la pantalla (más compatible). */
-  @media (orientation: landscape) and (max-height: 480px) {
-    #player-row {
-      flex-direction: row;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-    }
-    #cover-wrap {
-      flex: 0 0 auto;
-      width: 36vh;
-      max-width: 36vh;
-      height: 36vh;
-      max-height: 80vh;
-      margin: 0;
-      align-self: center;
-    }
-    #player-info {
-      flex: 1;
-      min-width: 0;
-      justify-content: center;
-      gap: 2px;
-    }
-    #info-text { text-align: left; margin-bottom: 4px; }
-    #np-sub, #track-count { text-align: left; }
-    #progress-wrap { padding: 4px 0 0; }
-    #controls {
-      justify-content: flex-start;
-      gap: 14px;
-      padding: 10px 0 4px;
-    }
-    .ctrl-btn { width: 46px; height: 46px; font-size: 18px; }
-    .ctrl-btn.play { width: 56px; height: 56px; font-size: 22px; }
+  @media (max-height: 480px) {
+    header { padding: 6px 16px 5px; }
+    header h1 { font-size: 14px; }
+    .header-btns .btn { padding: 6px 10px; font-size: 12px; }
+    #folder-bar { padding: 5px 16px; }
+    #view-tabs { padding: 5px 16px; }
+    .view-tab { padding: 6px; font-size: 12px; }
+    #nowplaying { padding: 4px 16px; }
+    #cover-expand { width: 28px; height: 28px; font-size: 13px; }
+    #np-title { font-size: 14px; }
+    #np-sub { font-size: 10px; }
+    #progress-wrap { padding: 2px 16px 0; }
+    #times { font-size: 10px; }
+    #volume-wrap { padding: 1px 16px 1px; gap: 6px; }
+    #volume-wrap .vol-icon { font-size: 12px; }
+    #controls { padding: 5px 16px 6px; gap: 10px; }
+    .ctrl-btn { width: 36px; height: 36px; font-size: 15px; }
+    .ctrl-btn.play { width: 44px; height: 44px; font-size: 18px; }
+    #status-msg { display: none; }
   }
-  body.modo-horizontal #player-row {
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-  }
-  body.modo-horizontal #cover-wrap {
-    flex: 0 0 auto;
-    width: 36vh;
-    max-width: 36vh;
-    height: 36vh;
-    max-height: 80vh;
-    margin: 0;
-    align-self: center;
-  }
-  body.modo-horizontal #player-info {
-    flex: 1;
-    min-width: 0;
-    justify-content: center;
-    gap: 2px;
-  }
-  body.modo-horizontal #info-text { text-align: left; margin-bottom: 4px; }
-  body.modo-horizontal #np-sub, body.modo-horizontal #track-count { text-align: left; }
-  body.modo-horizontal #progress-wrap { padding: 4px 0 0; }
-  body.modo-horizontal #controls {
-    justify-content: flex-start;
-    gap: 14px;
-    padding: 10px 0 4px;
-  }
-  body.modo-horizontal .ctrl-btn { width: 46px; height: 46px; font-size: 18px; }
-  body.modo-horizontal .ctrl-btn.play { width: 56px; height: 56px; font-size: 22px; }
 </style>
 </head>
 <body>
@@ -360,7 +392,7 @@
   <header>
     <h1>Chrome<span>Box</span> Jukebox</h1>
     <div class="header-btns">
-      <button class="btn accent" id="btn-add" title="Añadir canciones y elegir a qué lista van">＋ Música</button>
+      <button class="btn accent" id="btn-add" title="Añadir canciones sueltas">＋ Música</button>
       <button class="btn accent" id="btn-add-folder" title="Añadir una carpeta completa">📁 Carpeta</button>
       <button class="btn danger" id="btn-clear" title="Vaciar toda la música guardada">🗑</button>
     </div>
@@ -376,37 +408,50 @@
     <button class="btn danger" id="btn-delete-folder" title="Borrar esta carpeta" style="display:none;">🗑 Borrar carpeta</button>
   </div>
 
-  <div id="nowplaying">
-    <div id="player-row">
+  <div id="view-tabs">
+    <button class="view-tab active" id="tab-player" data-view="player">🎧 Reproductor</button>
+    <button class="view-tab" id="tab-queue" data-view="queue">📃 Cola</button>
+  </div>
+
+  <div id="view-player" class="view active">
+    <div id="nowplaying">
       <div id="cover-wrap">
         <img id="cover-img" alt="Portada">
         <div id="cover-placeholder">🎵</div>
         <button id="cover-expand" title="Ver a pantalla completa">⛶</button>
       </div>
-      <div id="player-info">
-        <div id="info-text">
-          <p id="np-title" class="empty">Nada en reproducción</p>
-          <p id="np-sub"></p>
-          <p id="track-count">0 canciones cargadas</p>
-        </div>
-
-        <div id="progress-wrap">
-          <input type="range" id="progress" min="0" max="100" value="0">
-          <div id="times">
-            <span id="time-cur">0:00</span>
-            <span id="time-dur">0:00</span>
-          </div>
-        </div>
-
-        <div id="controls">
-          <button class="ctrl-btn" id="btn-shuffle" title="Aleatorio">🔀</button>
-          <button class="ctrl-btn" id="btn-prev" title="Anterior">⏮</button>
-          <button class="ctrl-btn play" id="btn-play" title="Play/Pausa">▶</button>
-          <button class="ctrl-btn" id="btn-next" title="Siguiente">⏭</button>
-          <button class="ctrl-btn" id="btn-repeat" title="Repetir">🔁</button>
-        </div>
+      <div id="nowplaying-text">
+        <p id="np-title" class="empty">Nada en reproducción</p>
+        <p id="np-sub"></p>
+        <p id="track-count">0 canciones cargadas</p>
       </div>
     </div>
+
+    <div id="progress-wrap">
+      <input type="range" id="progress" min="0" max="100" value="0">
+      <div id="times">
+        <span id="time-cur">0:00</span>
+        <span id="time-dur">0:00</span>
+      </div>
+    </div>
+
+    <div id="volume-wrap">
+      <span class="vol-icon">🔈</span>
+      <input type="range" id="volume" min="0" max="100" value="100">
+      <span class="vol-icon">🔊</span>
+    </div>
+
+    <div id="controls">
+      <button class="ctrl-btn" id="btn-shuffle" title="Aleatorio">🔀</button>
+      <button class="ctrl-btn" id="btn-prev" title="Anterior">⏮</button>
+      <button class="ctrl-btn play" id="btn-play" title="Play/Pausa">▶</button>
+      <button class="ctrl-btn" id="btn-next" title="Siguiente">⏭</button>
+      <button class="ctrl-btn" id="btn-repeat" title="Repetir">🔁</button>
+    </div>
+  </div>
+
+  <div id="view-queue" class="view">
+    <div id="queue-list"></div>
   </div>
 
   <div id="fullscreen-cover">
@@ -420,7 +465,6 @@
   <div id="status-msg"></div>
 
 </div>
-
 
 <audio id="audio-el"></audio>
 
@@ -561,6 +605,24 @@
   const fsClose = document.getElementById("fs-close");
   const folderSelect = document.getElementById("folder-select");
   const btnDeleteFolder = document.getElementById("btn-delete-folder");
+  const queueListEl = document.getElementById("queue-list");
+  const volumeEl = document.getElementById("volume");
+  const tabPlayer = document.getElementById("tab-player");
+  const tabQueue = document.getElementById("tab-queue");
+  const viewPlayer = document.getElementById("view-player");
+  const viewQueue = document.getElementById("view-queue");
+
+  function showView(name){
+    tabPlayer.classList.toggle("active", name === "player");
+    tabQueue.classList.toggle("active", name === "queue");
+    viewPlayer.classList.toggle("active", name === "player");
+    viewQueue.classList.toggle("active", name === "queue");
+    document.getElementById("app").classList.toggle("queue-mode", name === "queue");
+  }
+  tabPlayer.addEventListener("click", () => showView("player"));
+  tabPlayer.setAttribute("ontouchstart", "");
+  tabQueue.addEventListener("click", () => showView("queue"));
+  tabQueue.setAttribute("ontouchstart", "");
 
   let activeFolder = ""; // "" = todas las carpetas
   const ACTIVE_FOLDER_KEY = "cbx_active_folder";
@@ -617,12 +679,43 @@
       npTitle.classList.add("empty");
       npSub.textContent = "";
       setCoverDisplay(null);
+      renderQueue();
       return;
     }
     npTitle.classList.remove("empty");
     npTitle.textContent = tracks[currentIndex].name;
     npSub.textContent = (currentIndex + 1) + " de " + tracks.length;
     setCoverDisplay(tracks[currentIndex].coverUrl || null);
+    renderQueue();
+  }
+
+  function renderQueue(){
+    if(!tracks.length){
+      queueListEl.innerHTML = '<div style="text-align:center;color:var(--text-dim);padding:30px 10px;font-size:13px;">Sin canciones cargadas</div>';
+      return;
+    }
+    var order = (typeof playOrder !== "undefined" && playOrder && playOrder.length) ? playOrder : tracks.map((_, i) => i);
+    var html = "";
+    order.forEach(function(i){
+      var t = tracks[i];
+      if(!t) return;
+      var playing = i === currentIndex;
+      html += '<div class="q-item' + (playing ? ' playing' : '') + '" data-idx="' + i + '">' +
+        '<div class="q-cover">' +
+          (t.coverUrl ? '<img src="' + t.coverUrl + '" alt="">' : '🎵') +
+          '<div class="q-play">' + (playing && isPlaying ? '⏸' : '▶') + '</div>' +
+        '</div>' +
+        '<div class="q-info">' +
+          '<div class="q-name' + (playing ? ' playing' : '') + '">' + escapeHtml(t.name) + '</div>' +
+          '<div class="q-sub">' + escapeHtml(t.folder || "Sueltos") + '</div>' +
+        '</div>' +
+      '</div>';
+    });
+    queueListEl.innerHTML = html;
+    queueListEl.querySelectorAll(".q-item").forEach(function(el){
+      el.addEventListener("click", function(){ playTrack(parseInt(this.dataset.idx, 10)); showView("player"); });
+      el.setAttribute("ontouchstart", "");
+    });
   }
 
   function setCoverDisplay(url){
@@ -693,6 +786,7 @@
             if(tracks[currentIndex] && tracks[currentIndex].id === track.id){
               setCoverDisplay(url);
             }
+            renderQueue();
           }
         } catch(err){
           console.warn("No se pudo procesar la portada de", track.name, err);
@@ -709,6 +803,8 @@
 
   function updatePlayButton(){
     btnPlay.textContent = isPlaying ? "⏸" : "▶";
+    var activeQ = queueListEl.querySelector('.q-item[data-idx="' + currentIndex + '"] .q-play');
+    if(activeQ) activeQ.textContent = isPlaying ? "⏸" : "▶";
   }
 
   // ---------- Playback ----------
@@ -819,25 +915,15 @@
   fileInput.addEventListener("change", async (e) => {
     const files = Array.from(e.target.files || []);
     if(files.length === 0) return;
-
-    // Averiguamos qué listas existen ya, para que sea fácil añadir a una existente
-    const existentes = Array.from(new Set(tracks.map(t => t.folder || "Sueltos"))).sort((a,b) => a.localeCompare(b, "es"));
-    const pista = existentes.length
-      ? "Listas que ya tienes: " + existentes.join(", ") + "\n\nEscribe el nombre de una de esas para añadir ahí, o un nombre nuevo para crear una lista distinta.\nDéjalo en blanco para \"Sueltos\"."
-      : "Escribe un nombre para esta lista (por ejemplo, el nombre de un álbum o artista).\nDéjalo en blanco para \"Sueltos\".";
-    const folderName = (prompt("¿A qué lista añadimos estas " + files.length + " canciones?\n\n" + pista, "") || "").trim() || "Sueltos";
-
-    setStatus("Guardando " + files.length + " archivo(s) en \"" + folderName + "\"...");
+    setStatus("Guardando " + files.length + " archivo(s)...");
     for(const f of files){
       try {
-        await dbAddTrack(f.name, f, folderName);
+        await dbAddTrack(f.name, f, "Sueltos");
       } catch(err){
         console.error("Error guardando", f.name, err);
       }
     }
-    setStatus("¡Guardado en \"" + folderName + "\"!", 2500);
-    activeFolder = folderName;
-    try { localStorage.setItem(ACTIVE_FOLDER_KEY, activeFolder); } catch(e) {}
+    setStatus("¡Listo! Música guardada localmente.", 2500);
     await loadTracksFromDB(true);
     fileInput.value = "";
   });
@@ -846,17 +932,12 @@
     const all = Array.from(e.target.files || []);
     const files = all.filter(f => AUDIO_EXT_RE.test(f.name));
     if(files.length === 0){
-      setStatus("No se han detectado archivos de audio compatibles.", 3500);
+      setStatus("Esa carpeta no tiene archivos de audio compatibles.", 3500);
       folderInput.value = "";
       return;
     }
     // nombre de la carpeta = primer tramo de la ruta relativa (la carpeta que eligió el usuario)
-    let folderName = (files[0].webkitRelativePath || "").split("/")[0] || "";
-    if(!folderName){
-      // Este navegador no ha permitido elegir una carpeta real (solo archivos sueltos),
-      // así que preguntamos el nombre para poder organizarlos igualmente en una lista.
-      folderName = (prompt("Este navegador no permite elegir una carpeta completa, solo archivos sueltos.\n\n¿Qué nombre le ponemos a esta lista con los " + files.length + " archivos elegidos?", "Mi lista") || "").trim() || "Carpeta";
-    }
+    const folderName = (files[0].webkitRelativePath || "").split("/")[0] || "Carpeta";
     setStatus("Guardando " + files.length + " archivo(s) de \"" + folderName + "\"...");
     for(const f of files){
       try {
@@ -865,7 +946,7 @@
         console.error("Error guardando", f.name, err);
       }
     }
-    setStatus("¡Lista \"" + folderName + "\" añadida! " + files.length + " canciones.", 3000);
+    setStatus("¡Carpeta \"" + folderName + "\" añadida! " + files.length + " canciones.", 3000);
     activeFolder = folderName; // saltar directamente a ver la carpeta recién añadida
     try { localStorage.setItem(ACTIVE_FOLDER_KEY, activeFolder); } catch(e) {}
     await loadTracksFromDB(true);
@@ -879,6 +960,7 @@
     activeFolder = folderSelect.value;
     try { localStorage.setItem(ACTIVE_FOLDER_KEY, activeFolder); } catch(e) {}
     buildPlayOrder();
+    renderQueue();
     btnDeleteFolder.style.display = activeFolder ? "flex" : "none";
     if(activeFolder){
       const yaEnEstaCarpeta = tracks[currentIndex] && (tracks[currentIndex].folder || "Sueltos") === activeFolder;
@@ -921,6 +1003,7 @@
     isShuffle = !isShuffle;
     btnShuffle.classList.toggle("toggled", isShuffle);
     buildPlayOrder();
+    renderQueue();
     setStatus(isShuffle ? "Aleatorio activado" : "Aleatorio desactivado", 1500);
   });
 
@@ -1062,25 +1145,16 @@
     setStatus("Recuperada: " + track.name, 3000);
   }
 
-  // Comprueba el tamaño real de la ventana y activa el modo horizontal
-  // (portada a la izquierda, controles a la derecha) cuando la pantalla es
-  // ancha y baja, como la de un estéreo de coche. No depende de que el
-  // navegador entienda bien las media queries de CSS, así que funciona
-  // incluso en navegadores de fábrica más limitados.
-  function actualizarModoPantalla(){
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-    const esAnchaYBaja = h > 0 && (w / h) > 1.3 && h <= 520;
-    document.body.classList.toggle("modo-horizontal", esAnchaYBaja);
-  }
-  window.addEventListener("resize", actualizarModoPantalla);
-  window.addEventListener("orientationchange", () => setTimeout(actualizarModoPantalla, 200));
-  actualizarModoPantalla();
-
   async function init(){
     try {
       db = await openDB();
       try { activeFolder = localStorage.getItem(ACTIVE_FOLDER_KEY) || ""; } catch(e) {}
+      var savedVol = null;
+      try { savedVol = localStorage.getItem("cbx_volume"); } catch(e) {}
+      var vol = savedVol !== null ? parseInt(savedVol, 10) : 100;
+      if(isNaN(vol)) vol = 100;
+      volumeEl.value = vol;
+      audioEl.volume = vol / 100;
       await loadTracksFromDB(false);
       restoreLastPosition();
     } catch(err){
@@ -1088,6 +1162,11 @@
       console.error(err);
     }
   }
+
+  volumeEl.addEventListener("input", () => {
+    audioEl.volume = volumeEl.value / 100;
+    try { localStorage.setItem("cbx_volume", volumeEl.value); } catch(e) {}
+  });
 
   // Ensure buttons respond on WebView/touch devices too
   document.querySelectorAll("button").forEach(b => b.setAttribute("ontouchstart", ""));
